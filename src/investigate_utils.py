@@ -88,7 +88,6 @@ def add_experiment_id_arg(
     Returns:
         The argument parser with the experiment ID argument added.
     '''
-    Analyzer.add_connection_args(parser)
     parser.add_argument(
         'experiment_id',
         type=str,
