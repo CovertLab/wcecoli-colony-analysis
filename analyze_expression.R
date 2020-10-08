@@ -1,12 +1,18 @@
 library(tidyverse)
 library(readxl)
 library(ggridges)
+library(argparse)
+
+parser <- ArgumentParser()
+parser$add_argument("input", help="Input expression data file")
+parser$add_argument("output", help="Output folder")
+parser$add_argument("experiment_id", help="ID of experiment")
+args <- parser$parse_args()
 
 taniguchi_s6_path <- file.path("assets", "TableS6.xls")
 gene <- "yaaA"
 
 # Plot Reference Data
-
 taniguchi_s6 <- read_excel(taniguchi_s6_path)
 gamma_parameters <- taniguchi_s6[, c("Gene Name", "A_Protein",
                                      "B_Protein")]
@@ -18,10 +24,10 @@ taniguchi_plot <- ggplot(data = tibble(x = c(0, 10)), aes(x = x)) +
     labs(title = "Distribution of Counts per Cell for yaaA",
          subtitle = "Uses Parameters from Table S6, Taniguchi 2010") +
     xlab("Counts per Cell") + ylab("Frequency")
-ggsave("taniguchi_plot.pdf", taniguchi_plot)
+ggsave(file.path(args$output, "taniguchi_plot.pdf"), taniguchi_plot)
 
 # Plot Expression Data
-data <- read_csv("expression.csv")
+data <- read_csv(args$input)
 protein <- c()
 expression <- c()
 for (value in data$"EG10040-MONOMER[p]") {
@@ -41,7 +47,7 @@ expression_plot <- ggplot(transformed, aes(x = expression, y = protein)) +
         alpha = 0.7,
     ) +
     labs(title = "Protein Concentration Distributions",
-         subtitle = "From Experiment 20200924.162551") +
+         subtitle = paste("From Experiment ", args$experiment_id)) +
     xlab("Protein Concentration (counts/fL)") + ylab("Protein")
 
-ggsave("expression_plot.pdf", expression_plot)
+ggsave(file.path(args$output, "expression_plot.pdf"), expression_plot)
