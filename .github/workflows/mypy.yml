@@ -26,4 +26,4 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Check types with mypy
       run: |
-        mypy src
+        mypy --disallow-untyped-defs src/

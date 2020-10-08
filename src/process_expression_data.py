@@ -5,11 +5,12 @@ import csv
 import json
 import os
 
-from typing import Dict, Any, Tuple
-
+from typing import Dict
 import pandas as pd
 from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
+
+from src.types import Path, RawData
 
 
 AGENTS_PATH = ('agents',)
@@ -17,8 +18,8 @@ VOLUME_PATH = ('boundary', 'volume')
 
 
 def raw_data_to_end_expression_table(
-        raw_data: Dict[str, Any],
-        paths_dict: Dict[str, Tuple[str, ...]]) -> pd.DataFrame:
+        raw_data: RawData,
+        paths_dict: Dict[str, Path]) -> pd.DataFrame:
     '''Create a table of end expression levels from raw simulation data.
 
     Args:
