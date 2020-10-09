@@ -11,10 +11,7 @@ from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
 
 from src.types import Path, RawData
-
-
-AGENTS_PATH = ('agents',)
-VOLUME_PATH = ('boundary', 'volume')
+from src.constants import AGENTS_PATH, VOLUME_PATH
 
 
 def raw_data_to_end_expression_table(
