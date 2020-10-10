@@ -3,7 +3,7 @@
 import os
 from typing import Dict, List, Set, Iterable
 
-from ete3 import TreeNode
+from ete3 import TreeNode, TreeStyle, NodeStyle
 from vivarium.core.experiment import get_in
 
 from src.types import RawData
@@ -49,7 +49,14 @@ def make_ete_trees(agent_ids: Iterable[str]) -> List[TreeNode]:
     return roots
 
 
-def plot_phylogeny(data: RawData, out='phylogeny.pdf') -> None:
+def plot_phylogeny(data: RawData, out: str = 'phylogeny.pdf') -> None:
+    '''Plot phylogenetic tree from an experiment.
+
+    Args:
+        data: The simulation data.
+        out: Path to the output file. File type will be inferred from
+            the file name.
+    '''
     agent_ids: Set[str] = set()
     for _, time_data in data.items():
         agents_data = get_in(time_data, AGENTS_PATH)
@@ -58,4 +65,14 @@ def plot_phylogeny(data: RawData, out='phylogeny.pdf') -> None:
     trees = make_ete_trees(agent_ids)
     assert len(trees) == 1
     tree = trees[0]
-    tree.render(out)
+    tstyle = TreeStyle()
+    tstyle.show_scale = False
+    tstyle.show_leaf_name = False
+    tstyle.scale = 10
+    nstyle=NodeStyle()
+    nstyle['size'] = 5
+    nstyle['vt_line_width'] = 3
+    nstyle['hz_line_width'] = 3
+    for node in tree.traverse():
+        node.set_style(nstyle)
+    tree.render(out, tree_style=tstyle, w=400)
