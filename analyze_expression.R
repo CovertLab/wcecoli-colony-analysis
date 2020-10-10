@@ -4,9 +4,9 @@ library(ggridges)
 library(argparse)
 
 parser <- ArgumentParser()
-parser$add_argument("input", help="Input expression data file")
-parser$add_argument("output", help="Output folder")
-parser$add_argument("experiment_id", help="ID of experiment")
+parser$add_argument("input", help = "Input expression data file")
+parser$add_argument("output", help = "Output folder")
+parser$add_argument("experiment_id", help = "ID of experiment")
 args <- parser$parse_args()
 
 taniguchi_s6_path <- file.path("assets", "TableS6.xls")
