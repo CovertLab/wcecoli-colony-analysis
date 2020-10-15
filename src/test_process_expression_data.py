@@ -36,6 +36,7 @@ class TestRawDataToEndExpressionTable:
         }
         table = raw_data_to_end_expression_table(data, name_to_path_map)
         assert set(table['protein']) == set([1 / 2, 4 / 4])
+        assert set(table['volume']) == set([2, 4])
 
     def test_get_end_time(self) -> None:
         data = RawData({
@@ -63,6 +64,7 @@ class TestRawDataToEndExpressionTable:
         }
         table = raw_data_to_end_expression_table(data, name_to_path_map)
         assert set(table['protein']) == set([1 / 2, 4 / 4])
+        assert set(table['volume']) == set([2, 4])
 
     def test_multiple_proteins(self) -> None:
         data = RawData({
@@ -87,9 +89,11 @@ class TestRawDataToEndExpressionTable:
         if table['protein1'][0] == 1 / 2:
             assert table['protein1'].tolist() == [1 / 2, 8 / 4]
             assert table['protein2'].tolist() == [2 / 2, 3 / 4]
+            assert table['volume'].tolist() == [2, 4]
         else:
             assert table['protein1'].tolist() == [8 / 4, 1 / 2]
             assert table['protein2'].tolist() == [3 / 4, 2 / 2]
+            assert table['volume'].tolist() == [4, 2]
         assert 'protein3' not in table.columns
 
     def test_zeros(self) -> None:
@@ -107,3 +111,4 @@ class TestRawDataToEndExpressionTable:
         }
         table = raw_data_to_end_expression_table(data, name_to_path_map)
         assert set(table['protein']) == set([0, 0, 0])
+        assert set(table['volume']) == set([0, 4, 0])

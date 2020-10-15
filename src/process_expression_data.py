@@ -14,6 +14,9 @@ from src.types import Path, RawData
 from src.constants import AGENTS_PATH, VOLUME_PATH
 
 
+VOLUME_KEY = 'volume'
+
+
 def raw_data_to_end_expression_table(
         raw_data: RawData,
         paths_dict: Dict[str, Path]) -> pd.DataFrame:
@@ -34,9 +37,11 @@ def raw_data_to_end_expression_table(
         name: []
         for name in paths_dict
     }
+    expression_data[VOLUME_KEY] = []
     agents_data = get_in(end_data, AGENTS_PATH)
     for agent_data in agents_data.values():
         volume = get_in(agent_data, VOLUME_PATH, 0)
+        expression_data[VOLUME_KEY].append(volume)
         for name, path in paths_dict.items():
             count = get_in(agent_data, path, 0)
             concentration = count / volume if volume else 0
