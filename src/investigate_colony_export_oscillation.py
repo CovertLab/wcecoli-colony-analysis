@@ -15,7 +15,7 @@ from src.investigate_utils import (
 
 TIME_RANGE = (0.51, 1)
 FIELDS = ['nitrocefin']
-N_SNAPSHOTS = 50
+N_SNAPSHOTS = 35
 
 
 def main() -> None:
