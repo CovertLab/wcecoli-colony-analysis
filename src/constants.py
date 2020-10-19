@@ -15,3 +15,5 @@ ANTIBIOTIC_KEY = 'nitrocefin'
 AGENTS_PATH = ('agents',)
 #: Path to volume variable from each agent's root store.
 VOLUME_PATH = ('boundary', 'volume')
+#: Path to store of environmental fields.
+FIELDS_PATH = ('fields',)
