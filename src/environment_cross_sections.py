@@ -82,7 +82,11 @@ def plot_enviro_sections(
                 'More than {} non-inf fields so reusing style'.format(
                     len(STYLES))
             )
-        ax.plot(x, y, label=field, linestyle=linestyle, color=color)
+        if flat_bins:
+            ax.plot(x, y, label=field, linestyle=linestyle, color=color)
+        else:
+            ax.plot(x, y, 'o', label=field, linestyle=linestyle,
+                    color=color)
         i += 1
     ax.legend()
     ax.set_xlabel('Environment Horizontal Axis ($\mu m$)')
