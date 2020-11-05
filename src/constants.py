@@ -17,3 +17,5 @@ AGENTS_PATH = ('agents',)
 VOLUME_PATH = ('boundary', 'volume')
 #: Path to store of environmental fields.
 FIELDS_PATH = ('fields',)
+#: Path to environment bounds variable
+BOUNDS_PATH = ('dimensions', 'bounds')

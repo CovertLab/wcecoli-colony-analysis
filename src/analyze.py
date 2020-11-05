@@ -9,7 +9,10 @@ import argparse
 import os
 
 from vivarium_cell.analysis.analyze import Analyzer
+from vivarium.core.experiment import get_in
 
+from src.constants import FIELDS_PATH, BOUNDS_PATH
+from src.environment_cross_sections import get_enviro_sections_plot
 from src.phylogeny import plot_phylogeny
 
 
@@ -30,6 +33,8 @@ TAGS_CONFIG = {
     'tag_label_size': 54,
     'default_font_size': 54,
 }
+#: Fields to Plot in Environment Cross-Section
+ENVIRONMENT_SECTION_FIELDS = None
 
 
 class ColonyAnalyzer(Analyzer):
@@ -46,6 +51,14 @@ class ColonyAnalyzer(Analyzer):
             default=False,
             help='Plot agent phylogeny',
         )
+        parser.add_argument(
+            '--environment_section', '-e',
+            type=str,
+            help=(
+                'Plot cross-sections of environmental fields. '
+                'Specify "flat" or "mid".'
+            ),
+        )
         return parser
 
     def plot(self, args: argparse.Namespace) -> None:
@@ -56,6 +69,21 @@ class ColonyAnalyzer(Analyzer):
                 self.data,
                 os.path.join(self.out_dir, 'phylogeny.png'),
             )
+        if args.environment_section:
+            assert args.environment_section in ('flat', 'mid')
+            t_final = max(self.data.keys())
+            fields = get_in(self.data[t_final], FIELDS_PATH)
+            if ENVIRONMENT_SECTION_FIELDS:
+                fields = {
+                    key: val for key, val in fields.items()
+                    if key in ENVIRONMENT_SECTION_FIELDS
+                }
+            bounds = get_in(self.data[t_final], BOUNDS_PATH)
+            flat_bins = args.environment_section == 'flat'
+            fig = get_enviro_sections_plot(fields, bounds,
+                    section_location=0.4, flat_bins=flat_bins)
+            fig.savefig(
+                os.path.join(self.out_dir, 'enviro_sections.png'))
 
 
 def main() -> None:
