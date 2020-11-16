@@ -44,10 +44,10 @@ for (i in seq_len(num_proteins)) {
     protein_key <- chosen["wcecoli_protein_key"][[i, 1]]
 
     # Get expression levels
-    protein_concentrations <- data[protein_key][[1]]  # counts/fL
-    volumes <- data[VOLUME_KEY][[1]]  # fL/cell
+    protein_concentrations <- data[protein_key][[1]]  # Units of counts/fL
+    volumes <- data[VOLUME_KEY][[1]]  # Units of fL/cell
     stopifnot(length(protein_concentrations) == length(volumes))
-    protein_counts = protein_concentrations * volumes  # counts/cell
+    protein_counts <- protein_concentrations * volumes  # Units of counts/cell
     num_cells <- length(protein_concentrations)
 
     proteins <- c(proteins, rep(protein_key, num_cells))
@@ -69,7 +69,7 @@ for (i in seq_len(num_proteins)) {
     data_sources <- c(data_sources, rep("expected", NUM_GAMMA_SAMPLES))
 
     # Run KS Test
-    ks_stat_obj = ks.test(protein_counts, "pgamma", shape = a, scale = b)
+    ks_stat_obj <- ks.test(protein_counts, "pgamma", shape = a, scale = b)
     ks_stat <- ks_stat_obj$statistic
     ks_stats <- c(ks_stats, ks_stat)
     ks_proteins <- c(ks_proteins, protein_key)
@@ -106,7 +106,7 @@ expression_plot <- ggplot(transformed,
          subtitle = paste("From Experiment ", args$experiment_id)) +
     xlab("Protein Counts per Cell") + ylab("Protein")
 
-expression_range = max(expressions) - min(expressions)
+expression_range <- max(expressions) - min(expressions)
 suppressMessages(ggsave(file.path(args$output,
                                   "expression_distributions.pdf"),
                         expression_plot, height = num_proteins * 10,
