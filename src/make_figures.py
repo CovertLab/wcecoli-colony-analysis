@@ -25,8 +25,10 @@ from src.environment_cross_sections import get_enviro_sections_plot
 
 PUMP_PATH = (
     'boundary', 'bulk_molecule_concentrations', 'TRANS-CPLX-201[s]')
+BETA_LACTAMASE_PATH = (
+    'boundary', 'bulk_molecule_concentrations', 'EG10040-MONOMER[p]')
 TAG_PATH_NAME_MAP = {
-    ('boundary', 'bulk_molecules_report', 'XAPB-MONOMER[i]'): 'XapB',
+    ('boundary', 'bulk_molecules_report', 'EG10040-MONOMER[p]'): 'AmpC',
     (
         'boundary', 'bulk_molecules_report', 'TRANS-CPLX-201[s]'
     ): 'AcrAB-TolC',
@@ -141,6 +143,14 @@ def make_expression_survival_fig(data):
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival.{}'.format(FILE_EXTENSION)))
 
+    fig = plot_expression_survival(
+        data, PUMP_PATH,
+        'Average AmpC Concentration (mmol/L) Over Cell Lifetime',
+        EXPRESSION_SURVIVAL_TIME_RANGE,
+    )
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR, 'expression_survival.{}'.format(FILE_EXTENSION)))
+
 
 def make_pump_timeseries_fig(data):
     '''Plot AcrAB-TolC concentrations over time for all agents.'''
@@ -181,7 +191,7 @@ def main():
     if not os.path.exists(FIG_OUT_DIR):
         os.makedirs(FIG_OUT_DIR)
     with open(os.path.join(FIG_OUT_DIR, METADATA_FILE), 'w') as f:
-        json.dump(get_metadata, f)
+        json.dump(get_metadata(), f)
     parser = argparse.ArgumentParser()
     Analyzer.add_connection_args(parser)
     args = parser.parse_args()
@@ -214,7 +224,7 @@ def main():
     if ENVIRO_SECTION_ID != ENVIRO_HETEROGENEITY_ID:
         data, environment_config = Analyzer.get_data(
             args, ENVIRO_SECTION_ID)
-        make_environment_section(data)
+    make_environment_section(data)
 
     data_dict = dict()
     for key, exp_id in THRESHOLD_SCAN_IDS.items():
