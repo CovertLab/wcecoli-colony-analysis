@@ -141,19 +141,23 @@ def make_expression_survival_fig(data):
         EXPRESSION_SURVIVAL_TIME_RANGE,
     )
     fig.savefig(os.path.join(
-        FIG_OUT_DIR, 'expression_survival.{}'.format(FILE_EXTENSION)))
+        FIG_OUT_DIR, 'expression_survival_acrABtolC.{}'.format(
+            FILE_EXTENSION)
+    ))
 
     fig = plot_expression_survival(
-        data, PUMP_PATH,
+        data, BETA_LACTAMASE_PATH,
         'Average AmpC Concentration (mmol/L) Over Cell Lifetime',
         EXPRESSION_SURVIVAL_TIME_RANGE,
     )
     fig.savefig(os.path.join(
-        FIG_OUT_DIR, 'expression_survival.{}'.format(FILE_EXTENSION)))
+        FIG_OUT_DIR, 'expression_survival_ampC.{}'.format(
+            FILE_EXTENSION)
+    ))
 
 
 def make_pump_timeseries_fig(data):
-    '''Plot AcrAB-TolC concentrations over time for all agents.'''
+    '''Plot concentrations over time for all agents.'''
     settings = {
         'include_paths': [PUMP_PATH],
         'titles_map': {
@@ -165,7 +169,20 @@ def make_pump_timeseries_fig(data):
     }
     plot_agents_multigen(
         data, settings, FIG_OUT_DIR,
-        'pump_timeseries.{}'.format(FILE_EXTENSION)
+        'acrABtolC_timeseries.{}'.format(FILE_EXTENSION)
+    )
+    settings = {
+        'include_paths': [BETA_LACTAMASE_PATH],
+        'titles_map': {
+            BETA_LACTAMASE_PATH: 'AmpC Concentration',
+        },
+        'ylabels_map': {
+            BETA_LACTAMASE_PATH: 'Concentration (mM)',
+        },
+    }
+    plot_agents_multigen(
+        data, settings, FIG_OUT_DIR,
+        'ampC_timeseries.{}'.format(FILE_EXTENSION)
     )
 
 
