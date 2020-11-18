@@ -32,8 +32,9 @@ def get_enviro_sections_plot(
     bounds: Sequence,
     section_location: float = 0.5,
     flat_bins: bool = False,
+    figsize=(30, 30),
 ) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(30, 30))
+    fig, ax = plt.subplots(figsize=figsize)
     plot_enviro_sections(ax, fields, bounds, section_location, flat_bins)
     fig.tight_layout()
     return fig
