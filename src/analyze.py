@@ -14,6 +14,7 @@ from vivarium.core.experiment import get_in
 from src.constants import FIELDS_PATH, BOUNDS_PATH
 from src.environment_cross_sections import get_enviro_sections_plot
 from src.phylogeny import plot_phylogeny
+from src.total_mass import get_total_mass_plot
 
 
 #: Configuration dictionary for multigen agent timeseries plot.
@@ -34,7 +35,9 @@ TAGS_CONFIG = {
     'default_font_size': 54,
 }
 #: Fields to Plot in Environment Cross-Section
-ENVIRONMENT_SECTION_FIELDS = None
+ENVIRONMENT_SECTION_FIELDS = (
+    'GLC', 'AMMONIUM', 'PI', 'PROTON', 'HYPOXANTHINE', 'K+', 'TRP',
+    'ASN', 'L_ALPHA_ALANINE', 'SULFATE')
 
 
 class ColonyAnalyzer(Analyzer):
@@ -59,6 +62,12 @@ class ColonyAnalyzer(Analyzer):
                 'Specify "flat" or "mid".'
             ),
         )
+        parser.add_argument(
+            '--total_mass', '-m',
+            action='store_true',
+            default=False,
+            help='Plot total cell mass',
+        )
         return parser
 
     def plot(self, args: argparse.Namespace) -> None:
@@ -81,9 +90,13 @@ class ColonyAnalyzer(Analyzer):
             bounds = get_in(self.data[t_final], BOUNDS_PATH)
             flat_bins = args.environment_section == 'flat'
             fig = get_enviro_sections_plot(fields, bounds,
-                    section_location=0.4, flat_bins=flat_bins)
+                    section_location=0.5, flat_bins=flat_bins)
             fig.savefig(
                 os.path.join(self.out_dir, 'enviro_sections.png'))
+        if args.total_mass:
+            fig = get_total_mass_plot({'': self.data})
+            fig.savefig(
+                os.path.join(self.out_dir, 'total_mass.png'))
 
 
 def main() -> None:
