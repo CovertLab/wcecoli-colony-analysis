@@ -44,5 +44,6 @@ def plot_total_mass(data: RawData, ax: plt.Axes, label='') -> None:
     mass_timeseries = get_total_mass_timeseries(data)
     if label:
         ax.semilogy(times, mass_timeseries, label=label)
+        ax.legend()
     else:
         ax.semilogy(times, mass_timeseries)
