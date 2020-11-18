@@ -35,9 +35,7 @@ TAGS_CONFIG = {
     'default_font_size': 54,
 }
 #: Fields to Plot in Environment Cross-Section
-ENVIRONMENT_SECTION_FIELDS = (
-    'GLC', 'AMMONIUM', 'PI', 'PROTON', 'HYPOXANTHINE', 'K+', 'TRP',
-    'ASN', 'L_ALPHA_ALANINE', 'SULFATE')
+ENVIRONMENT_SECTION_FIELDS = None
 
 
 class ColonyAnalyzer(Analyzer):

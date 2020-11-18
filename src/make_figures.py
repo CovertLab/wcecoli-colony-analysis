@@ -9,6 +9,7 @@ import os
 import sys
 
 from vivarium.plots.agents_multigen import plot_agents_multigen
+from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
 from vivarium_cell.plots.multibody_physics import (
     plot_snapshots,
@@ -17,8 +18,9 @@ from vivarium_cell.plots.multibody_physics import (
 from vivarium_cell.plots.expression_survival_dotplot import (
     plot_expression_survival)
 
-from src.constants import OUT_DIR
+from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
 from src.total_mass import get_total_mass_plot
+from src.environment_cross_sections import get_enviro_sections_plot
 
 
 PUMP_PATH = (
@@ -29,11 +31,15 @@ TAG_PATH_NAME_MAP = {
         'boundary', 'bulk_molecules_report', 'TRANS-CPLX-201[s]'
     ): 'AcrAB-TolC',
 }
+ENVIRONMENT_SECTION_FIELDS = (
+    'GLC', 'AMMONIUM', 'PI', 'HYPOXANTHINE', 'K+', 'TRP',
+    'ASN', 'L_ALPHA_ALANINE', 'SULFATE')
 COLONY_MASS_PATH = ('mass',)
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
 EXPRESSION_HETEROGENEITY_ID = '20200820.202016'
 ENVIRO_HETEROGENEITY_ID = '20200824.165625'
+ENVIRO_SECTION_ID = ENVIRO_HETEROGENEITY_ID
 GROWTH_BASAL_ID = EXPRESSION_HETEROGENEITY_ID
 GROWTH_ANAEROBIC_ID = '20200820.235622'
 THRESHOLD_SCAN_IDS = {
@@ -61,6 +67,7 @@ def get_metadata():
         'python': sys.version.splitlines()[0],
         'expression_heterogeneity_id': EXPRESSION_HETEROGENEITY_ID,
         'enviro_heterogeneity_id': ENVIRO_HETEROGENEITY_ID,
+        'enviro_section_id': ENVIRO_SECTION_ID,
         'growth_basal_id': GROWTH_BASAL_ID,
         'growth_anaerobic_id': GROWTH_ANAEROBIC_ID,
         'threshold_scan_ids': THRESHOLD_SCAN_IDS,
@@ -152,6 +159,23 @@ def make_pump_timeseries_fig(data):
     )
 
 
+def make_environment_section(data):
+    '''Plot field concentrations in cross-section of final enviro.'''
+    t_final = max(data.keys())
+    fields = get_in(data[t_final], FIELDS_PATH)
+    fields = {
+        key: val for key, val in fields.items()
+        if key in ENVIRONMENT_SECTION_FIELDS
+    }
+    bounds = get_in(data[t_final], BOUNDS_PATH)
+    fig = get_enviro_sections_plot(fields, bounds,
+            section_location=0.5, flat_bins=False)
+    fig.savefig(
+        os.path.join(OUT_DIR, 'enviro_sections.{}'.format(
+            FILE_EXTENSION))
+    )
+
+
 def main():
     '''Generate all figures.'''
     if not os.path.exists(FIG_OUT_DIR):
@@ -186,6 +210,11 @@ def main():
             args, ENVIRO_HETEROGENEITY_ID)
     make_snapshots_figure(
         data, environment_config, 'enviro_heterogeneity', ['GLC'])
+
+    if ENVIRO_SECTION_ID != ENVIRO_HETEROGENEITY_ID:
+        data, environment_config = Analyzer.get_data(
+            args, ENVIRO_SECTION_ID)
+        make_environment_section(data)
 
     data_dict = dict()
     for key, exp_id in THRESHOLD_SCAN_IDS.items():
