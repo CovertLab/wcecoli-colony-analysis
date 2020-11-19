@@ -35,7 +35,7 @@ TAG_PATH_NAME_MAP = {
 }
 ENVIRONMENT_SECTION_FIELDS = (
     'GLC', 'AMMONIUM', 'PI', 'HYPOXANTHINE', 'K+', 'TRP',
-    'ASN', 'L_ALPHA_ALANINE', 'SULFATE')
+    'ASN', 'L_ALPHA_ALANINE', 'SULFATE', 'PROTON')
 COLONY_MASS_PATH = ('mass',)
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
@@ -196,7 +196,7 @@ def make_environment_section(data):
     }
     bounds = get_in(data[t_final], BOUNDS_PATH)
     fig = get_enviro_sections_plot(fields, bounds,
-            section_location=0.5, flat_bins=False, figsize=(15, 15))
+            section_location=0.5, flat_bins=False)
     fig.savefig(
         os.path.join(FIG_OUT_DIR, 'enviro_sections.{}'.format(
             FILE_EXTENSION))
