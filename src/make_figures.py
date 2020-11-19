@@ -198,7 +198,7 @@ def make_environment_section(data):
     fig = get_enviro_sections_plot(fields, bounds,
             section_location=0.5, flat_bins=False, figsize=(15, 15))
     fig.savefig(
-        os.path.join(OUT_DIR, 'enviro_sections.{}'.format(
+        os.path.join(FIG_OUT_DIR, 'enviro_sections.{}'.format(
             FILE_EXTENSION))
     )
 
