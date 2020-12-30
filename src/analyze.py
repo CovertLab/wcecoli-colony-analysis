@@ -35,9 +35,8 @@ TAGS_CONFIG = {
     'default_font_size': 54,
 }
 #: Fields to Plot in Environment Cross-Section
-ENVIRONMENT_SECTION_FIELDS = (
-    'GLC', 'AMMONIUM', 'PI', 'HYPOXANTHINE', 'K+', 'TRP',
-    'ASN', 'L_ALPHA_ALANINE', 'SULFATE', 'PROTON')
+ENVIRONMENT_SECTION_FIELDS = ('GLC',)
+ENVIRONMENT_SECTION_TIMES = (20, 420, 820, 1200, 1600, 2000)
 
 
 class ColonyAnalyzer(Analyzer):
@@ -81,15 +80,19 @@ class ColonyAnalyzer(Analyzer):
         if args.environment_section:
             assert args.environment_section in ('flat', 'mid')
             t_final = max(self.data.keys())
-            fields = get_in(self.data[t_final], FIELDS_PATH)
-            if ENVIRONMENT_SECTION_FIELDS:
-                fields = {
-                    key: val for key, val in fields.items()
-                    if key in ENVIRONMENT_SECTION_FIELDS
+            fields_ts = dict()
+            section_times = [
+                float(time) for time in ENVIRONMENT_SECTION_TIMES]
+            for time in section_times:
+                fields_ts[time] = {
+                    name: field
+                    for name, field in get_in(
+                        self.data[time], FIELDS_PATH).items()
+                    if name in ENVIRONMENT_SECTION_FIELDS
                 }
             bounds = get_in(self.data[t_final], BOUNDS_PATH)
             flat_bins = args.environment_section == 'flat'
-            fig = get_enviro_sections_plot(fields, bounds,
+            fig = get_enviro_sections_plot(fields_ts, bounds,
                     section_location=0.5, flat_bins=flat_bins)
             fig.savefig(
                 os.path.join(self.out_dir, 'enviro_sections.png'))

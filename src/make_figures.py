@@ -33,9 +33,8 @@ TAG_PATH_NAME_MAP = {
         'boundary', 'bulk_molecules_report', 'TRANS-CPLX-201[s]'
     ): 'AcrAB-TolC',
 }
-ENVIRONMENT_SECTION_FIELDS = (
-    'GLC', 'AMMONIUM', 'PI', 'HYPOXANTHINE', 'K+', 'TRP',
-    'ASN', 'L_ALPHA_ALANINE', 'SULFATE', 'PROTON')
+ENVIRONMENT_SECTION_FIELDS = ('GLC',)
+ENVIRONMENT_SECTION_TIMES = (231, 4851, 9471, 13860, 18480, 23100)
 COLONY_MASS_PATH = ('mass',)
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
@@ -184,19 +183,22 @@ def make_pump_timeseries_fig(data):
 def make_environment_section(data):
     '''Plot field concentrations in cross-section of final enviro.'''
     t_final = max(data.keys())
-    fields = get_in(data[t_final], FIELDS_PATH)
-    fields = {
-        key: val for key, val in fields.items()
-        if key in ENVIRONMENT_SECTION_FIELDS
-    }
+    fields_ts = dict()
+    section_times = [
+        float(time) for time in ENVIRONMENT_SECTION_TIMES]
+    for time in section_times:
+        fields_ts[time] = {
+            name: field
+            for name, field in get_in(
+                data[time], FIELDS_PATH).items()
+            if name in ENVIRONMENT_SECTION_FIELDS
+        }
     bounds = get_in(data[t_final], BOUNDS_PATH)
-    fig = get_enviro_sections_plot(fields, bounds,
+    fig = get_enviro_sections_plot(fields_ts, bounds,
             section_location=0.5, flat_bins=False)
     fig.savefig(
         os.path.join(FIG_OUT_DIR, 'enviro_sections.{}'.format(
-            FILE_EXTENSION))
-    )
-
+            FILE_EXTENSION)))
 
 def main():
     '''Generate all figures.'''
