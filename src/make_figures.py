@@ -103,7 +103,7 @@ def make_snapshots_figure(data, environment_config, name, fields):
     snapshots_data = Analyzer.format_data_for_snapshots(
         data, environment_config)
     if not fields:
-        data = {key: val for key, val in data.items if key != 'fields'}
+        data = {key: val for key, val in data.items() if key != 'fields'}
     plot_config = {
         'out_dir': FIG_OUT_DIR,
         'filename': '{}.{}'.format(name, FILE_EXTENSION),
