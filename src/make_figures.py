@@ -20,6 +20,7 @@ from src.expression_survival import plot_expression_survival
 from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
 from src.total_mass import get_total_mass_plot
 from src.environment_cross_sections import get_enviro_sections_plot
+from src.phylogeny import plot_phylogeny
 
 
 PUMP_PATH = (
@@ -49,8 +50,9 @@ THRESHOLD_SCAN_IDS = {
     '0.04 mM': '20201230.191552',
 }
 EXPRESSION_SURVIVAL_ID = THRESHOLD_SCAN_IDS['0.02 mM']
-PUMP_TIMESERIES_ID = EXPRESSION_SURVIVAL_ID
 EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
+DEATH_SNAPSHOTS_ID = THRESHOLD_SCAN_IDS['0.02 mM']
+PHYLOGENY_ID = THRESHOLD_SCAN_IDS['0.02 mM']
 METADATA_FILE = 'metadata.json'
 
 
@@ -68,7 +70,8 @@ def get_metadata():
         'growth_anaerobic_id': GROWTH_ANAEROBIC_ID,
         'threshold_scan_ids': THRESHOLD_SCAN_IDS,
         'expression_survival_id': EXPRESSION_SURVIVAL_ID,
-        'pump_timeseries_id': PUMP_TIMESERIES_ID,
+        'death_snapshots_id': DEATH_SNAPSHOTS_ID,
+        'phylogeny_id': PHYLOGENY_ID,
     }
     return metadata
 
@@ -99,6 +102,8 @@ def make_snapshots_figure(data, environment_config, name, fields):
     '''
     snapshots_data = Analyzer.format_data_for_snapshots(
         data, environment_config)
+    if not fields:
+        data = {key: val for key, val in data.items if key != 'fields'}
     plot_config = {
         'out_dir': FIG_OUT_DIR,
         'filename': '{}.{}'.format(name, FILE_EXTENSION),
@@ -141,36 +146,6 @@ def make_expression_survival_fig(data):
     ))
 
 
-def make_pump_timeseries_fig(data):
-    '''Plot concentrations over time for all agents.'''
-    settings = {
-        'include_paths': [PUMP_PATH],
-        'titles_map': {
-            PUMP_PATH: 'AcrAB-TolC Concentration',
-        },
-        'ylabels_map': {
-            PUMP_PATH: 'Concentration (mM)',
-        },
-    }
-    plot_agents_multigen(
-        data, settings, FIG_OUT_DIR,
-        'acrABtolC_timeseries.{}'.format(FILE_EXTENSION)
-    )
-    settings = {
-        'include_paths': [BETA_LACTAMASE_PATH],
-        'titles_map': {
-            BETA_LACTAMASE_PATH: 'AmpC Concentration',
-        },
-        'ylabels_map': {
-            BETA_LACTAMASE_PATH: 'Concentration (mM)',
-        },
-    }
-    plot_agents_multigen(
-        data, settings, FIG_OUT_DIR,
-        'ampC_timeseries.{}'.format(FILE_EXTENSION)
-    )
-
-
 def make_environment_section(data):
     '''Plot field concentrations in cross-section of final enviro.'''
     t_final = max(data.keys())
@@ -191,6 +166,13 @@ def make_environment_section(data):
         os.path.join(FIG_OUT_DIR, 'enviro_sections.{}'.format(
             FILE_EXTENSION)))
 
+
+def make_phylogeny_plot(data):
+    '''Plot phylogenetic tree'''
+    plot_phylogeny(data, os.path.join(
+        FIG_OUT_DIR, 'phylogeny.{}').format(FILE_EXTENSION))
+
+
 def main():
     '''Generate all figures.'''
     if not os.path.exists(FIG_OUT_DIR):
@@ -210,12 +192,12 @@ def main():
             args, GROWTH_BASAL_ID)
     data_growth_basal = data
     make_snapshots_figure(
-        data, environment_config, 'growth_basal', ['nitrocefin'])
+        data, environment_config, 'growth_basal', [])
 
     data, environment_config = Analyzer.get_data(
         args, GROWTH_ANAEROBIC_ID)
     make_snapshots_figure(
-        data, environment_config, 'growth_anaerobic', ['nitrocefin'])
+        data, environment_config, 'growth_anaerobic', [])
 
     make_growth_fig(data_growth_basal, data)
     del data_growth_basal
@@ -238,12 +220,19 @@ def main():
     make_threshold_scan_fig(data_dict)
     del data_dict
 
-    data, _ = Analyzer.get_data(args, EXPRESSION_SURVIVAL_ID)
+    data, environment_config = Analyzer.get_data(
+        args, EXPRESSION_SURVIVAL_ID)
     make_expression_survival_fig(data)
 
-    if EXPRESSION_SURVIVAL_ID != PUMP_TIMESERIES_ID:
-        data, _ = Analyzer.get_data(args, PUMP_TIMESERIES_ID)
-    make_pump_timeseries_fig(data)
+    if PHYLOGENY_ID != EXPRESSION_SURVIVAL_ID:
+        data, environment_config = Analyzer.get_data(args, PHYLOGENY_ID)
+    make_phylogeny_plot(data)
+
+    if DEATH_SNAPSHOTS_ID != PHYLOGENY_ID:
+        data, environment_config = Analyzer.get_data(
+            args, DEATH_SNAPSHOTS_ID)
+    make_snapshots_figure(
+        data, environment_config, 'death_snapshots', ['nitrocefin'])
 
 
 if __name__ == '__main__':
