@@ -6,8 +6,6 @@ import os
 
 from vivarium.plots.agents_multigen import plot_agents_multigen
 from vivarium_cell.analysis.analyze import Analyzer
-from vivarium_cell.plots.expression_survival_dotplot import (
-    plot_expression_survival)
 from vivarium_cell.plots.multibody_physics import plot_tags
 
 from src.constants import (
@@ -19,6 +17,7 @@ from src.investigate_utils import (
     filter_raw_data_by_time,
     split_raw_data_by_survival,
 )
+from src.expression_survival import plot_expression_survival
 
 
 PUMP_PATH = (
@@ -33,17 +32,12 @@ def main() -> None:
     data, environment_config, out_dir = parse_args_retrieve_data_by_id()
 
     fig_pump = plot_expression_survival(
-        data, PUMP_PATH,
+        data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Average [AcrAB-TolC] (mmol/L) over Cell Lifetime',
-        ANTIBIOTIC_TIME_RANGE,
-    )
-    fig_pump.savefig(os.path.join(out_dir, 'pump'))
-    fig_beta_lactamase = plot_expression_survival(
-        data, BETA_LACTAMASE_PATH,
         'Average [Beta-Lactamase] (mmol/L) over Cell Lifetime',
         ANTIBIOTIC_TIME_RANGE,
     )
-    fig_beta_lactamase.savefig(os.path.join(out_dir, 'beta_lactamase'))
+    fig_pump.savefig(os.path.join(out_dir, 'expression_survival'))
 
     multigen_settings = {
         'include_paths': [

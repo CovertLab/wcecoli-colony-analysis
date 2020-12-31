@@ -15,8 +15,7 @@ from vivarium_cell.plots.multibody_physics import (
     plot_snapshots,
     plot_tags,
 )
-from vivarium_cell.plots.expression_survival_dotplot import (
-    plot_expression_survival)
+from src.expression_survival import plot_expression_survival
 
 from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
 from src.total_mass import get_total_mass_plot
@@ -47,6 +46,7 @@ THRESHOLD_SCAN_IDS = {
     '0.01 mM': '20201228.172246',
     '0.02 mM': '20201228.211700',
     '0.03 mM': '20201229.160649',
+    '0.04 mM': '20201230.191552',
 }
 EXPRESSION_SURVIVAL_ID = THRESHOLD_SCAN_IDS['0.02 mM']
 PUMP_TIMESERIES_ID = EXPRESSION_SURVIVAL_ID
@@ -130,22 +130,13 @@ def make_threshold_scan_fig(data_dict):
 def make_expression_survival_fig(data):
     '''Make expression-survival dotplot figure.'''
     fig = plot_expression_survival(
-        data, PUMP_PATH,
+        data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Average AcrAB-TolC Concentration (mmol/L) Over Cell Lifetime',
-        EXPRESSION_SURVIVAL_TIME_RANGE,
-    )
-    fig.savefig(os.path.join(
-        FIG_OUT_DIR, 'expression_survival_acrABtolC.{}'.format(
-            FILE_EXTENSION)
-    ))
-
-    fig = plot_expression_survival(
-        data, BETA_LACTAMASE_PATH,
         'Average AmpC Concentration (mmol/L) Over Cell Lifetime',
         EXPRESSION_SURVIVAL_TIME_RANGE,
     )
     fig.savefig(os.path.join(
-        FIG_OUT_DIR, 'expression_survival_ampC.{}'.format(
+        FIG_OUT_DIR, 'expression_survival.{}'.format(
             FILE_EXTENSION)
     ))
 
