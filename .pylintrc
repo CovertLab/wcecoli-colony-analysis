@@ -51,6 +51,11 @@ disable=print-statement,
         input-builtin,
         round-builtin,
         missing-module-docstring,
+        too-many-return-statements,
+        too-few-public-methods,
+        too-many-arguments,
+        too-many-locals,
+        too-many-branches,
 
 [BASIC]
 
