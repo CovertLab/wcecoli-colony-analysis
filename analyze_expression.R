@@ -34,6 +34,7 @@ expressions <- c()
 trials <- c()
 data_sources <- c()
 ks_stats <- c()
+mean_diffs <- c()
 ks_proteins <- c()
 
 # Fill vectors with data
@@ -73,24 +74,35 @@ for (i in seq_len(num_proteins)) {
     ks_stat <- ks_stat_obj$statistic
     ks_stats <- c(ks_stats, ks_stat)
     ks_proteins <- c(ks_proteins, protein_key)
+
+    # Find distance between distribution means
+    mean_diff <- abs(mean(taniguchi_samples) - mean(protein_counts))
+    mean_diffs <- c(mean_diffs, mean_diff)
 }
 
 # Plot KS statistics
-stat_data <- tibble(protein = ks_proteins, ks = ks_stats)
-stat_data <- arrange(stat_data, desc(ks))
-stat_data$protein <- factor(stat_data$protein, levels = stat_data$protein)
+stat_sort <- tibble(protein = ks_proteins, value = ks_stats + mean_diffs)
+stat_sort <- arrange(stat_sort, desc(value))
+protein_order = stat_sort$protein
+
+stat_data <- tibble(protein = c(ks_proteins, ks_proteins),
+                    ks = c(ks_stats, mean_diffs / 10000),
+                    stat = c(rep("KS Statistic", length(ks_proteins)),
+                             rep("Difference Between Means", length(ks_proteins))))
+#stat_data <- arrange(stat_data, desc(ks))
+stat_data$protein <- factor(stat_data$protein, levels = protein_order)
 stats_plot <- ggplot(data = stat_data) +
-    geom_bar(mapping = aes(x = protein, y = ks), stat = "identity") +
+    geom_bar(mapping = aes(x = protein, y = ks, fill = stat), stat = "identity") +
     labs(title = "KS Test Between Experimental and Simulated Protein Counts",
          subtitle = paste("From Experiment ", args$experiment_id)) +
-    xlab("Protein") + ylab("KS Statistic") + coord_flip()
+    xlab("Protein") + ylab("KS Statistic + Difference Between Means / 10,000") + coord_flip()
 ggsave(file.path(args$output, "expression_ks_stats.pdf"), stats_plot,
        height = num_proteins * 0.5, units = "cm", limitsize = FALSE)
 
 # Plot Distributions
 transformed <- tibble(protein = proteins, expression = expressions,
                       trial = trials, data_source = data_sources)
-transformed$protein <- factor(transformed$protein, levels = stat_data$protein)
+transformed$protein <- factor(transformed$protein, levels = protein_order)
 expression_plot <- ggplot(transformed,
                           aes(x = expression, y = protein,
                               fill = data_sources,
@@ -112,3 +124,31 @@ suppressMessages(ggsave(file.path(args$output,
                         expression_plot, height = num_proteins * 10,
                         width = expression_range * 0.001,
                         units = "cm", limitsize = FALSE))
+
+# Plot Expression Data for AmpC and AcrAB-TolC
+protein <- c()
+expression <- c()
+
+for (value in data$"EG10040-MONOMER[p]") {
+    protein <- c(protein, "AmpC")
+    expression <- c(expression, value)
+}
+for (value in data$"TRANS-CPLX-201[s]") {
+    protein <- c(protein, "AcrAB-TolC")
+    expression <- c(expression, value)
+}
+transformed <- tibble(protein = protein, expression = expression)
+expression_plot <- ggplot(transformed, aes(x = expression, y = protein)) +
+    geom_density_ridges(
+        jittered_points = TRUE,
+        position = position_points_jitter(width = 0.05, height = 0),
+        point_shape = "|", point_size = 3, point_alpha = 1,
+        alpha = 0.7,
+    ) +
+    labs(title = "Protein Concentration Distributions",
+         subtitle = paste("From Experiment ", args$experiment_id)) +
+    xlab("Protein Concentration (counts/fL)") + ylab("Protein")
+
+suppressMessages(ggsave(file.path(args$output,
+                                  "antibiotics_expression.pdf"),
+                        expression_plot))
