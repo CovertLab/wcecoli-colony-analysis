@@ -8,7 +8,6 @@ import json
 import os
 import sys
 
-from vivarium.plots.agents_multigen import plot_agents_multigen
 from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
 from vivarium_cell.plots.multibody_physics import (
@@ -21,8 +20,13 @@ from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
 from src.total_mass import get_total_mass_plot
 from src.environment_cross_sections import get_enviro_sections_plot
 from src.phylogeny import plot_phylogeny
+from src.process_expression_data import (
+    raw_data_to_end_expression_table, VOLUME_KEY)
+from src.ridgeline import get_ridgeline_plot
 
 
+# Colors from https://colorbrewer2.org/
+COLORS = ('#a6cee3', '#1f78b4', '#b2df8a', '#33a02c')
 PUMP_PATH = (
     'boundary', 'bulk_molecule_concentrations', 'TRANS-CPLX-201[s]')
 BETA_LACTAMASE_PATH = (
@@ -36,23 +40,26 @@ TAG_PATH_NAME_MAP = {
 ENVIRONMENT_SECTION_FIELDS = ('GLC',)
 ENVIRONMENT_SECTION_TIMES = (231, 4851, 9471, 13860, 18480, 23100)
 COLONY_MASS_PATH = ('mass',)
+EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
-EXPRESSION_HETEROGENEITY_ID = '20201119.150828'
-ENVIRO_HETEROGENEITY_ID = '20201119.150828'
-ENVIRO_SECTION_ID = ENVIRO_HETEROGENEITY_ID
-GROWTH_BASAL_ID = EXPRESSION_HETEROGENEITY_ID
-GROWTH_ANAEROBIC_ID = '20201221.194828'
-THRESHOLD_SCAN_IDS = {
-    '0.01 mM': '20201228.172246',
-    '0.02 mM': '20201228.211700',
-    '0.03 mM': '20201229.160649',
-    '0.04 mM': '20201230.191552',
+EXPERIMENT_IDS = {
+    'expression_distributions': ('20201119.150828', '20210112.185210'),
+    'expression_heterogeneity': '20201119.150828',
+    'enviro_heterogeneity': '20201119.150828',
+    'enviro_section': '20201119.150828',
+    'growth_basal': '20201119.150828',
+    'growth_anaerobic': '20201221.194828',
+    'threshold_scan': {
+        '0.01 mM': '20201228.172246',
+        '0.02 mM': '20201228.211700',
+        '0.03 mM': '20201229.160649',
+        '0.04 mM': '20201230.191552',
+    },
+    'expression_survival': '20201228.211700',
+    'death_snapshots': '20201228.211700',
+    'phylogeny': '20201228.211700',
 }
-EXPRESSION_SURVIVAL_ID = THRESHOLD_SCAN_IDS['0.02 mM']
-EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
-DEATH_SNAPSHOTS_ID = THRESHOLD_SCAN_IDS['0.02 mM']
-PHYLOGENY_ID = THRESHOLD_SCAN_IDS['0.02 mM']
 METADATA_FILE = 'metadata.json'
 
 
@@ -63,17 +70,35 @@ def get_metadata():
         #'git_branch': fp.run_cmdline('git symbolic-ref --short HEAD'),
         #'time': fp.timestamp(),
         'python': sys.version.splitlines()[0],
-        'expression_heterogeneity_id': EXPRESSION_HETEROGENEITY_ID,
-        'enviro_heterogeneity_id': ENVIRO_HETEROGENEITY_ID,
-        'enviro_section_id': ENVIRO_SECTION_ID,
-        'growth_basal_id': GROWTH_BASAL_ID,
-        'growth_anaerobic_id': GROWTH_ANAEROBIC_ID,
-        'threshold_scan_ids': THRESHOLD_SCAN_IDS,
-        'expression_survival_id': EXPRESSION_SURVIVAL_ID,
-        'death_snapshots_id': DEATH_SNAPSHOTS_ID,
-        'phylogeny_id': PHYLOGENY_ID,
+        'experiment_ids': EXPERIMENT_IDS,
     }
     return metadata
+
+
+def get_experiment_ids(id_obj):
+    '''Get a flat list of all experiment IDs. May have duplicates.'''
+    if isinstance(id_obj, str):
+        return [id_obj]
+    if isinstance(id_obj, (tuple, list, set)):
+        ids_lst = []
+        for elem in id_obj:
+            ids_lst.extend(get_experiment_ids(elem))
+        return ids_lst
+    if isinstance(id_obj, dict):
+        ids_lst = []
+        for elem in id_obj.values():
+            ids_lst.extend(get_experiment_ids(elem))
+        return ids_lst
+    return id_obj
+
+
+def get_data(args, experiment_ids):
+    '''Load all the data we'll need to generate the figures.'''
+    unique_ids = set(experiment_ids)
+    all_data = {}
+    for experiment_id in unique_ids:
+        all_data[experiment_id] = Analyzer.get_data(args, experiment_id)
+    return all_data
 
 
 def make_expression_heterogeneity_fig(data, environment_config):
@@ -91,6 +116,30 @@ def make_expression_heterogeneity_fig(data, environment_config):
     plot_tags(tags_data, plot_config)
 
 
+def make_expression_distributions_fig(replicates_raw_data):
+    '''Figure shows the distributions of expression values.'''
+    replicates_data = []
+    for i, raw_data in enumerate(replicates_raw_data):
+        color = COLORS[i]
+        end_expression_table = raw_data_to_end_expression_table(
+            raw_data,
+            {'AcrAB-TolC': PUMP_PATH, 'AmpC': BETA_LACTAMASE_PATH})
+        volumes = end_expression_table[VOLUME_KEY]
+        data = {
+            key: end_expression_table[key] / volumes
+            for key in end_expression_table.columns
+            if key != VOLUME_KEY
+        }
+        replicates_data.append((data, color))
+    fig = get_ridgeline_plot(replicates_data)
+    fig.savefig(
+        os.path.join(
+            FIG_OUT_DIR,
+            'expression_distributions.{}'.format(FILE_EXTENSION),
+        )
+    )
+
+
 def make_snapshots_figure(data, environment_config, name, fields):
     '''Make a figure of snapshots
 
@@ -103,7 +152,10 @@ def make_snapshots_figure(data, environment_config, name, fields):
     snapshots_data = Analyzer.format_data_for_snapshots(
         data, environment_config)
     if not fields:
-        data = {key: val for key, val in data.items() if key != 'fields'}
+        data = {
+            key: val
+            for key, val in data.items() if key != 'fields'
+        }
     plot_config = {
         'out_dir': FIG_OUT_DIR,
         'filename': '{}.{}'.format(name, FILE_EXTENSION),
@@ -183,56 +235,52 @@ def main():
     Analyzer.add_connection_args(parser)
     args = parser.parse_args()
 
-    data, environment_config = Analyzer.get_data(
-        args, EXPRESSION_HETEROGENEITY_ID)
-    make_expression_heterogeneity_fig(data, environment_config)
+    experiment_ids = get_experiment_ids(EXPERIMENT_IDS)
+    all_data = get_data(args, experiment_ids)
 
-    if GROWTH_BASAL_ID != EXPRESSION_HETEROGENEITY_ID:
-        data, environment_config = Analyzer.get_data(
-            args, GROWTH_BASAL_ID)
-    data_growth_basal = data
+    expression_distribution_data = []
+    for experiment_id in EXPERIMENT_IDS['expression_distributions']:
+        data, _ = all_data[experiment_id]
+        expression_distribution_data.append(data)
+    make_expression_distributions_fig(expression_distribution_data)
+
+    make_expression_heterogeneity_fig(
+        *all_data[EXPERIMENT_IDS['expression_heterogeneity']])
+
     make_snapshots_figure(
-        data, environment_config, 'growth_basal', [])
+        *all_data[EXPERIMENT_IDS['growth_basal']],
+        'growth_basal', [])
 
-    data, environment_config = Analyzer.get_data(
-        args, GROWTH_ANAEROBIC_ID)
     make_snapshots_figure(
-        data, environment_config, 'growth_anaerobic', [])
+        *all_data[EXPERIMENT_IDS['growth_anaerobic']],
+        'growth_anaerobic', [])
 
-    make_growth_fig(data_growth_basal, data)
-    del data_growth_basal
+    make_growth_fig(
+        all_data[EXPERIMENT_IDS['growth_basal']][0],
+        all_data[EXPERIMENT_IDS['growth_anaerobic']][0],
+    )
 
-    if ENVIRO_HETEROGENEITY_ID != GROWTH_ANAEROBIC_ID:
-        data, environment_config = Analyzer.get_data(
-            args, ENVIRO_HETEROGENEITY_ID)
     make_snapshots_figure(
-        data, environment_config, 'enviro_heterogeneity', ['GLC'])
+        *all_data[EXPERIMENT_IDS['enviro_heterogeneity']],
+        'enviro_heterogeneity', ['GLC'])
 
-    if ENVIRO_SECTION_ID != ENVIRO_HETEROGENEITY_ID:
-        data, environment_config = Analyzer.get_data(
-            args, ENVIRO_SECTION_ID)
-    make_environment_section(data)
+    make_environment_section(
+        all_data[EXPERIMENT_IDS['enviro_section']][0])
 
     data_dict = dict()
-    for key, exp_id in THRESHOLD_SCAN_IDS.items():
-        exp_data, _ = Analyzer.get_data(args, exp_id)
-        data_dict[key] = exp_data
+    for key, exp_id in EXPERIMENT_IDS['threshold_scan'].items():
+        data_dict[key] = all_data[exp_id][0]
     make_threshold_scan_fig(data_dict)
-    del data_dict
 
-    data, environment_config = Analyzer.get_data(
-        args, EXPRESSION_SURVIVAL_ID)
-    make_expression_survival_fig(data)
+    make_expression_survival_fig(
+        all_data[EXPERIMENT_IDS['expression_survival']][0])
 
-    if PHYLOGENY_ID != EXPRESSION_SURVIVAL_ID:
-        data, environment_config = Analyzer.get_data(args, PHYLOGENY_ID)
-    make_phylogeny_plot(data)
+    make_phylogeny_plot(
+        all_data[EXPERIMENT_IDS['phylogeny']][0])
 
-    if DEATH_SNAPSHOTS_ID != PHYLOGENY_ID:
-        data, environment_config = Analyzer.get_data(
-            args, DEATH_SNAPSHOTS_ID)
     make_snapshots_figure(
-        data, environment_config, 'death_snapshots', ['nitrocefin'])
+        *all_data[EXPERIMENT_IDS['death_snapshots']],
+        'death_snapshots', ['nitrocefin'])
 
 
 if __name__ == '__main__':
