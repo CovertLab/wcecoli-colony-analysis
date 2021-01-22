@@ -8,7 +8,7 @@ from matplotlib.axes import Axes
 
 
 Color = Union[str, Tuple[float, float, float, float]]
-Number = Union[float, int]
+Number = Union[float, int, np.float64]
 
 
 def flatten(value: Any) -> list:
@@ -75,24 +75,41 @@ def get_ridgeline_plot(
         fig, ax = plt.subplots()
     else:
         fig, ax = plt.subplots(figsize=figsize)
-    flat_data: List[Number] = []
-    for data, _ in replicates:
-        flat_data.extend(flatten(data.values()))
-    data_bounds = min(flat_data), max(flat_data)
-    for data, color in replicates:
-        plot_ridgeline(
-            data, ax, color, 0.2, color, color, num_bins, overlap,
-            horizontal_extra, jitter, data_bounds)
+    data = [replicate[0] for replicate in replicates]
+    colors = [replicate[1] for replicate in replicates]
+    plot_ridgeline(
+        data, ax, colors, 0.2, num_bins, overlap, horizontal_extra,
+        jitter)
     return fig
 
 
+def _calculate_density_curves(
+        data: Iterable[Dict[str, Sequence[Number]]],
+        x_values: Union[Sequence[Number], np.ndarray],
+        overlap: float):
+    y_values: Dict[str, List[float]] = {}
+    density_curves: Dict[str, List[Sequence[float]]] = {}
+    for data_dict in data:
+        y = 0.
+        for y_label, data_values in data_dict.items():
+            pdf = gaussian_kde(data_values)
+            density_curve = pdf(x_values)
+            density_curves.setdefault(y_label, []).append(density_curve)
+            y_values.setdefault(y_label, []).append(y)
+            y += max(density_curve) * (1 - overlap)
+    max_y_values = {
+        y_label: max(values)
+        for y_label, values in y_values.items()
+    }
+    return max_y_values, density_curves
+
+
+
 def plot_ridgeline(
-        data: Dict[str, Sequence[Union[Number]]],
+        data: Sequence[Dict[str, Sequence[Number]]],
         ax: Axes,
-        fill_color: Optional[Color] = 'gray',
+        colors: Sequence[Color],
         fill_alpha: float = 0.2,
-        line_color: Optional[Color] = 'black',
-        point_color: Optional[Color] = 'black',
         num_bins: int = 20,
         overlap: float = 0.2,
         horizontal_extra: float = 0.2,
@@ -102,15 +119,13 @@ def plot_ridgeline(
     '''Plot data as a ridgeline plot.
 
     Args:
-        data: A mapping from strings to sequences of values. One
+        data: List of mappings from strings to sequences of values. One
             distribution will be plotted for each sequence of values and
-            labeled with the corresponding string.
+            labeled with the corresponding string. Each mapping
+            represents a replicate.
         ax: Axes on which to plot.
-        fill_color: Color to show under each distribution. If ``None``,
-            the area under each distribution will not be filled.
+        colors: The colors to plot each replicate in.
         fill_alpha: Alpha value to control transparency of fill color.
-        line_color: Color of curve that forms the top of each
-            distribution. If ``None``, no curve is shown.
         num_bins: Number of equally-sized bins into which the values
             will be grouped. The averages of the values in each bin
             determine the curve height at the middle of the bin on the
@@ -125,9 +140,6 @@ def plot_ridgeline(
         horizontal_extra: The fraction of the range of ``data`` which
             should be added to the negative and positive x axis. This
             adds extra space to the left and right of distributions.
-        point_color: The color of markers along the bottom of each
-            distribution showing the actual point values. If ``None``,
-            no markers are plotted.
         jitter: To let the viewer distinguish between multiple nearby
             points, we randomly add small values to point positions.
             ``jitter`` is the maximum absolute value of these
@@ -140,56 +152,50 @@ def plot_ridgeline(
             be useful when ``data`` is only some of the data that will
             be plotted, e.g. with replicates.
     '''
-    # Mypy doesn't recognize that a view of dictionary values is valid
-    # input for np.array()
     if data_bounds is None:
-        flat_data = flatten(data.values())
+        flat_data = flatten([data_elem.values() for data_elem in data])
         data_min = min(flat_data)
         data_max = max(flat_data)
     else:
         data_min, data_max = data_bounds
-    if jitter is None:
-        jitter = data_max / 10
     data_range = data_max - data_min
+    if jitter is None:
+        jitter = data_range / 10
     extra = data_range * horizontal_extra
     x_values = np.linspace(
         data_min - extra, data_max + extra, num_bins)
-    y_values: List[float] = []
-    y_labels: List[str] = []
-    for i, (label, values) in enumerate(data.items()):
-        pdf = gaussian_kde(values)
-        y = i * (1 - overlap)
-        y_values.append(y)
-        y_labels.append(label)
-        density_curve = pdf(x_values)
-        zorder = len(data) - i + 1
+    y_values, density_curves = _calculate_density_curves(
+        data, x_values, overlap)
+    num_replicates = len(density_curves[list(y_values.keys())[0]])
+    assert len(colors) == num_replicates
 
-        # Below, we cast colors to strings to satisfy mypy, which
-        # doesn't understand using tuples as colors.
-        if line_color is not None:
+    for i, y_label in enumerate(y_values):
+        y = y_values[y_label]
+        assert len(density_curves[y_label]) == num_replicates
+        for j, density_curve in enumerate(density_curves[y_label]):
+            color = colors[j]
+            zorder = num_replicates - i + 1
+            # Below, we cast colors to strings to satisfy mypy, which
+            # doesn't understand using tuples as colors.
             ax.plot(
                 x_values, density_curve + y,
-                color=cast(str, line_color), linestyle='-',
-                zorder=zorder)
-        if fill_color is not None:
+                color=cast(str, color), linestyle='-', zorder=zorder)
             # Mypy incorrectly complains that Axes has no fill_between
             # attribute.
             ax.fill_between(  # type: ignore
                 x_values, np.ones(num_bins) * y, density_curve + y,
-                color=cast(str, fill_color), zorder=-1,
-                alpha=fill_alpha)
-        if point_color is not None:
-            point_values = np.array(
-                values, dtype=float)  # type: ignore
+                color=cast(str, color), zorder=-1, alpha=fill_alpha)
+            points = np.array(
+                data[j][y_label], dtype=float)  # type: ignore
             # We disable pylint's no-member check because pylint doesn't
             # recognize that np.random.random is valid.
             # pylint: disable=no-member
-            point_values += (
-                np.random.random(len(values)) - 0.5  # type: ignore
+            points += (
+                np.random.random(len(points)) - 0.5  # type: ignore
             ) * 2 * jitter
             # pylint: enable=no-member
-            ax.scatter(point_values,  # type: ignore
-                np.ones(len(values)) * y, color=cast(str, point_color),
+            ax.scatter(points,  # type: ignore
+                np.ones(len(points)) * y, color=cast(str, color),
                 marker='|', zorder=zorder)
-    ax.set_yticks(y_values)
-    ax.set_yticklabels(y_labels)
+    ax.set_yticks(list(y_values.values()))
+    ax.set_yticklabels(list(y_values.keys()))
