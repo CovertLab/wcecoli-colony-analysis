@@ -26,7 +26,7 @@ from src.ridgeline import get_ridgeline_plot
 
 
 # Colors from https://colorbrewer2.org/
-COLORS = ('#a6cee3', '#1f78b4', '#b2df8a', '#33a02c')
+COLORS = ('#a6cee3', '#b2df8a', '#1f78b4', '#33a02c')
 PUMP_PATH = (
     'boundary', 'bulk_molecule_concentrations', 'TRANS-CPLX-201[s]')
 BETA_LACTAMASE_PATH = (
