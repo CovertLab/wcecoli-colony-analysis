@@ -46,6 +46,7 @@ def get_ridgeline_plot(
             Dict[str, Sequence[Number]],
             Color,
         ]],
+        point_alpha: float = 1,
         num_bins: int = 20,
         overlap: float = 0.2,
         horizontal_extra: float = 0.2,
@@ -82,14 +83,14 @@ def get_ridgeline_plot(
     data = [replicate[0] for replicate in replicates]
     colors = [replicate[1] for replicate in replicates]
     plot_ridgeline(
-        data, ax, colors, 0.2, num_bins, overlap, horizontal_extra,
-        jitter)
+        data, ax, colors, 0.2, point_alpha, num_bins, overlap,
+        horizontal_extra, jitter)
     if x_label:
         ax.set_xlabel(x_label)
     if y_label:
         ax.set_ylabel(y_label)
     for spine_name in ('top', 'right'):
-        ax.spines[spine_name].set_visible(False)
+        ax.spines[spine_name].set_visible(False)  # type: ignore
     fig.tight_layout()
     return fig
 
@@ -121,6 +122,7 @@ def plot_ridgeline(
         ax: Axes,
         colors: Sequence[Color],
         fill_alpha: float = 0.2,
+        point_alpha: float = 1,
         num_bins: int = 20,
         overlap: float = 0.2,
         horizontal_extra: float = 0.2,
@@ -137,6 +139,7 @@ def plot_ridgeline(
         ax: Axes on which to plot.
         colors: The colors to plot each replicate in.
         fill_alpha: Alpha value to control transparency of fill color.
+        point_alpha: Alpha value to control transparency of point color.
         num_bins: Number of equally-sized bins into which the values
             will be grouped. The averages of the values in each bin
             determine the curve height at the middle of the bin on the
@@ -207,6 +210,7 @@ def plot_ridgeline(
             # pylint: enable=no-member
             ax.scatter(points,  # type: ignore
                 np.ones(len(points)) * y, color=cast(str, color),
-                marker='|', zorder=zorder)
+                marker='|', zorder=zorder,
+                alpha=point_alpha)
     ax.set_yticks(list(y_values.values()))
     ax.set_yticklabels(list(y_values.keys()))
