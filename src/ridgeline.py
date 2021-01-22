@@ -51,6 +51,8 @@ def get_ridgeline_plot(
         horizontal_extra: float = 0.2,
         jitter: Optional[float] = None,
         figsize: Optional[Tuple[Number, Number]] = None,
+        x_label: str = '',
+        y_label: str = '',
         ) -> plt.Figure:
     '''Generate a ridgeline plot.
 
@@ -67,6 +69,8 @@ def get_ridgeline_plot(
             variation.
         figsize: Tuple indicating the figure size in inches as ``(width,
         height)``.
+        x_label: Label for x axis.
+        y_label: Label for y axis.
 
     Returns:
         A figure with the ridgeline plot.
@@ -80,6 +84,13 @@ def get_ridgeline_plot(
     plot_ridgeline(
         data, ax, colors, 0.2, num_bins, overlap, horizontal_extra,
         jitter)
+    if x_label:
+        ax.set_xlabel(x_label)
+    if y_label:
+        ax.set_ylabel(y_label)
+    for spine_name in ('top', 'right'):
+        ax.spines[spine_name].set_visible(False)
+    fig.tight_layout()
     return fig
 
 

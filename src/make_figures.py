@@ -26,7 +26,7 @@ from src.ridgeline import get_ridgeline_plot
 
 
 # Colors from https://colorbrewer2.org/
-COLORS = ('#a6cee3', '#b2df8a', '#1f78b4', '#33a02c')
+COLORS = ('#1f78b4', '#33a02c', '#a6cee3', '#b2df8a')
 PUMP_PATH = (
     'boundary', 'bulk_molecule_concentrations', 'TRANS-CPLX-201[s]')
 BETA_LACTAMASE_PATH = (
@@ -124,14 +124,16 @@ def make_expression_distributions_fig(replicates_raw_data):
         end_expression_table = raw_data_to_end_expression_table(
             raw_data,
             {'AcrAB-TolC': PUMP_PATH, 'AmpC': BETA_LACTAMASE_PATH})
-        volumes = end_expression_table[VOLUME_KEY]
         data = {
-            key: end_expression_table[key] / volumes
+            key: end_expression_table[key]
             for key in end_expression_table.columns
             if key != VOLUME_KEY
         }
         replicates_data.append((data, color))
-    fig = get_ridgeline_plot(replicates_data)
+    fig = get_ridgeline_plot(
+        replicates_data,
+        x_label='Protein Concentration (counts/fL)',
+        y_label='Distribution Density')
     fig.savefig(
         os.path.join(
             FIG_OUT_DIR,
