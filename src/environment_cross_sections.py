@@ -65,7 +65,8 @@ def get_enviro_sections_plot(
             ax = axes[field_i]
             ax.plot(x, median, 'o', color=color, linestyle='-',
                     label='{}s'.format(time))
-            ax.fill_between(x, q25, q75, color=color, alpha=0.2)
+            ax.fill_between(
+                x, q25, q75, color=color, alpha=0.2, edgecolor='none')
     for i, ax in enumerate(axes):
         if num_fields != 1:
             ax.set_title(field_names[i])
