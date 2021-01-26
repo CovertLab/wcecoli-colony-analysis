@@ -104,8 +104,17 @@ def _calculate_density_curves(
     for data_dict in data:
         y = 0.
         for y_label, data_values in data_dict.items():
-            pdf = gaussian_kde(data_values)
-            density_curve = pdf(x_values)
+            if len(data_values) > 1:
+                pdf = gaussian_kde(data_values)
+                density_curve = pdf(x_values)
+            elif len(data_values) == 1:
+                density_curve = np.zeros(len(x_values))
+                for i, x_value in enumerate(x_values):
+                    if x_value >= data_values[0]:
+                        density_curve[i] = 1
+                        break
+            else:
+                density_curve = np.zeros(len(x_values))
             density_curves.setdefault(y_label, []).append(density_curve)
             y_values.setdefault(y_label, []).append(y)
             y += max(density_curve) * (1 - overlap)

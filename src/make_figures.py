@@ -25,8 +25,9 @@ from src.process_expression_data import (
 from src.ridgeline import get_ridgeline_plot
 
 
-# Colors from https://colorbrewer2.org/
-COLORS = ('#1f78b4', '#33a02c', '#a6cee3', '#b2df8a')
+# Colors from https://personal.sron.nl/~pault/#sec:qualitative
+COLORS = (
+    '#0077BB', '#EE7733', '#33BBEE', '#CC3311', '#009988', '#EE3377')
 PUMP_PATH = (
     'boundary', 'bulk_molecule_concentrations', 'TRANS-CPLX-201[s]')
 BETA_LACTAMASE_PATH = (
@@ -45,16 +46,16 @@ FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
 EXPERIMENT_IDS = {
     'expression_distributions': ('20201119.150828', '20210112.185210'),
-    'expression_heterogeneity': '20201119.150828',
-    'enviro_heterogeneity': '20201119.150828',
-    'enviro_section': '20201119.150828',
-    'growth_basal': '20201119.150828',
-    'growth_anaerobic': '20201221.194828',
+    'expression_heterogeneity': ('20201119.150828', '20210112.185210'),
+    'enviro_heterogeneity': ('20201119.150828', '20210112.185210'),
+    'enviro_section': ('20201119.150828', '20210112.185210'),
+    'growth_basal': ('20201119.150828', '20210112.185210'),
+    'growth_anaerobic': ('20201221.194828',),
     'threshold_scan': {
-        '0.01 mM': '20201228.172246',
-        '0.02 mM': '20201228.211700',
-        '0.03 mM': '20201229.160649',
-        '0.04 mM': '20201230.191552',
+        '0.01 mM': ('20201228.172246',),
+        '0.02 mM': ('20201228.211700',),
+        '0.03 mM': ('20201229.160649',),
+        '0.04 mM': ('20201230.191552',),
     },
     'expression_survival': '20201228.211700',
     'death_snapshots': '20201228.211700',
@@ -101,14 +102,14 @@ def get_data(args, experiment_ids):
     return all_data
 
 
-def make_expression_heterogeneity_fig(data, environment_config):
+def make_expression_heterogeneity_fig(
+        data, environment_config, name_base):
     '''Figure shows heterogeneous expression within wcEcoli agents.'''
     tags_data = Analyzer.format_data_for_tags(data, environment_config)
     plot_config = {
         'out_dir': FIG_OUT_DIR,
         'tagged_molecules': TAG_PATH_NAME_MAP.keys(),
-        'filename': 'expression_heterogeneity.{}'.format(
-            FILE_EXTENSION),
+        'filename': '{}.{}'.format(name_base, FILE_EXTENSION),
         'tag_path_name_map': TAG_PATH_NAME_MAP,
         'tag_label_size': 48,
         'default_font_size': 48,
@@ -176,14 +177,14 @@ def make_growth_fig(basal_data, anaerobic_data):
         'basal': basal_data,
         'anaerobic': anaerobic_data,
     }
-    fig = get_total_mass_plot(data_dict)
+    fig = get_total_mass_plot(data_dict, COLORS)
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'growth.{}'.format(FILE_EXTENSION)))
 
 
 def make_threshold_scan_fig(data_dict):
     '''Plot colony mass curves with various antibiotic thresholds.'''
-    fig = get_total_mass_plot(data_dict)
+    fig = get_total_mass_plot(data_dict, COLORS)
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'threshold_scan.{}'.format(FILE_EXTENSION)))
 
@@ -202,7 +203,7 @@ def make_expression_survival_fig(data):
     ))
 
 
-def make_environment_section(data):
+def make_environment_section(data, base_name):
     '''Plot field concentrations in cross-section of final enviro.'''
     t_final = max(data.keys())
     fields_ts = dict()
@@ -219,8 +220,8 @@ def make_environment_section(data):
     fig = get_enviro_sections_plot(fields_ts, bounds,
             section_location=0.5, flat_bins=False)
     fig.savefig(
-        os.path.join(FIG_OUT_DIR, 'enviro_sections.{}'.format(
-            FILE_EXTENSION)))
+        os.path.join(FIG_OUT_DIR, '{}.{}'.format(
+            base_name, FILE_EXTENSION)))
 
 
 def make_phylogeny_plot(data):
@@ -248,32 +249,44 @@ def main():
         expression_distribution_data.append(data)
     make_expression_distributions_fig(expression_distribution_data)
 
-    make_expression_heterogeneity_fig(
-        *all_data[EXPERIMENT_IDS['expression_heterogeneity']])
+    for i, experiment_id in enumerate(
+            EXPERIMENT_IDS['expression_heterogeneity']):
+        make_expression_heterogeneity_fig(
+            *all_data[experiment_id],
+            'expression_heterogeneity_{}'.format(i))
 
-    make_snapshots_figure(
-        *all_data[EXPERIMENT_IDS['growth_basal']],
-        'growth_basal', [])
+    for i, experiment_id in enumerate(EXPERIMENT_IDS['growth_basal']):
+        make_snapshots_figure(
+            *all_data[experiment_id], 'growth_basal_{}'.format(i), [])
 
-    make_snapshots_figure(
-        *all_data[EXPERIMENT_IDS['growth_anaerobic']],
-        'growth_anaerobic', [])
+    for i, experiment_id in enumerate(EXPERIMENT_IDS['growth_anaerobic']):
+        make_snapshots_figure(
+            *all_data[experiment_id], 'growth_anaerobic_{}'.format(i), [])
 
-    make_growth_fig(
-        all_data[EXPERIMENT_IDS['growth_basal']][0],
-        all_data[EXPERIMENT_IDS['growth_anaerobic']][0],
-    )
+    basal_data = [
+        all_data[experiment_id][0]
+        for experiment_id in EXPERIMENT_IDS['growth_basal']
+    ]
+    anaerobic_data = [
+        all_data[experiment_id][0]
+        for experiment_id in EXPERIMENT_IDS['growth_anaerobic']
+    ]
+    make_growth_fig(basal_data, anaerobic_data)
 
-    make_snapshots_figure(
-        *all_data[EXPERIMENT_IDS['enviro_heterogeneity']],
-        'enviro_heterogeneity', ['GLC'])
+    for i, experiment_id in enumerate(
+            EXPERIMENT_IDS['enviro_heterogeneity']):
+        make_snapshots_figure(
+            *all_data[experiment_id],
+            'enviro_heterogeneity_{}'.format(i), ['GLC'])
 
-    make_environment_section(
-        all_data[EXPERIMENT_IDS['enviro_section']][0])
+    for i, experiment_id in enumerate(
+            EXPERIMENT_IDS['enviro_section']):
+        make_environment_section(
+            all_data[experiment_id][0], 'enviro_section_{}'.format(i))
 
     data_dict = dict()
-    for key, exp_id in EXPERIMENT_IDS['threshold_scan'].items():
-        data_dict[key] = all_data[exp_id][0]
+    for key, exp_ids in EXPERIMENT_IDS['threshold_scan'].items():
+        data_dict[key] = [all_data[exp_id][0] for exp_id in exp_ids]
     make_threshold_scan_fig(data_dict)
 
     make_expression_survival_fig(
