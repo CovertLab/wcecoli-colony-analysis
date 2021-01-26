@@ -219,7 +219,7 @@ def plot_ridgeline(
             # pylint: enable=no-member
             ax.scatter(points,  # type: ignore
                 np.ones(len(points)) * y, color=cast(str, color),
-                marker='|', zorder=zorder,
+                marker='|', s=20, linewidths=0.1, zorder=zorder,
                 alpha=point_alpha)
     ax.set_yticks(list(y_values.values()))
     ax.set_yticklabels(list(y_values.keys()))
