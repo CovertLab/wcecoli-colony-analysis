@@ -61,8 +61,10 @@ def plot_total_mass(
     q25, q75 = np.percentile(mass_matrix, [25, 75], axis=0)
     if label:
         ax.semilogy(times, median, label=label, color=color)
-        ax.fill_between(times, q25, q75, color=color, alpha=0.2)
+        ax.fill_between(
+            times, q25, q75, color=color, alpha=0.2, edgecolor='none')
         ax.legend()
     else:
         ax.semilogy(times, mass_timeseries, color=color)
-        ax.fill_between(times, q25, q75, color=color, alpha=0.2)
+        ax.fill_between(
+            times, q25, q75, color=color, alpha=0.2, edgecolor='none')
