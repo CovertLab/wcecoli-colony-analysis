@@ -210,20 +210,22 @@ def make_expression_survival_fig(data):
 
 def make_environment_section(data, base_name):
     '''Plot field concentrations in cross-section of final enviro.'''
-    t_final = max(data.keys())
-    fields_ts = dict()
+    t_final = max(data[0].keys())
+    fields_ts = []
     section_times = [
         float(time) for time in ENVIRONMENT_SECTION_TIMES]
-    for time in section_times:
-        fields_ts[time] = {
-            name: field
-            for name, field in get_in(
-                data[time], FIELDS_PATH).items()
-            if name in ENVIRONMENT_SECTION_FIELDS
-        }
-    bounds = get_in(data[t_final], BOUNDS_PATH)
+    for i, replicate in enumerate(data):
+        fields_ts.append(dict())
+        for time in section_times:
+            fields_ts[i][time] = {
+                name: field
+                for name, field in get_in(
+                    replicate[time], FIELDS_PATH).items()
+                if name in ENVIRONMENT_SECTION_FIELDS
+            }
+    bounds = get_in(data[0][t_final], BOUNDS_PATH)
     fig = get_enviro_sections_plot(fields_ts, bounds,
-            section_location=0.5, flat_bins=False)
+        section_location=0.5)
     fig.savefig(
         os.path.join(FIG_OUT_DIR, '{}.{}'.format(
             base_name, FILE_EXTENSION)))
@@ -264,9 +266,11 @@ def main():
         make_snapshots_figure(
             *all_data[experiment_id], 'growth_basal_{}'.format(i), [])
 
-    for i, experiment_id in enumerate(EXPERIMENT_IDS['growth_anaerobic']):
+    for i, experiment_id in enumerate(
+            EXPERIMENT_IDS['growth_anaerobic']):
         make_snapshots_figure(
-            *all_data[experiment_id], 'growth_anaerobic_{}'.format(i), [])
+            *all_data[experiment_id], 'growth_anaerobic_{}'.format(i),
+            [])
 
     basal_data = [
         all_data[experiment_id][0]
@@ -284,10 +288,12 @@ def main():
             *all_data[experiment_id],
             'enviro_heterogeneity_{}'.format(i), ['GLC'])
 
+    enviro_section_data = []
     for i, experiment_id in enumerate(
             EXPERIMENT_IDS['enviro_section']):
-        make_environment_section(
-            all_data[experiment_id][0], 'enviro_section_{}'.format(i))
+        enviro_section_data.append(all_data[experiment_id][0])
+    make_environment_section(
+        enviro_section_data, 'enviro_section')
 
     data_dict = dict()
     for key, exp_ids in EXPERIMENT_IDS['threshold_scan'].items():

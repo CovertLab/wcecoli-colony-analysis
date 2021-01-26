@@ -14,47 +14,35 @@ MIN_COLOR_NORMALIZED = 0.2
 
 
 def get_enviro_sections_plot(
-        fields_ts: Dict[int, Dict[str, SerializedField]],
+        fields_ts_list: List[Dict[int, Dict[str, SerializedField]]],
         bounds: Sequence,
         section_location: float = 0.5,
-        flat_bins: bool = False,
         cmap: Colormap = DEFAULT_COLORMAP) -> plt.Figure:
-    sorted_times = sorted(fields_ts.keys())
-    some_timepoint = fields_ts[sorted_times[0]]
+    sorted_times = sorted(fields_ts_list[0].keys())
+    some_timepoint = fields_ts_list[0][sorted_times[0]]
     some_field = some_timepoint[list(some_timepoint.keys())[0]]
     num_bins = np.array(some_field).shape
     bin_width = bounds[0] / num_bins[0]
     x = []
-    if flat_bins:
-        for i in range(num_bins[0]):
-            start = i * bin_width
-            end = (i + 1) * bin_width
-            x += [start, end]
-    else:
-        for i in range(num_bins[0]):
-            mid = i * bin_width + bin_width / 2
-            x.append(mid)
+    for i in range(num_bins[0]):
+        mid = i * bin_width + bin_width / 2
+        x.append(mid)
 
-    y_values_ts: Dict[int, Dict[str, List[float]]] = dict()
+    y_values_ts: Dict[int, Dict[str, List[List[float]]]] = dict()
+    all_fields = list(some_timepoint.keys())
     for time in sorted_times:
-        fields = fields_ts[time]
         y_values = y_values_ts.setdefault(time, dict())
-        for field, field_vals in fields.items():
-            matrix = np.array(field_vals)
-            # Skip infinite fields
-            if np.any(np.isinf(matrix)):
-                continue
-            assert matrix.shape == num_bins
-            section_index = int(section_location * matrix.shape[0])
-            section = matrix[section_index, :]
-            # Value for start and end points
-            y = []
-            if flat_bins:
-                for val in section:
-                    y += [val, val]
-            else:
-                y = section.tolist()
-            y_values[field] = y
+        for field in all_fields:
+            y_values[field] = []
+            for fields_ts in fields_ts_list:
+                matrix = np.array(fields_ts[time][field])
+                # Skip infinite fields
+                if np.any(np.isinf(matrix)):
+                    continue
+                assert matrix.shape == num_bins
+                section_index = int(section_location * matrix.shape[0])
+                section = matrix[section_index, :]
+                y_values[field].append(section.tolist())
     field_names = list(y_values_ts[sorted_times[0]].keys())
     num_fields = len(field_names)
     figsize=(num_bins[1], num_fields * 4)
@@ -70,13 +58,14 @@ def get_enviro_sections_plot(
             + MIN_COLOR_NORMALIZED)
         color = cmap(color_normalized)
         y_values = y_values_ts[time]
-        for field_i, (field, y) in enumerate(y_values.items()):
+        for field_i, (field, y_list) in enumerate(y_values.items()):
+            y_matrix = np.array(y_list)
+            median = np.median(y_matrix, axis=0)
+            q25, q75 = np.percentile(y_matrix, [25, 75], axis=0)
             ax = axes[field_i]
-            if flat_bins:
-                ax.plot(x, y, color=color, label='{}s'.format(time))
-            else:
-                ax.plot(x, y, 'o', color=color, linestyle='-',
-                        label='{}s'.format(time))
+            ax.plot(x, median, 'o', color=color, linestyle='-',
+                    label='{}s'.format(time))
+            ax.fill_between(x, q25, q75, color=color, alpha=0.2)
     for i, ax in enumerate(axes):
         if num_fields != 1:
             ax.set_title(field_names[i])
