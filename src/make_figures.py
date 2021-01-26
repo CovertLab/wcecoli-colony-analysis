@@ -45,11 +45,16 @@ EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
 EXPERIMENT_IDS = {
-    'expression_distributions': ('20201119.150828', '20210112.185210'),
-    'expression_heterogeneity': ('20201119.150828', '20210112.185210'),
-    'enviro_heterogeneity': ('20201119.150828', '20210112.185210'),
-    'enviro_section': ('20201119.150828', '20210112.185210'),
-    'growth_basal': ('20201119.150828', '20210112.185210'),
+    'expression_distributions': (
+        '20201119.150828', '20210112.185210', '20210125.152527'),
+    'expression_heterogeneity': (
+        '20201119.150828', '20210112.185210', '20210125.152527'),
+    'enviro_heterogeneity': (
+        '20201119.150828', '20210112.185210', '20210125.152527'),
+    'enviro_section': (
+        '20201119.150828', '20210112.185210', '20210125.152527'),
+    'growth_basal': (
+        '20201119.150828', '20210112.185210', '20210125.152527'),
     'growth_anaerobic': ('20201221.194828',),
     'threshold_scan': {
         '0.01 mM': ('20201228.172246',),
