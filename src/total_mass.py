@@ -54,8 +54,6 @@ def plot_total_mass(
         assert sorted(replicate.keys()) == times
         replicate_timeseries = get_total_mass_timeseries(replicate)
         mass_timeseries.append(replicate_timeseries)
-        ax.semilogy(
-            times, replicate_timeseries, color=color, linestyle='--')
     mass_matrix = np.array(mass_timeseries)
     median = np.median(mass_matrix, axis=0)
     q25, q75 = np.percentile(mass_matrix, [25, 75], axis=0)
