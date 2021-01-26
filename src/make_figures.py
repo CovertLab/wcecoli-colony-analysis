@@ -129,7 +129,7 @@ def make_expression_distributions_fig(replicates_raw_data):
         color = COLORS[i]
         end_expression_table = raw_data_to_end_expression_table(
             raw_data,
-            {'AcrAB-TolC': PUMP_PATH, 'AmpC': BETA_LACTAMASE_PATH})
+            {val: key for key, val in TAG_PATH_NAME_MAP.items()})
         data = {
             key: end_expression_table[key]
             for key in end_expression_table.columns
