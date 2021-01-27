@@ -199,8 +199,8 @@ def make_expression_survival_fig(data):
     '''Make expression-survival dotplot figure.'''
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
-        'Average AcrAB-TolC Concentration (mmol/L) Over Cell Lifetime',
-        'Average AmpC Concentration (mmol/L) Over Cell Lifetime',
+        'Average [AcrAB-TolC] (mM)',
+        'Average [AmpC] (mM)',
         EXPRESSION_SURVIVAL_TIME_RANGE,
     )
     fig.savefig(os.path.join(
