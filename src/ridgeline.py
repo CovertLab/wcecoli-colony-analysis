@@ -96,14 +96,16 @@ def get_ridgeline_plot(
 
 
 def _calculate_density_curves(
-        data: Iterable[Dict[str, Sequence[Number]]],
+        data: Sequence[Dict[str, Sequence[Number]]],
         x_values: Union[Sequence[Number], np.ndarray],
         overlap: float):
     y_values: Dict[str, List[float]] = {}
     density_curves: Dict[str, List[Sequence[float]]] = {}
+    # Reverse order since we plot from bottom to top
     for data_dict in data:
         y = 0.
-        for y_label, data_values in data_dict.items():
+        for y_label in reversed(data_dict.keys()):
+            data_values = data_dict[y_label]
             if len(data_values) > 1:
                 pdf = gaussian_kde(data_values)
                 density_curve = pdf(x_values)
