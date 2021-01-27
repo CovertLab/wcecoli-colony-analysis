@@ -139,7 +139,7 @@ def make_expression_distributions_fig(replicates_raw_data):
     fig = get_ridgeline_plot(
         replicates_data,
         point_alpha=1,
-        overlap=0,
+        overlap=-0.1,
         num_bins=100,
         x_label='Protein Concentration (counts/fL)',
         y_label='Distribution Density')
