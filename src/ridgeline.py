@@ -104,7 +104,7 @@ def _calculate_density_curves(
     # Reverse order since we plot from bottom to top
     for data_dict in data:
         y = 0.
-        for y_label in reversed(data_dict.keys()):
+        for y_label in reversed(list(data_dict.keys())):
             data_values = data_dict[y_label]
             if len(data_values) > 1:
                 pdf = gaussian_kde(data_values)
