@@ -141,6 +141,7 @@ def make_expression_distributions_fig(replicates_raw_data):
         point_alpha=1,
         overlap=-0.1,
         num_bins=100,
+        jitter=0,
         x_label='Protein Concentration (counts/fL)',
         y_label='Distribution Density')
     fig.savefig(
