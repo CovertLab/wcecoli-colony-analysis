@@ -4,9 +4,11 @@ For usage information, run:
     python make_figures.py -h
 '''
 import argparse
+from datetime import datetime
 import json
 import os
 import sys
+import subprocess
 
 from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
@@ -23,6 +25,8 @@ from src.phylogeny import plot_phylogeny
 from src.process_expression_data import (
     raw_data_to_end_expression_table, VOLUME_KEY)
 from src.ridgeline import get_ridgeline_plot
+from src.expression_survival_scan import (
+    load_scan_data, plot_expression_survival_scan)
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
@@ -69,12 +73,25 @@ EXPERIMENT_IDS = {
 METADATA_FILE = 'metadata.json'
 
 
+def exec_shell(tokens, timeout=10):
+    proc = subprocess.run(
+        tokens,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+        env=None,
+        universal_newlines=True,
+        timeout=timeout)
+    return proc.stdout.rstrip(), proc.stderr.rstrip()
+
+
 def get_metadata():
     '''Get information on which experiments and code were used.'''
     metadata = {
-        #'git_hash': fp.run_cmdline('git rev-parse HEAD'),
-        #'git_branch': fp.run_cmdline('git symbolic-ref --short HEAD'),
-        #'time': fp.timestamp(),
+        'git_hash': exec_shell(['git', 'rev-parse', 'HEAD'])[0],
+        'git_branch': exec_shell(['git', 'symbolic-ref', '--short', 'HEAD'])[0],
+        'git_status': exec_shell(['git', 'status', '--porcelain'])[0].split('\n'),
+        'time': datetime.utcnow().isoformat() + '+00:00',
         'python': sys.version.splitlines()[0],
         'experiment_ids': EXPERIMENT_IDS,
     }
@@ -210,6 +227,15 @@ def make_expression_survival_fig(data):
     ))
 
 
+def make_expression_survival_scan_fig(data, parameters):
+    '''Plot expression-survival parameter scan figure.'''
+    fig = plot_expression_survival_scan(data, parameters['agent_name'])
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR,
+        'expression_survival_scan.{}'.format(FILE_EXTENSION)
+    ))
+
+
 def make_environment_section(data, base_name):
     '''Plot field concentrations in cross-section of final enviro.'''
     t_final = max(data[0].keys())
@@ -244,9 +270,11 @@ def main():
     if not os.path.exists(FIG_OUT_DIR):
         os.makedirs(FIG_OUT_DIR)
     with open(os.path.join(FIG_OUT_DIR, METADATA_FILE), 'w') as f:
-        json.dump(get_metadata(), f)
+        json.dump(get_metadata(), f, indent=4)
     parser = argparse.ArgumentParser()
     Analyzer.add_connection_args(parser)
+    parser.add_argument(
+        'scan_data', type=str, help='Path to parameter scan data.')
     args = parser.parse_args()
 
     experiment_ids = get_experiment_ids(EXPERIMENT_IDS)
@@ -304,6 +332,8 @@ def main():
 
     make_expression_survival_fig(
         all_data[EXPERIMENT_IDS['expression_survival']][0])
+
+    make_expression_survival_scan_fig(*load_scan_data(args.scan_data))
 
     make_phylogeny_plot(
         all_data[EXPERIMENT_IDS['phylogeny']][0])
