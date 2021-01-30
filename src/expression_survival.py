@@ -73,6 +73,56 @@ def plot_expression_survival(
     return fig
 
 
+def plot_expression_survival_dotplot(
+    data, path_to_variable, xlabel, time_range=(0, 1)
+):
+    '''Create Expression Dotplot Colored by Survival
+
+    Plot one dot for each cell along an axis to indicate that cell's
+    average expression level for a specified protein. The dot color
+    reflects whether the cell survived long enough to divide.
+
+    Note that only the expression levels while the cell is alive are
+    considered in the average.
+
+    Parameters:
+        data (dict): The raw data emitted from the simulation.
+        path_to_variable (tuple): Path from the agent root to the
+            variable that holds the protein's expression level. We do
+            not adjust for cell volume, so this should be a
+            concentration.
+        xlabel (str): Label for x-axis.
+        time_range (tuple): Tuple of two :py:class:`float`s that are
+            fractions of the total simulated time period. These
+            fractions indicate the start and end points (inclusive) of
+            the time range to consider when calculating average
+            expression level.
+
+    Returns:
+        plt.Figure: The finished figure.
+    '''
+    live_averages, dead_averages = calc_live_and_dead_averages(
+        data, path_to_variable, time_range)
+    fig, ax = plt.subplots(figsize=(6, 2))
+    ax.scatter(
+        live_averages, [0.1] * len(live_averages),
+        label='Survive', color=LIVE_COLOR, alpha=ALPHA,
+    )
+    ax.scatter(
+        dead_averages, [0.1] * len(dead_averages),
+        label='Die', color=DEAD_COLOR, alpha=ALPHA,
+    )
+    ax.legend()
+    ax.set_xlabel(xlabel)
+    ax.set_ylim([0, 1.25])
+    ax.get_yaxis().set_visible(False)
+    for spine_name in ('left', 'top', 'right'):
+        ax.spines[spine_name].set_visible(False)
+    ax.spines['bottom'].set_position('zero')
+    fig.tight_layout()
+    return fig
+
+
 def calc_live_and_dead_averages(data, path_to_variable, time_range):
     expression_levels = dict()
     die = set()

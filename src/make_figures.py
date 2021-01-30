@@ -16,7 +16,10 @@ from vivarium_cell.plots.multibody_physics import (
     plot_snapshots,
     plot_tags,
 )
-from src.expression_survival import plot_expression_survival
+from src.expression_survival import (
+    plot_expression_survival,
+    plot_expression_survival_dotplot,
+)
 
 from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
 from src.total_mass import get_total_mass_plot
@@ -214,7 +217,7 @@ def make_threshold_scan_fig(data_dict):
 
 
 def make_expression_survival_fig(data):
-    '''Make expression-survival dotplot figure.'''
+    '''Make expression-survival figure.'''
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Average [AcrAB-TolC] (mM)',
@@ -225,6 +228,23 @@ def make_expression_survival_fig(data):
         FIG_OUT_DIR, 'expression_survival.{}'.format(
             FILE_EXTENSION)
     ))
+
+
+def make_expression_survival_dotplots(data):
+    '''Make expression-survival dotplots.'''
+    fig = plot_expression_survival_dotplot(
+        data, PUMP_PATH, 'Average [AcrAB-TolC] (mM)',
+        EXPRESSION_SURVIVAL_TIME_RANGE)
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR, 'expression_survival_pump.{}'.format(
+            FILE_EXTENSION)))
+    fig = plot_expression_survival_dotplot(
+        data, BETA_LACTAMASE_PATH, 'Average [AmpC] (mM)',
+        EXPRESSION_SURVIVAL_TIME_RANGE)
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR,
+        'expression_survival_beta_lactamase.{}'.format(
+            FILE_EXTENSION)))
 
 
 def make_expression_survival_scan_fig(data, parameters):
@@ -331,6 +351,9 @@ def main():
     make_threshold_scan_fig(data_dict)
 
     make_expression_survival_fig(
+        all_data[EXPERIMENT_IDS['expression_survival']][0])
+
+    make_expression_survival_dotplots(
         all_data[EXPERIMENT_IDS['expression_survival']][0])
 
     make_expression_survival_scan_fig(*load_scan_data(args.scan_data))
