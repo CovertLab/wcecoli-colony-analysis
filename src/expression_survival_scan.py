@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from vivarium.core.experiment import get_in
 
 
-LIVE_COLOR = 'red'
+LIVE_COLOR = 'gray'
 DEAD_COLOR = 'black'
 ALPHA = 0.5
 

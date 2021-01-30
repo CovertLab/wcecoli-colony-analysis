@@ -13,7 +13,7 @@ from vivarium.core.experiment import get_in
 
 PATH_TO_AGENTS = ('agents',)
 PATH_TO_DEAD = ('boundary', 'dead')
-LIVE_COLOR = 'red'
+LIVE_COLOR = 'gray'
 DEAD_COLOR = 'black'
 ALPHA = 0.5
 
