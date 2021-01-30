@@ -55,7 +55,7 @@ def plot_expression_survival(
         data, path_to_x_variable, time_range)
     live_averages_y, dead_averages_y = calc_live_and_dead_averages(
         data, path_to_y_variable, time_range)
-    fig, ax = plt.subplots(figsize=(6, 2))
+    fig, ax = plt.subplots()
     ax.scatter(
         live_averages_x, live_averages_y,
         label='Survive', color=LIVE_COLOR, alpha=ALPHA,
