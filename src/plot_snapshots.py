@@ -59,12 +59,15 @@ class LineWidthData(Line2D):
 
     _linewidth = property(_get_lw, _set_lw)
 
-def plot_agent(ax, data, color, agent_shape):
+def plot_agent(ax, data, color, agent_shape, alpha=1):
     x_center = data['boundary']['location'][0]
     y_center = data['boundary']['location'][1]
 
-    # get color, convert to rgb
-    rgb = hsv_to_rgb(color)
+    # get color, convert to rgb. Strings are already RGB
+    if isinstance(color, str):
+        rgb = color
+    else:
+        rgb = hsv_to_rgb(color)
 
     if agent_shape == 'rectangle':
         theta = data['boundary']['angle'] / PI * 180 + 90  # rotate 90 degrees to match field
@@ -87,7 +90,8 @@ def plot_agent(ax, data, color, agent_shape):
             angle=theta,
             linewidth=2,
             edgecolor='w',
-            facecolor=rgb
+            alpha=alpha,
+            facecolor=rgb,
         )
         ax.add_patch(shape)
 
@@ -116,10 +120,12 @@ def plot_agent(ax, data, color, agent_shape):
             [x1, x2], [y1, y2],
             color=membrane_color,
             linewidth=width,
+            alpha=alpha,
             solid_capstyle='round')
         line = LineWidthData(
             [x1, x2], [y1, y2],
             color=rgb,
+            alpha=alpha,
             linewidth=width-membrane_width,
             solid_capstyle='round')
         ax.add_line(membrane)
@@ -134,11 +140,13 @@ def plot_agent(ax, data, color, agent_shape):
         y = y_center - radius
 
         # Create a circle
-        circle = patches.Circle((x, y), radius, linewidth=1, edgecolor='b')
+        circle = patches.Circle(
+            (x, y), radius, linewidth=1, edgecolor='b', alpha=alpha)
         ax.add_patch(circle)
 
 def plot_agents(
-    ax, agents, agent_colors={}, agent_shape='segment', dead_color=None
+    ax, agents, agent_colors={}, agent_shape='segment', dead_color=None,
+    alpha=1
 ):
     '''
     - ax: the axis for plot
@@ -147,13 +155,14 @@ def plot_agents(
     - agent_colors: dict with {agent_id: hsv color}
     - dead_color: List of 3 floats that define HSV color to use for dead
       cells. Dead cells only get treated differently if this is set.
+    - alpha: Alpha value for agents.
     '''
     for agent_id, agent_data in agents.items():
         color = agent_colors.get(agent_id, [DEFAULT_HUE]+DEFAULT_SV)
         if dead_color and 'boundary' in agent_data and 'dead' in agent_data['boundary']:
             if agent_data['boundary']['dead']:
                 color = dead_color
-        plot_agent(ax, agent_data, color, agent_shape)
+        plot_agent(ax, agent_data, color, agent_shape, alpha)
 
 def mutate_color(baseline_hsv):
     mutation = 0.1
@@ -260,6 +269,10 @@ def plot_snapshots(data, plot_config):
               is black.
             * **default_font_size** (:py:class:`float`): Font size for
               titles and axis labels.
+            * **agent_fill_color** (:py:class:`tuple`): HSV Color to use
+              for all agent fills.
+            * **agent_alpha** (:py:class:`float`): Alpha for agent
+              plots.
     '''
     check_plt_backend()
 
@@ -273,6 +286,8 @@ def plot_snapshots(data, plot_config):
     field_label_size = plot_config.get('field_label_size', 20)
     default_font_size = plot_config.get('default_font_size', 36)
     dead_color = plot_config.get('dead_color', [0, 0, 0])
+    agent_fill_color = plot_config.get('agent_fill_color', None)
+    agent_alpha = plot_config.get('agent_alpha', 1)
 
     # get data
     agents = data.get('agents', {})
@@ -319,7 +334,10 @@ def plot_snapshots(data, plot_config):
         agent_ids = list(agent_ids)
 
         # set agent colors
-        if phylogeny_names:
+        if agent_fill_color:
+            agent_colors = {
+                agent_id: agent_fill_color for agent_id in agent_ids}
+        elif phylogeny_names:
             agent_colors = get_phylogeny_colors_from_names(agent_ids)
         else:
             agent_colors = {}
@@ -364,7 +382,8 @@ def plot_snapshots(data, plot_config):
                 if agents:
                     agents_now = agents[time]
                     plot_agents(
-                        ax, agents_now, agent_colors, agent_shape, dead_color)
+                        ax, agents_now, agent_colors, agent_shape,
+                        dead_color, agent_alpha)
 
                 # colorbar in new column after final snapshot
                 if col_idx == n_snapshots - 1:
@@ -388,7 +407,9 @@ def plot_snapshots(data, plot_config):
 
             if agents:
                 agents_now = agents[time]
-                plot_agents(ax, agents_now, agent_colors, agent_shape, dead_color)
+                plot_agents(
+                    ax, agents_now, agent_colors, agent_shape,
+                    dead_color, agent_alpha)
 
     fig_path = os.path.join(out_dir, filename)
     fig.subplots_adjust(wspace=0.7, hspace=0.1)

@@ -12,10 +12,6 @@ import subprocess
 
 from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
-from vivarium_cell.plots.multibody_physics import (
-    plot_snapshots,
-    plot_tags,
-)
 from src.expression_survival import (
     plot_expression_survival,
     plot_expression_survival_dotplot,
@@ -30,6 +26,7 @@ from src.process_expression_data import (
 from src.ridgeline import get_ridgeline_plot
 from src.expression_survival_scan import (
     load_scan_data, plot_expression_survival_scan)
+from src.plot_snapshots import plot_snapshots, plot_tags
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
@@ -172,7 +169,9 @@ def make_expression_distributions_fig(replicates_raw_data):
     )
 
 
-def make_snapshots_figure(data, environment_config, name, fields):
+def make_snapshots_figure(
+        data, environment_config, name, fields, agent_fill_color=None,
+        agent_alpha=1):
     '''Make a figure of snapshots
 
     Parameters:
@@ -194,6 +193,8 @@ def make_snapshots_figure(data, environment_config, name, fields):
         'include_fields': fields,
         'field_label_size': 54,
         'default_font_size': 54,
+        'agent_fill_color': agent_fill_color,
+        'agent_alpha': agent_alpha,
     }
     plot_snapshots(snapshots_data, plot_config)
 
@@ -341,7 +342,7 @@ def main():
             EXPERIMENT_IDS['enviro_heterogeneity']):
         make_snapshots_figure(
             *all_data[experiment_id],
-            'enviro_heterogeneity_{}'.format(i), ['GLC'])
+            'enviro_heterogeneity_{}'.format(i), ['GLC'], 'black', 0.2)
 
     enviro_section_data = []
     for i, experiment_id in enumerate(
