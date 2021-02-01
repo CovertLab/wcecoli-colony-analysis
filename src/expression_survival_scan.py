@@ -1,5 +1,8 @@
 import json
+
 from matplotlib import pyplot as plt
+import numpy as np
+from sklearn.linear_model import LogisticRegression
 
 from vivarium.core.experiment import get_in
 
@@ -31,6 +34,25 @@ def plot_expression_survival_scan(raw_datasets, agent_name):
         ax.scatter(
             *zip(*points_live), label='Survive', color=LIVE_COLOR,
             alpha=ALPHA)
+
+    model = LogisticRegression()
+    features = np.array(points_die + points_live)
+    # Logistic regression doesn't do well with very small numbers
+    scaled = features / features.max()
+    labels = [0] * len(points_die) + [1] * len(points_live)
+    model.fit(scaled, labels)
+    theta_0 = model.intercept_[0]
+    theta_1, theta_2 = model.coef_.tolist()[0]
+    x, _ = zip(*features)
+    boundary_x = np.linspace(min(x), max(x), 10)
+    # Decision boundary comes from solving theta^T X = 0
+    m = -theta_1 / theta_2
+    b = -theta_0 / theta_2 * features.max()
+    boundary_y = m * boundary_x + b
+    ax.plot(
+        boundary_x, boundary_y, c='black',
+        label='y = {}x + {}'.format(m, b))
+
     ax.legend()
     ax.set_xlabel('[AcrAB-TolC] (mM)')
     ax.set_ylabel('[AmpC] (mM)')

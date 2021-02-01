@@ -24,6 +24,7 @@ ipython==7.18.1
 ipython-genutils==0.2.0
 isort==5.5.4
 jedi==0.17.2
+joblib==1.0.0
 kiwisolver==1.2.0
 lazy-object-proxy==1.4.3
 matplotlib==3.3.2
@@ -61,12 +62,14 @@ python-libsbml-experimental==5.18.1
 pytz==2020.1
 ruamel.yaml==0.16.12
 ruamel.yaml.clib==0.2.2
+scikit-learn==0.24.1
 scipy==1.5.2
 Shapely==1.7.1
 six==1.15.0
 stochastic-arrow==0.4.3
 swiglpk==4.65.1
 sympy==1.6.2
+threadpoolctl==2.1.0
 toml==0.10.1
 traitlets==5.0.4
 typed-ast==1.4.1

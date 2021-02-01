@@ -16,10 +16,13 @@ PATH_TO_DEAD = ('boundary', 'dead')
 LIVE_COLOR = 'green'
 DEAD_COLOR = 'black'
 ALPHA = 0.5
+BOUNDARY_M = -0.18241492897759418
+BOUNDARY_B = 0.0001343552138570287
 
 
 def plot_expression_survival(
-    data, path_to_x_variable, path_to_y_variable, xlabel, ylabel, time_range=(0, 1)
+    data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
+    time_range=(0, 1)
 ):
     '''Create Expression Scatterplot Colored by Survival
 
@@ -64,6 +67,12 @@ def plot_expression_survival(
         dead_averages_y, dead_averages_y,
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
+    averages = live_averages_x + live_averages_y
+    boundary_x = np.linspace(min(averages), max(averages), 10)
+    boundary_y = BOUNDARY_M * boundary_x + BOUNDARY_B
+    ax.plot(
+        boundary_x, boundary_y, c='black',
+        label='y = {}x + {}'.format(BOUNDARY_M, BOUNDARY_B))
     ax.legend()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
