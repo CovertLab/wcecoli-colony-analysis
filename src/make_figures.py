@@ -220,9 +220,10 @@ def make_expression_survival_fig(data):
     '''Make expression-survival figure.'''
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
-        'Average [AcrAB-TolC] (mM)',
-        'Average [AmpC] (mM)',
-        EXPRESSION_SURVIVAL_TIME_RANGE,
+        'Average [AcrAB-TolC] (µM)',
+        'Average [AmpC] (µM)',
+        scaling=1e3,
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
     )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival.{}'.format(
@@ -233,14 +234,16 @@ def make_expression_survival_fig(data):
 def make_expression_survival_dotplots(data):
     '''Make expression-survival dotplots.'''
     fig = plot_expression_survival_dotplot(
-        data, PUMP_PATH, 'Average [AcrAB-TolC] (mM)',
-        EXPRESSION_SURVIVAL_TIME_RANGE)
+        data, PUMP_PATH, 'Average [AcrAB-TolC] (µM)',
+        scaling=1e3,
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE)
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival_pump.{}'.format(
             FILE_EXTENSION)))
     fig = plot_expression_survival_dotplot(
-        data, BETA_LACTAMASE_PATH, 'Average [AmpC] (mM)',
-        EXPRESSION_SURVIVAL_TIME_RANGE)
+        data, BETA_LACTAMASE_PATH, 'Average [AmpC] (µM)',
+        scaling=1e3,
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE)
     fig.savefig(os.path.join(
         FIG_OUT_DIR,
         'expression_survival_beta_lactamase.{}'.format(
@@ -249,7 +252,9 @@ def make_expression_survival_dotplots(data):
 
 def make_expression_survival_scan_fig(data, parameters):
     '''Plot expression-survival parameter scan figure.'''
-    fig = plot_expression_survival_scan(data, parameters['agent_name'])
+    fig = plot_expression_survival_scan(
+        data, parameters['agent_name'], '[AcrAB-TolC] (µM)',
+        '[AmpC] (µM)', scaling=1e3)
     fig.savefig(os.path.join(
         FIG_OUT_DIR,
         'expression_survival_scan.{}'.format(FILE_EXTENSION)

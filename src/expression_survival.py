@@ -16,13 +16,13 @@ PATH_TO_DEAD = ('boundary', 'dead')
 LIVE_COLOR = 'green'
 DEAD_COLOR = 'black'
 ALPHA = 0.5
-BOUNDARY_M = -0.18241492897759418
-BOUNDARY_B = 0.0001343552138570287
+BOUNDARY_M = -0.1824149289775941
+BOUNDARY_B = 0.1343552138570287
 
 
 def plot_expression_survival(
     data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
-    time_range=(0, 1)
+    scaling=1, time_range=(0, 1)
 ):
     '''Create Expression Scatterplot Colored by Survival
 
@@ -45,6 +45,8 @@ def plot_expression_survival(
             concentration. This protein will be plotted on the y axis.
         xlabel (str): Label for x-axis.
         xlabel (str): Label for y-axis.
+        scaling (str): Coefficient to multiply all data by. This is
+            intended to be used for changing the units plotted.
         time_range (tuple): Tuple of two :py:class:`float`s that are
             fractions of the total simulated time period. These
             fractions indicate the start and end points (inclusive) of
@@ -60,15 +62,18 @@ def plot_expression_survival(
         data, path_to_y_variable, time_range)
     fig, ax = plt.subplots()
     ax.scatter(
-        live_averages_x, live_averages_y,
+        np.array(live_averages_x) * scaling,
+        np.array(live_averages_y) * scaling,
         label='Survive', color=LIVE_COLOR, alpha=ALPHA,
     )
     ax.scatter(
-        dead_averages_y, dead_averages_y,
+        np.array(dead_averages_x) * scaling,
+        np.array(dead_averages_y) * scaling,
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
     averages = live_averages_x + live_averages_y
-    boundary_x = np.linspace(min(averages), max(averages), 10)
+    boundary_x = np.linspace(
+        min(averages) * scaling, max(averages) * scaling, 10)
     boundary_y = BOUNDARY_M * boundary_x + BOUNDARY_B
     ax.plot(
         boundary_x, boundary_y, c='black',
@@ -83,7 +88,7 @@ def plot_expression_survival(
 
 
 def plot_expression_survival_dotplot(
-    data, path_to_variable, xlabel, time_range=(0, 1)
+    data, path_to_variable, xlabel, scaling=1, time_range=(0, 1)
 ):
     '''Create Expression Dotplot Colored by Survival
 
@@ -101,6 +106,8 @@ def plot_expression_survival_dotplot(
             not adjust for cell volume, so this should be a
             concentration.
         xlabel (str): Label for x-axis.
+        scaling (str): Coefficient to multiply all data by. This is
+            intended to be used for changing the units plotted.
         time_range (tuple): Tuple of two :py:class:`float`s that are
             fractions of the total simulated time period. These
             fractions indicate the start and end points (inclusive) of
@@ -114,11 +121,13 @@ def plot_expression_survival_dotplot(
         data, path_to_variable, time_range)
     fig, ax = plt.subplots(figsize=(6, 2))
     ax.scatter(
-        live_averages, [0.1] * len(live_averages),
+        np.array(live_averages) * scaling,
+        [0.1] * len(live_averages),
         label='Survive', color=LIVE_COLOR, alpha=ALPHA,
     )
     ax.scatter(
-        dead_averages, [0.1] * len(dead_averages),
+        np.array(dead_averages) * scaling,
+        [0.1] * len(dead_averages),
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
     ax.legend()

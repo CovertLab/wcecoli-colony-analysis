@@ -12,7 +12,8 @@ DEAD_COLOR = 'black'
 ALPHA = 0.5
 
 
-def plot_expression_survival_scan(raw_datasets, agent_name):
+def plot_expression_survival_scan(
+        raw_datasets, agent_name, xlabel, ylabel, scaling=1):
     death_path = ('agents', agent_name, 'boundary', 'dead')
     points_die = []  # (pump, beta lactamase)
     points_live = []  # (pump, beta lactamase)
@@ -21,9 +22,11 @@ def plot_expression_survival_scan(raw_datasets, agent_name):
         last_timepoint = raw_data[str(max_time)]
         dead = get_in(last_timepoint, death_path)
         if dead:
-            points_die.append((pump, beta_lactamase))
+            points_die.append(
+                (pump * scaling, beta_lactamase * scaling))
         else:
-            points_live.append((pump, beta_lactamase))
+            points_live.append(
+                (pump * scaling, beta_lactamase * scaling))
 
     fig, ax = plt.subplots()
     if points_die:
@@ -54,8 +57,8 @@ def plot_expression_survival_scan(raw_datasets, agent_name):
         label='y = {}x + {}'.format(m, b))
 
     ax.legend()
-    ax.set_xlabel('[AcrAB-TolC] (mM)')
-    ax.set_ylabel('[AmpC] (mM)')
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     for spine_name in ('top', 'right'):
         ax.spines[spine_name].set_visible(False)
     fig.tight_layout()
