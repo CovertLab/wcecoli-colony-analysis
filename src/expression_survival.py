@@ -71,9 +71,9 @@ def plot_expression_survival(
         np.array(dead_averages_y) * scaling,
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
+    averages = live_averages_x + dead_averages_x
     boundary_x = np.linspace(
-        min(live_averages_x) * scaling,
-        max(live_averages_x) * scaling, 10)
+        min(averages) * scaling, max(averages) * scaling, 10)
     boundary_y = BOUNDARY_M * boundary_x + BOUNDARY_B
     ax.plot(
         boundary_x, boundary_y, c='black',
