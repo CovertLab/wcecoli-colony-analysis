@@ -18,8 +18,8 @@ from matplotlib.colors import hsv_to_rgb
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.collections import LineCollection
 import numpy as np
-
 from vivarium.library.dict_utils import get_value_from_path
+from vivarium.core.experiment import get_in
 
 
 DEFAULT_BOUNDS = [10, 10]
@@ -541,12 +541,37 @@ def plot_tags(data, plot_config):
 
     # plot tags
     for row_idx, tag_id in enumerate(tag_ranges.keys()):
-        used_agent_colors = []
-        concentrations = []
-        for col_idx, (time_idx, time) in enumerate(
+        tag_name = tag_path_name_map.get(tag_id, tag_id)
+        min_tag, max_tag = tag_ranges[tag_id]
+        tag_color = tag_colors[tag_id]
+        min_hsv = get_fluorescent_color(
+            BASELINE_TAG_COLOR, tag_color, 0)
+        max_hsv = get_fluorescent_color(
+            BASELINE_TAG_COLOR, tag_color, 1)
+        min_rgb = matplotlib.colors.hsv_to_rgb(min_hsv)
+        max_rgb = matplotlib.colors.hsv_to_rgb(max_hsv)
+        colors_dict = {
+            'red': [
+                [0, min_rgb[0], min_rgb[0]],
+                [1, max_rgb[0], max_rgb[0]],
+            ],
+            'green': [
+                [0, min_rgb[1], min_rgb[1]],
+                [1, max_rgb[1], max_rgb[1]],
+            ],
+            'blue': [
+                [0, min_rgb[2], min_rgb[2]],
+                [1, max_rgb[2], max_rgb[2]],
+            ],
+        }
+        cmap = matplotlib.colors.LinearSegmentedColormap(
+            tag_id, segmentdata=colors_dict, N=512)
+
+        norm = matplotlib.colors.Normalize(min_tag, max_tag)
+
+        for col_idx, (_, time) in enumerate(
             zip(time_indices, snapshot_times)
         ):
-            tag_name = tag_path_name_map.get(tag_id, tag_id)
             ax = init_axes(
                 fig, edge_length_x, edge_length_y, grid,
                 row_idx, col_idx, time, tag_name, tag_label_size,
@@ -557,28 +582,19 @@ def plot_tags(data, plot_config):
             )
             ax.set_facecolor(background_color)
 
-            # update agent colors based on tag_level
-            min_tag, max_tag = tag_ranges[tag_id]
             agent_tag_colors = {}
             for agent_id, agent_data in agents[time].items():
-                agent_color = BASELINE_TAG_COLOR
-
                 # get current tag concentration, and determine color
                 level = get_value_from_path(agent_data, tag_id)
                 if convert_to_concs:
-                    volume = agent_data.get('boundary', {}).get('volume', 0)
+                    volume = get_in(
+                        agent_data, ('boundary', 'volume'), 0)
                     level = level / volume if volume else 0
-                if min_tag != max_tag:
-                    concentrations.append(level)
-                    intensity = max((level - min_tag), 0)
-                    intensity = min(intensity / (max_tag - min_tag), 1)
-                    tag_color = tag_colors[tag_id]
-                    agent_color = get_fluorescent_color(
-                        BASELINE_TAG_COLOR, tag_color, intensity)
-                    agent_rgb = matplotlib.colors.hsv_to_rgb(agent_color)
-                    used_agent_colors.append(agent_rgb)
-
-                agent_tag_colors[agent_id] = agent_color
+                intensity = norm(level)
+                agent_rgb = cmap(intensity)[:3]
+                agent_hsv = matplotlib.colors.rgb_to_hsv(
+                    agent_rgb)
+                agent_tag_colors[agent_id] = agent_hsv
 
             plot_agents(ax, agents[time], agent_tag_colors, agent_shape)
 
@@ -594,15 +610,7 @@ def plot_tags(data, plot_config):
                     continue
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("left", size="5%", pad=0.0)
-                norm = matplotlib.colors.Normalize()
-                # Sort colors and concentrations by concentration
-                sorted_idx = np.argsort(concentrations)
-                norm.autoscale(used_agent_colors)
-                cmap = matplotlib.colors.ListedColormap(
-                    np.array(used_agent_colors)[sorted_idx])
                 mappable = matplotlib.cm.ScalarMappable(norm, cmap)
-                mappable.set_array(np.array(concentrations)[sorted_idx])
-                mappable.set_clim(min_tag, max_tag)
                 fig.colorbar(mappable, cax=cax, format='%.6f')
 
     fig_path = os.path.join(out_dir, filename)
