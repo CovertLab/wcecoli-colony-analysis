@@ -861,7 +861,7 @@ def init_axes(
 ):
     ax = fig.add_subplot(grid[row_idx, col_idx])
     if row_idx == 0:
-        plot_title = 'time: {:.4f} s'.format(float(time))
+        plot_title = 'time: {:.0f} s'.format(float(time))
         plt.title(plot_title, y=1.08)
     if col_idx == 0:
         ax.set_ylabel(
