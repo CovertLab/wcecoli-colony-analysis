@@ -390,13 +390,13 @@ def plot_snapshots(data, plot_config):
                     cbar_col = col_idx + 1
                     ax = fig.add_subplot(grid[row_idx, cbar_col])
                     if row_idx == 0:
-                        ax.set_title('Concentration (mmol/L)', y=1.08)
+                        ax.set_title('Concentration (mM)', y=1.08)
                     ax.axis('off')
                     if vmin == vmax:
                         continue
                     divider = make_axes_locatable(ax)
                     cax = divider.append_axes("left", size="5%", pad=0.0)
-                    fig.colorbar(im, cax=cax, format='%.6f')
+                    fig.colorbar(im, cax=cax, format='%.3f')
                     ax.axis('off')
         else:
             row_idx = 0
@@ -611,7 +611,7 @@ def plot_tags(data, plot_config):
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("left", size="5%", pad=0.0)
                 mappable = matplotlib.cm.ScalarMappable(norm, cmap)
-                fig.colorbar(mappable, cax=cax, format='%.6f')
+                fig.colorbar(mappable, cax=cax, format='%.0f')
 
     fig_path = os.path.join(out_dir, filename)
     fig.subplots_adjust(wspace=0.7, hspace=0.1)
