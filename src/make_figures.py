@@ -289,7 +289,8 @@ def make_environment_section(data, base_name):
 def make_phylogeny_plot(data):
     '''Plot phylogenetic tree'''
     plot_phylogeny(data, os.path.join(
-        FIG_OUT_DIR, 'phylogeny.{}').format(FILE_EXTENSION))
+        FIG_OUT_DIR, 'phylogeny.{}').format(FILE_EXTENSION),
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE)
 
 
 def main():
