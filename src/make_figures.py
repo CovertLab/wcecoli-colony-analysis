@@ -372,7 +372,7 @@ def main():
 
     make_snapshots_figure(
         *all_data[EXPERIMENT_IDS['death_snapshots']],
-        'death_snapshots', ['nitrocefin'])
+        'death_snapshots', ['nitrocefin'], 'green')
 
 
 if __name__ == '__main__':
