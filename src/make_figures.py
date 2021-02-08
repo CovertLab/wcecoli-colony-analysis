@@ -10,6 +10,7 @@ import os
 import sys
 import subprocess
 
+from matplotlib import colors as mcolors
 from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
 from src.expression_survival import (
@@ -30,8 +31,13 @@ from src.plot_snapshots import plot_snapshots, plot_tags
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
-COLORS = (
-    '#0077BB', '#EE7733', '#33BBEE', '#CC3311', '#009988', '#EE3377')
+COLORS = {
+    'blue': '#0077BB',
+    'orange': '#EE7733',
+    'cyan': '#33BBEE',
+    'red': '#CC3311',
+    'teal': '#009988',
+    'magenta': '#EE3377'}
 PUMP_PATH = (
     'boundary', 'bulk_molecule_concentrations', 'TRANS-CPLX-201[s]')
 BETA_LACTAMASE_PATH = (
@@ -76,6 +82,7 @@ METADATA_FILE = 'metadata.json'
 
 
 def exec_shell(tokens, timeout=10):
+    '''Execute a shell command and return the output.'''
     proc = subprocess.run(
         tokens,
         stdout=subprocess.PIPE,
@@ -91,8 +98,10 @@ def get_metadata():
     '''Get information on which experiments and code were used.'''
     metadata = {
         'git_hash': exec_shell(['git', 'rev-parse', 'HEAD'])[0],
-        'git_branch': exec_shell(['git', 'symbolic-ref', '--short', 'HEAD'])[0],
-        'git_status': exec_shell(['git', 'status', '--porcelain'])[0].split('\n'),
+        'git_branch': exec_shell(
+            ['git', 'symbolic-ref', '--short', 'HEAD'])[0],
+        'git_status': exec_shell(
+            ['git', 'status', '--porcelain'])[0].split('\n'),
         'time': datetime.utcnow().isoformat() + '+00:00',
         'python': sys.version.splitlines()[0],
         'experiment_ids': EXPERIMENT_IDS,
@@ -130,13 +139,19 @@ def make_expression_heterogeneity_fig(
         data, environment_config, name_base):
     '''Figure shows heterogeneous expression within wcEcoli agents.'''
     tags_data = Analyzer.format_data_for_tags(data, environment_config)
+    tagged_molecules = list(TAG_PATH_NAME_MAP.keys())
+    colors = tuple(COLORS[name] for name in ('orange', 'cyan'))
     plot_config = {
         'out_dir': FIG_OUT_DIR,
-        'tagged_molecules': TAG_PATH_NAME_MAP.keys(),
+        'tagged_molecules': tagged_molecules,
         'filename': '{}.{}'.format(name_base, FILE_EXTENSION),
         'tag_path_name_map': TAG_PATH_NAME_MAP,
         'tag_label_size': 48,
         'default_font_size': 48,
+        'hues': {
+            tag: mcolors.rgb_to_hsv(mcolors.to_rgb(colors[i]))[0]
+            for i, tag in enumerate(tagged_molecules)
+        },
     }
     plot_tags(tags_data, plot_config)
 
@@ -144,8 +159,9 @@ def make_expression_heterogeneity_fig(
 def make_expression_distributions_fig(replicates_raw_data):
     '''Figure shows the distributions of expression values.'''
     replicates_data = []
+    colors = list(COLORS.values())
     for i, raw_data in enumerate(replicates_raw_data):
-        color = COLORS[i]
+        color = colors[i]
         end_expression_table = raw_data_to_end_expression_table(
             raw_data,
             {val: key for key, val in TAG_PATH_NAME_MAP.items()})
@@ -207,14 +223,14 @@ def make_growth_fig(basal_data, anaerobic_data):
         'basal': basal_data,
         'anaerobic': anaerobic_data,
     }
-    fig = get_total_mass_plot(data_dict, COLORS)
+    fig = get_total_mass_plot(data_dict, tuple(COLORS.values()))
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'growth.{}'.format(FILE_EXTENSION)))
 
 
 def make_threshold_scan_fig(data_dict):
     '''Plot colony mass curves with various antibiotic thresholds.'''
-    fig = get_total_mass_plot(data_dict, COLORS)
+    fig = get_total_mass_plot(data_dict, tuple(COLORS.values()))
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'threshold_scan.{}'.format(FILE_EXTENSION)))
 

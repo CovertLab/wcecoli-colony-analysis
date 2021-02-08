@@ -475,6 +475,8 @@ def plot_tags(data, plot_config):
               the tag name label
             * **default_font_size** (:py:class:`float`): Font size for
               titles and axis labels.
+            * **hues** (:py:class:`dict`): Map from tag ID in
+              tagged_molecules to a hue value in the HSV color space.
     '''
     check_plt_backend()
 
@@ -488,6 +490,7 @@ def plot_tags(data, plot_config):
     tag_label_size = plot_config.get('tag_label_size', 20)
     default_font_size = plot_config.get('default_font_size', 36)
     convert_to_concs = plot_config.get('convert_to_concs', True)
+    hues = plot_config.get('hues', {})
 
     if tagged_molecules == []:
         raise ValueError('At least one molecule must be tagged.')
@@ -525,7 +528,7 @@ def plot_tags(data, plot_config):
                     tag_ranges[tag_id] = [level, level]
 
                     # select random initial hue
-                    hue = random.choice(HUES)
+                    hue = hues.get(tag_id, random.choice(HUES))
                     tag_color = [hue] + FLOURESCENT_SV
                     tag_colors[tag_id] = tag_color
 
