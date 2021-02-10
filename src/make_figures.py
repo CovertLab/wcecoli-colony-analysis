@@ -248,6 +248,18 @@ def make_expression_survival_fig(data):
         FIG_OUT_DIR, 'expression_survival.{}'.format(
             FILE_EXTENSION)
     ))
+    fig = plot_expression_survival(
+        data, PUMP_PATH, BETA_LACTAMASE_PATH,
+        'Average [AcrAB-TolC] (µM)',
+        'Average [AmpC] (µM)',
+        scaling=1e3,
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
+        label_agents=True,
+    )
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR, 'expression_survival_labeled.{}'.format(
+            FILE_EXTENSION)
+    ))
 
 
 def make_expression_survival_dotplots(data):

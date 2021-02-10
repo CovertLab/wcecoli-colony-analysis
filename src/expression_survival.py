@@ -22,7 +22,7 @@ BOUNDARY_B = 0.1343552138570287
 
 def plot_expression_survival(
     data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
-    scaling=1, time_range=(0, 1)
+    scaling=1, time_range=(0, 1), label_agents=False,
 ):
     '''Create Expression Scatterplot Colored by Survival
 
@@ -52,6 +52,8 @@ def plot_expression_survival(
             fractions indicate the start and end points (inclusive) of
             the time range to consider when calculating average
             expression level.
+        label_agents (bool): Whether to label each point with the agent
+            ID.
 
     Returns:
         plt.Figure: The finished figure.
@@ -62,16 +64,26 @@ def plot_expression_survival(
         data, path_to_y_variable, time_range)
     fig, ax = plt.subplots()
     ax.scatter(
-        np.array(live_averages_x) * scaling,
-        np.array(live_averages_y) * scaling,
+        np.array(list(live_averages_x.values())) * scaling,
+        np.array(list(live_averages_y.values())) * scaling,
         label='Survive', color=LIVE_COLOR, alpha=ALPHA,
     )
     ax.scatter(
-        np.array(dead_averages_x) * scaling,
-        np.array(dead_averages_y) * scaling,
+        np.array(list(dead_averages_x.values())) * scaling,
+        np.array(list(dead_averages_y.values())) * scaling,
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
-    averages = live_averages_x + dead_averages_x
+    if label_agents:
+        for agent in live_averages_x:
+            x = live_averages_x[agent] * scaling
+            y = live_averages_y[agent] * scaling
+            ax.annotate(agent, (x, y), size=5)
+        for agent in dead_averages_x:
+            x = dead_averages_x[agent] * scaling
+            y = dead_averages_y[agent] * scaling
+            ax.annotate(agent, (x, y), size=5)
+    averages = list(live_averages_x.values()) + list(
+        dead_averages_x.values())
     boundary_x = np.linspace(
         min(averages) * scaling, max(averages) * scaling, 10)
     boundary_y = BOUNDARY_M * boundary_x + BOUNDARY_B
@@ -121,12 +133,12 @@ def plot_expression_survival_dotplot(
         data, path_to_variable, time_range)
     fig, ax = plt.subplots(figsize=(6, 2))
     ax.scatter(
-        np.array(live_averages) * scaling,
+        np.array(list(live_averages.values())) * scaling,
         [0.1] * len(live_averages),
         label='Survive', color=LIVE_COLOR, alpha=ALPHA,
     )
     ax.scatter(
-        np.array(dead_averages) * scaling,
+        np.array(list(dead_averages.values())) * scaling,
         [0.1] * len(dead_averages),
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
@@ -161,13 +173,13 @@ def calc_live_and_dead_averages(data, path_to_variable, time_range):
             elif value is not None:
                 lst.append(value)
 
-    live_averages = []
-    dead_averages = []
+    live_averages = {}
+    dead_averages = {}
     for agent, levels in expression_levels.items():
         if not levels:
             continue
         if agent in die:
-            dead_averages.append(np.mean(levels))
+            dead_averages[agent] = np.mean(levels)
         else:
-            live_averages.append(np.mean(levels))
+            live_averages[agent] = np.mean(levels)
     return live_averages, dead_averages
