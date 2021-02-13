@@ -37,9 +37,10 @@ def main():
                 os.path.join(archive_dir, ARCHIVES_FOLDER, archive_file)
             )
         print('Creating compressed archive', OUT_PATH)
-        exec_shell([
-            'tar', '-C', archive_dir, '-c', '-z', '-f', OUT_PATH,
-            ARCHIVES_FOLDER])
+        exec_shell(
+            ['tar', '-C', archive_dir, '-c', '-z', '-f', OUT_PATH,
+                ARCHIVES_FOLDER],
+            timeout=TIMEOUT)
 
 
 if __name__ == '__main__':
