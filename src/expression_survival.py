@@ -5,16 +5,20 @@ Expression Dotplot Colored by Survival
 
 Adapted from vivarium-cell.
 '''
+from bisect import bisect_left, bisect_right
+
 from matplotlib import pyplot as plt
 import numpy as np
 
 from vivarium.core.experiment import get_in
+from vivarium.core.emitter import path_timeseries_from_data
 
 
 PATH_TO_AGENTS = ('agents',)
 PATH_TO_DEAD = ('boundary', 'dead')
 LIVE_COLOR = 'green'
 DEAD_COLOR = 'black'
+MARKERS = ('.', 'v', '^', 's', 'p', '*', '+', 'x', 'D')
 ALPHA = 0.5
 BOUNDARY_M = -0.1824149289775941
 BOUNDARY_B = 0.1343552138570287
@@ -90,6 +94,79 @@ def plot_expression_survival(
     ax.plot(
         boundary_x, boundary_y, c='black',
         label='y = {}x + {}'.format(BOUNDARY_M, BOUNDARY_B))
+    ax.legend()
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    for spine_name in ('top', 'right'):
+        ax.spines[spine_name].set_visible(False)
+    fig.tight_layout()
+    return fig
+
+
+def plot_expression_survival_traces(
+    data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
+    scaling=1, time_range=(0, 1), agents=tuple(),
+):
+    '''Create Expression Traces Colored by Survival
+
+    Plot a trace of expression values for each cell. The color of each
+    dot in the trace reflects whether the cell was alive at that point.
+
+    Parameters:
+        data (dict): The raw data emitted from the simulation.
+        path_to_x_variable (tuple): Path from the agent root to the
+            variable that holds the protein's expression level. We do
+            not adjust for cell volume, so this should be a
+            concentration. This protein will be plotted on the x axis.
+        path_to_y_variable (tuple): Path from the agent root to the
+            variable that holds the protein's expression level. We do
+            not adjust for cell volume, so this should be a
+            concentration. This protein will be plotted on the y axis.
+        xlabel (str): Label for x-axis.
+        xlabel (str): Label for y-axis.
+        scaling (str): Coefficient to multiply all data by. This is
+            intended to be used for changing the units plotted.
+        time_range (tuple): Tuple of two :py:class:`float`s that are
+            fractions of the total simulated time period. These
+            fractions indicate the start and end points (inclusive) of
+            the time range to consider when calculating average
+            expression level.
+        agents (Iterable): The agent IDs of the agents to plot traces
+            for.
+
+    Returns:
+        plt.Figure: The finished figure.
+    '''
+    path_timeseries = path_timeseries_from_data(data)
+    fig, ax = plt.subplots()
+    times = path_timeseries['time']
+    min_idx = bisect_left(times, time_range[0] * times[-1])
+    max_idx = bisect_right(times, time_range[1] * times[-1])
+    for i, agent in enumerate(agents):
+        x_timeseries = path_timeseries[
+            PATH_TO_AGENTS + (agent,)
+            + path_to_x_variable][min_idx:max_idx]
+        y_timeseries = path_timeseries[
+            PATH_TO_AGENTS + (agent,)
+            + path_to_y_variable][min_idx:max_idx]
+        dead_timeseries = path_timeseries[
+            PATH_TO_AGENTS + (agent,)
+            + PATH_TO_DEAD][min_idx:max_idx]
+        color_timeseries = tuple(
+            DEAD_COLOR if dead else LIVE_COLOR
+            for dead in dead_timeseries)
+        ax.scatter(
+            np.array(x_timeseries) * scaling,
+            np.array(y_timeseries) * scaling,
+            c=color_timeseries,
+            label=agent,
+            marker=MARKERS[i],
+            alpha=ALPHA)
+        ax.plot(
+            np.array(x_timeseries) * scaling,
+            np.array(y_timeseries) * scaling,
+            color='black',
+            linewidth=0.5)
     ax.legend()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)

@@ -13,11 +13,12 @@ import subprocess
 from matplotlib import colors as mcolors
 from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
+
 from src.expression_survival import (
     plot_expression_survival,
     plot_expression_survival_dotplot,
+    plot_expression_survival_traces,
 )
-
 from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
 from src.total_mass import get_total_mass_plot
 from src.environment_cross_sections import get_enviro_sections_plot
@@ -50,6 +51,9 @@ TAG_PATH_NAME_MAP = {
 }
 ENVIRONMENT_SECTION_FIELDS = ('GLC',)
 ENVIRONMENT_SECTION_TIMES = (231, 4851, 9471, 13860, 18480, 23100)
+AGENTS_TO_TRACE = (
+    '0_wcecoli0001', '0_wcecoli001100', '0_wcecoli10101',
+    '0_wcecoli101111')
 COLONY_MASS_PATH = ('mass',)
 EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
@@ -261,6 +265,17 @@ def make_expression_survival_fig(data):
     )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival_labeled.{}'.format(
+            FILE_EXTENSION)
+    ))
+    fig = plot_expression_survival_traces(
+        data, PUMP_PATH, BETA_LACTAMASE_PATH,
+        'Average [AcrAB-TolC] (µM)',
+        'Average [AmpC] (µM)',
+        scaling=1e3,
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
+        agents=AGENTS_TO_TRACE)
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR, 'expression_survival_trace.{}'.format(
             FILE_EXTENSION)
     ))
 
