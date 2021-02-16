@@ -77,11 +77,11 @@ def plot_expression_survival(
         for agent in live_averages_x:
             x = live_averages_x[agent] * scaling
             y = live_averages_y[agent] * scaling
-            ax.annotate(agent, (x, y), size=5)
+            ax.annotate(agent, (x, y), size=1)
         for agent in dead_averages_x:
             x = dead_averages_x[agent] * scaling
             y = dead_averages_y[agent] * scaling
-            ax.annotate(agent, (x, y), size=5)
+            ax.annotate(agent, (x, y), size=1)
     averages = list(live_averages_x.values()) + list(
         dead_averages_x.values())
     boundary_x = np.linspace(
