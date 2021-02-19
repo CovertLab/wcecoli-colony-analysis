@@ -299,11 +299,12 @@ def make_expression_survival_dotplots(data):
             FILE_EXTENSION)))
 
 
-def make_expression_survival_scan_fig(data, parameters):
+def make_expression_survival_scan_fig(data, parameters, search_data):
     '''Plot expression-survival parameter scan figure.'''
     fig = plot_expression_survival_scan(
         data, parameters['agent_name'], '[AcrAB-TolC] (µM)',
-        '[AmpC] (µM)', scaling=1e3)
+        '[AmpC] (µM)', search_data['x_values'], search_data['y_values'],
+        search_data['precision'], scaling=1e3)
     fig.savefig(os.path.join(
         FIG_OUT_DIR,
         'expression_survival_scan.{}'.format(FILE_EXTENSION)
@@ -350,6 +351,8 @@ def main():
     Analyzer.add_connection_args(parser)
     parser.add_argument(
         'scan_data', type=str, help='Path to parameter scan data.')
+    parser.add_argument(
+        'search_data', type=str, help='Path to boundary search data.')
     args = parser.parse_args()
 
     experiment_ids = get_experiment_ids(EXPERIMENT_IDS)
@@ -411,7 +414,10 @@ def main():
     make_expression_survival_dotplots(
         all_data[EXPERIMENT_IDS['expression_survival']][0])
 
-    make_expression_survival_scan_fig(*load_scan_data(args.scan_data))
+    with open(args.search_data, 'r') as f:
+        search_data = json.load(f)
+    make_expression_survival_scan_fig(
+        *load_scan_data(args.scan_data), search_data)
 
     make_phylogeny_plot(
         all_data[EXPERIMENT_IDS['phylogeny']][0])

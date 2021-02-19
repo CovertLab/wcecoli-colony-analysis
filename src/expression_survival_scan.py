@@ -13,7 +13,8 @@ ALPHA = 0.5
 
 
 def plot_expression_survival_scan(
-        raw_datasets, agent_name, xlabel, ylabel, scaling=1):
+        raw_datasets, agent_name, xlabel, ylabel, numeric_x, numeric_y,
+        numeric_error, scaling=1):
     death_path = ('agents', agent_name, 'boundary', 'dead')
     points_die = []  # (pump, beta lactamase)
     points_live = []  # (pump, beta lactamase)
@@ -53,8 +54,22 @@ def plot_expression_survival_scan(
     b = -theta_0 / theta_2 * features.max()
     boundary_y = m * boundary_x + b
     ax.plot(
-        boundary_x, boundary_y, c='black',
+        boundary_x, boundary_y, c='blue',
         label='y = {}x + {}'.format(m, b))
+
+    # Plot numeric solution
+    numeric_x_scaled = np.array(numeric_x) * scaling
+    numeric_y_scaled = np.array(numeric_y) * scaling
+    numeric_error_scaled = numeric_error * scaling
+    ax.plot(
+        numeric_x_scaled, numeric_y_scaled, c='orange',
+        label='Numeric Solution for Boundary')
+    ax.fill_between(
+        numeric_x_scaled,
+        numeric_y_scaled - numeric_error_scaled / 2,
+        numeric_y_scaled + numeric_error_scaled / 2,
+        color='orange', alpha=0.2
+    )
 
     ax.legend()
     ax.set_xlabel(xlabel)
