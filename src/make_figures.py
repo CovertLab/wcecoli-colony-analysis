@@ -279,6 +279,9 @@ def make_expression_survival_fig(data, search_data):
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Average [AcrAB-TolC] (µM)',
         'Average [AmpC] (µM)',
+        search_data['x_values'],
+        search_data['y_values'],
+        search_data['precision'],
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
         agents=AGENTS_TO_TRACE)
