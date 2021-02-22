@@ -26,8 +26,8 @@ ALPHA = 0.5
 
 def plot_expression_survival(
     data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
-    boundary_x, boundary_y, boundary_error, scaling=1,
-    time_range=(0, 1), label_agents=False,
+    boundary_x, boundary_y, boundary_error, boundary_color='black',
+    scaling=1, time_range=(0, 1), label_agents=False,
 ):
     '''Create Expression Scatterplot Colored by Survival
 
@@ -60,6 +60,7 @@ def plot_expression_survival(
             prediction. The predicted y-value will be in the middle of
             this range, so an error band can be drawn of width
             boundary_error centered at boundary_y.
+        boundary_color (str): Color of boundary.
         scaling (str): Coefficient to multiply all data by. This is
             intended to be used for changing the units plotted.
         time_range (tuple): Tuple of two :py:class:`float`s that are
@@ -107,13 +108,14 @@ def plot_expression_survival(
     boundary_x_arr = boundary_x_arr[mask]
     boundary_y_arr = boundary_y_arr[mask]
     ax.plot(
-        boundary_x_arr * scaling, boundary_y_arr * scaling, c='black',
+        boundary_x_arr * scaling, boundary_y_arr * scaling,
+        c=boundary_color,
         label='Boundary Predicted by Antibiotics Model')
     ax.fill_between(
         boundary_x_arr * scaling,
         boundary_y_arr * scaling - boundary_error * scaling / 2,
         boundary_y_arr * scaling + boundary_error * scaling / 2,
-        color='black', alpha=0.2)
+        color=boundary_color, alpha=0.2)
     ax.legend()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -125,7 +127,7 @@ def plot_expression_survival(
 
 def plot_expression_survival_traces(
     data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
-    boundary_x, boundary_y, boundary_error,
+    boundary_x, boundary_y, boundary_error, boundary_color='black',
     scaling=1, time_range=(0, 1), agents=tuple(),
 ):
     '''Create Expression Traces Colored by Survival
@@ -155,6 +157,7 @@ def plot_expression_survival_traces(
             prediction. The predicted y-value will be in the middle of
             this range, so an error band can be drawn of width
             boundary_error centered at boundary_y.
+        boundary_color (str): Color of boundary.
         scaling (str): Coefficient to multiply all data by. This is
             intended to be used for changing the units plotted.
         time_range (tuple): Tuple of two :py:class:`float`s that are
@@ -206,13 +209,14 @@ def plot_expression_survival_traces(
     boundary_x_arr = boundary_x_arr[mask]
     boundary_y_arr = boundary_y_arr[mask]
     ax.plot(
-        boundary_x_arr * scaling, boundary_y_arr * scaling, c='black',
+        boundary_x_arr * scaling, boundary_y_arr * scaling,
+        c=boundary_color,
         label='Boundary Predicted by Antibiotics Model')
     ax.fill_between(
         boundary_x_arr * scaling,
         boundary_y_arr * scaling - boundary_error * scaling / 2,
         boundary_y_arr * scaling + boundary_error * scaling / 2,
-        color='black', alpha=0.2)
+        color=boundary_color, alpha=0.2)
     ax.legend()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
