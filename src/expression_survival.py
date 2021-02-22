@@ -201,8 +201,8 @@ def plot_expression_survival_traces(
             np.array(y_timeseries) * scaling,
             color='black',
             linewidth=0.5)
-    boundary_x_arr = np.array(sorted(boundary_x))
-    boundary_y_arr = np.array(sorted(boundary_y))
+    boundary_x_arr = np.array(boundary_x)
+    boundary_y_arr = np.array(boundary_y)
     mask = (
         (min(x_values) <= boundary_x_arr)
         & (boundary_x_arr <= max(x_values)))
