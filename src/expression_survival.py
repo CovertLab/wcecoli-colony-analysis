@@ -201,11 +201,19 @@ def plot_expression_survival_traces(
             np.array(y_timeseries) * scaling,
             color='black',
             linewidth=0.5)
-    boundary_x_arr = np.array(boundary_x)
-    boundary_y_arr = np.array(boundary_y)
+    boundary_x_arr = np.array(sorted(boundary_x))
+    boundary_y_arr = np.array(sorted(boundary_y))
     mask = (
         (min(x_values) <= boundary_x_arr)
         & (boundary_x_arr <= max(x_values)))
+    true_indices = np.where(mask)[0]
+    min_true_idx = min(true_indices)
+    max_true_idx = max(true_indices)
+    # Make sure boundary spans entire figure
+    if min_true_idx > 0:
+        mask[min_true_idx - 1] = True
+    if max_true_idx < len(mask) - 1:
+        mask[max_true_idx + 1] = True
     boundary_x_arr = boundary_x_arr[mask]
     boundary_y_arr = boundary_y_arr[mask]
     ax.plot(
