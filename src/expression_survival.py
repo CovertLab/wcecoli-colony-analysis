@@ -20,13 +20,12 @@ LIVE_COLOR = 'green'
 DEAD_COLOR = 'black'
 MARKERS = ('.', 'v', '^', 's', 'p', '*', '+', 'x', 'D')
 ALPHA = 0.5
-BOUNDARY_M = -0.1824149289775941
-BOUNDARY_B = 0.1343552138570287
 
 
 def plot_expression_survival(
     data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
-    scaling=1, time_range=(0, 1), label_agents=False,
+    boundary_x, boundary_y, boundary_error, scaling=1,
+    time_range=(0, 1), label_agents=False,
 ):
     '''Create Expression Scatterplot Colored by Survival
 
@@ -49,6 +48,16 @@ def plot_expression_survival(
             concentration. This protein will be plotted on the y axis.
         xlabel (str): Label for x-axis.
         xlabel (str): Label for y-axis.
+        boundary_x (list(float)): X-values of the boundary identified
+            numerically from the antibiotic model.
+        boundary_y (list(float)): Y-values of the boundary identified
+            numerically from the antibiotic model.
+        boundary_error (list(float)): Precision of the Y-value
+            predictions. This is the distance along the y axis between
+            the known dead point and known live point closest to the
+            prediction. The predicted y-value will be in the middle of
+            this range, so an error band can be drawn of width
+            boundary_error centered at boundary_y.
         scaling (str): Coefficient to multiply all data by. This is
             intended to be used for changing the units plotted.
         time_range (tuple): Tuple of two :py:class:`float`s that are
@@ -88,12 +97,21 @@ def plot_expression_survival(
             ax.annotate(agent, (x, y), size=1)
     averages = list(live_averages_x.values()) + list(
         dead_averages_x.values())
-    boundary_x = np.linspace(
-        min(averages) * scaling, max(averages) * scaling, 10)
-    boundary_y = BOUNDARY_M * boundary_x + BOUNDARY_B
+    boundary_x_arr = np.array(boundary_x)
+    boundary_y_arr = np.array(boundary_y)
+    mask = (
+        (min(averages) <= boundary_x_arr)
+        & (boundary_x_arr <= max(averages)))
+    boundary_x_arr = boundary_x_arr[mask]
+    boundary_y_arr = boundary_y_arr[mask]
     ax.plot(
-        boundary_x, boundary_y, c='black',
-        label='y = {}x + {}'.format(BOUNDARY_M, BOUNDARY_B))
+        boundary_x_arr * scaling, boundary_y_arr * scaling, c='black',
+        label='Boundary Predicted by Antibiotics Model')
+    ax.fill_between(
+        boundary_x_arr * scaling,
+        boundary_y_arr * scaling - boundary_error * scaling / 2,
+        boundary_y_arr * scaling + boundary_error * scaling / 2,
+        color='black', alpha=0.2)
     ax.legend()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)

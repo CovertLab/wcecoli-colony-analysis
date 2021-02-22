@@ -242,12 +242,15 @@ def make_threshold_scan_fig(data_dict):
         FIG_OUT_DIR, 'threshold_scan.{}'.format(FILE_EXTENSION)))
 
 
-def make_expression_survival_fig(data):
+def make_expression_survival_fig(data, search_data):
     '''Make expression-survival figure.'''
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Average [AcrAB-TolC] (µM)',
         'Average [AmpC] (µM)',
+        search_data['x_values'],
+        search_data['y_values'],
+        search_data['precision'],
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
     )
@@ -259,6 +262,9 @@ def make_expression_survival_fig(data):
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Average [AcrAB-TolC] (µM)',
         'Average [AmpC] (µM)',
+        search_data['x_values'],
+        search_data['y_values'],
+        search_data['precision'],
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
         label_agents=True,
@@ -408,14 +414,15 @@ def main():
         data_dict[key] = [all_data[exp_id][0] for exp_id in exp_ids]
     make_threshold_scan_fig(data_dict)
 
+    with open(args.search_data, 'r') as f:
+        search_data = json.load(f)
+
     make_expression_survival_fig(
-        all_data[EXPERIMENT_IDS['expression_survival']][0])
+        all_data[EXPERIMENT_IDS['expression_survival']][0], search_data)
 
     make_expression_survival_dotplots(
         all_data[EXPERIMENT_IDS['expression_survival']][0])
 
-    with open(args.search_data, 'r') as f:
-        search_data = json.load(f)
     make_expression_survival_scan_fig(
         *load_scan_data(args.scan_data), search_data)
 
