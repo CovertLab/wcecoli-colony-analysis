@@ -30,11 +30,8 @@ def plot_expression_survival(
     '''Create Expression Scatterplot Colored by Survival
 
     Plot one dot for each cell along an axis to indicate that cell's
-    average expression level for a specified protein. The dot color
+    final expression level for a specified protein. The dot color
     reflects whether the cell survived long enough to divide.
-
-    Note that only the expression levels while the cell is alive are
-    considered in the average.
 
     Parameters:
         data (dict): The raw data emitted from the simulation.
@@ -64,8 +61,7 @@ def plot_expression_survival(
         time_range (tuple): Tuple of two :py:class:`float`s that are
             fractions of the total simulated time period. These
             fractions indicate the start and end points (inclusive) of
-            the time range to consider when calculating average
-            expression level.
+            the time range to consider.
         label_agents (bool): Whether to label each point with the agent
             ID.
 
@@ -161,8 +157,7 @@ def plot_expression_survival_traces(
         time_range (tuple): Tuple of two :py:class:`float`s that are
             fractions of the total simulated time period. These
             fractions indicate the start and end points (inclusive) of
-            the time range to consider when calculating average
-            expression level.
+            the time range to consider.
         agents (Iterable): The agent IDs of the agents to plot traces
             for.
 
@@ -239,11 +234,11 @@ def plot_expression_survival_dotplot(
     '''Create Expression Dotplot Colored by Survival
 
     Plot one dot for each cell along an axis to indicate that cell's
-    average expression level for a specified protein. The dot color
+    final expression level for a specified protein. The dot color
     reflects whether the cell survived long enough to divide.
 
     Note that only the expression levels while the cell is alive are
-    considered in the average.
+    considered.
 
     Parameters:
         data (dict): The raw data emitted from the simulation.
@@ -257,23 +252,22 @@ def plot_expression_survival_dotplot(
         time_range (tuple): Tuple of two :py:class:`float`s that are
             fractions of the total simulated time period. These
             fractions indicate the start and end points (inclusive) of
-            the time range to consider when calculating average
-            expression level.
+            the time range to consider.
 
     Returns:
         plt.Figure: The finished figure.
     '''
-    live_averages, dead_averages = calc_live_and_dead_averages(
+    live_finals, dead_finals = calc_live_and_dead_finals(
         data, path_to_variable, time_range)
     fig, ax = plt.subplots(figsize=(6, 2))
     ax.scatter(
-        np.array(list(live_averages.values())) * scaling,
-        [0.1] * len(live_averages),
+        np.array(list(live_finals.values())) * scaling,
+        [0.1] * len(live_finals),
         label='Survive', color=LIVE_COLOR, alpha=ALPHA,
     )
     ax.scatter(
-        np.array(list(dead_averages.values())) * scaling,
-        [0.1] * len(dead_averages),
+        np.array(list(dead_finals.values())) * scaling,
+        [0.1] * len(dead_finals),
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
     ax.legend()
@@ -285,36 +279,6 @@ def plot_expression_survival_dotplot(
     ax.spines['bottom'].set_position('zero')
     fig.tight_layout()
     return fig
-
-
-def calc_live_and_dead_averages(data, path_to_variable, time_range):
-    expression_levels = dict()
-    die = set()
-    end_time = max(data.keys())
-    for time, time_data in data.items():
-        if (time < time_range[0] * end_time
-                or time > time_range[1] * end_time):
-            continue
-        agents_data = get_in(time_data, PATH_TO_AGENTS)
-        for agent, agent_data in agents_data.items():
-            lst = expression_levels.setdefault(agent, [])
-            value = get_in(agent_data, path_to_variable)
-            if get_in(agent_data, PATH_TO_DEAD, False):
-                die.add(agent)
-            # Only count values when cell is alive
-            elif value is not None:
-                lst.append(value)
-
-    live_averages = {}
-    dead_averages = {}
-    for agent, levels in expression_levels.items():
-        if not levels:
-            continue
-        if agent in die:
-            dead_averages[agent] = np.mean(levels)
-        else:
-            live_averages[agent] = np.mean(levels)
-    return live_averages, dead_averages
 
 
 def calc_live_and_dead_finals(data, path_to_variable, time_range):
