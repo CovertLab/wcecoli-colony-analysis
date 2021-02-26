@@ -55,6 +55,7 @@ AGENTS_TO_TRACE = (
     '0_wcecoli101111')
 COLONY_MASS_PATH = ('mass',)
 EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
+NUM_SNAPSHOTS = 5
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
 EXPERIMENT_IDS = {
@@ -156,6 +157,7 @@ def make_expression_heterogeneity_fig(
         'tag_path_name_map': TAG_PATH_NAME_MAP,
         'tag_label_size': 48,
         'default_font_size': 48,
+        'n_snapshots': NUM_SNAPSHOTS,
         'hues': {
             tag: mcolors.rgb_to_hsv(mcolors.to_rgb(colors[i]))[0]
             for i, tag in enumerate(tagged_molecules)
@@ -221,6 +223,7 @@ def make_snapshots_figure(
         'default_font_size': 54,
         'agent_fill_color': agent_fill_color,
         'agent_alpha': agent_alpha,
+        'n_snapshots': NUM_SNAPSHOTS,
     }
     plot_snapshots(snapshots_data, plot_config)
 
