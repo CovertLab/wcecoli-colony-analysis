@@ -17,7 +17,6 @@ from vivarium_cell.analysis.analyze import Analyzer
 from src.expression_survival import (
     plot_expression_survival,
     plot_expression_survival_dotplot,
-    plot_expression_survival_traces,
 )
 from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
 from src.total_mass import get_total_mass_plot
@@ -256,6 +255,7 @@ def make_expression_survival_fig(data, search_data):
         boundary_color=COLORS['magenta'],
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
+        trace_agents=AGENTS_TO_TRACE,
     )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival.{}'.format(
@@ -275,21 +275,6 @@ def make_expression_survival_fig(data, search_data):
     )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival_labeled.{}'.format(
-            FILE_EXTENSION)
-    ))
-    fig = plot_expression_survival_traces(
-        data, PUMP_PATH, BETA_LACTAMASE_PATH,
-        'Average [AcrAB-TolC] (µM)',
-        'Average [AmpC] (µM)',
-        search_data['x_values'],
-        search_data['y_values'],
-        search_data['precision'],
-        boundary_color=COLORS['magenta'],
-        scaling=1e3,
-        time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
-        agents=AGENTS_TO_TRACE)
-    fig.savefig(os.path.join(
-        FIG_OUT_DIR, 'expression_survival_trace.{}'.format(
             FILE_EXTENSION)
     ))
 
