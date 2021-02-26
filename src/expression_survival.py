@@ -248,9 +248,7 @@ def calc_live_and_dead_finals(data, path_to_variable, time_range):
             value = get_in(agent_data, path_to_variable)
             if get_in(agent_data, PATH_TO_DEAD, False):
                 die.add(agent)
-            # Only count values when cell is alive
-            elif value is not None:
-                agent_values[time] = value
+            agent_values[time] = value
 
     live_finals = {}
     dead_finals = {}
