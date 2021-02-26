@@ -93,6 +93,7 @@ def plot_phylogeny(
     tstyle.show_scale = False
     tstyle.show_leaf_name = False
     tstyle.scale = 10
+    tstyle.mode = 'c'
     for node in tree.traverse():
         nstyle=NodeStyle()
         nstyle['size'] = 5
