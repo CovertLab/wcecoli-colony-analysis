@@ -5,8 +5,6 @@ Expression Dotplot Colored by Survival
 
 Adapted from vivarium-cell.
 '''
-from bisect import bisect_left, bisect_right
-
 from matplotlib import pyplot as plt
 import numpy as np
 
@@ -74,37 +72,37 @@ def plot_expression_survival(
     Returns:
         plt.Figure: The finished figure.
     '''
-    live_averages_x, dead_averages_x = calc_live_and_dead_averages(
+    live_finals_x, dead_finals_x = calc_live_and_dead_finals(
         data, path_to_x_variable, time_range)
-    live_averages_y, dead_averages_y = calc_live_and_dead_averages(
+    live_finals_y, dead_finals_y = calc_live_and_dead_finals(
         data, path_to_y_variable, time_range)
     fig, ax = plt.subplots()
     ax.scatter(
-        np.array(list(live_averages_x.values())) * scaling,
-        np.array(list(live_averages_y.values())) * scaling,
+        np.array(list(live_finals_x.values())) * scaling,
+        np.array(list(live_finals_y.values())) * scaling,
         label='Survive', color=LIVE_COLOR, alpha=ALPHA,
     )
     ax.scatter(
-        np.array(list(dead_averages_x.values())) * scaling,
-        np.array(list(dead_averages_y.values())) * scaling,
+        np.array(list(dead_finals_x.values())) * scaling,
+        np.array(list(dead_finals_y.values())) * scaling,
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
     if label_agents:
-        for agent in live_averages_x:
-            x = live_averages_x[agent] * scaling
-            y = live_averages_y[agent] * scaling
+        for agent in live_finals_x:
+            x = live_finals_x[agent] * scaling
+            y = live_finals_y[agent] * scaling
             ax.annotate(agent, (x, y), size=1)
-        for agent in dead_averages_x:
-            x = dead_averages_x[agent] * scaling
-            y = dead_averages_y[agent] * scaling
+        for agent in dead_finals_x:
+            x = dead_finals_x[agent] * scaling
+            y = dead_finals_y[agent] * scaling
             ax.annotate(agent, (x, y), size=1)
-    averages = list(live_averages_x.values()) + list(
-        dead_averages_x.values())
+    finals = list(live_finals_x.values()) + list(
+        dead_finals_x.values())
     boundary_x_arr = np.array(boundary_x)
     boundary_y_arr = np.array(boundary_y)
     mask = (
-        (min(averages) <= boundary_x_arr)
-        & (boundary_x_arr <= max(averages)))
+        (min(finals) <= boundary_x_arr)
+        & (boundary_x_arr <= max(finals)))
     boundary_x_arr = boundary_x_arr[mask]
     boundary_y_arr = boundary_y_arr[mask]
     ax.plot(
@@ -207,13 +205,14 @@ def plot_expression_survival_traces(
         (min(x_values) <= boundary_x_arr)
         & (boundary_x_arr <= max(x_values)))
     true_indices = np.where(mask)[0]
-    min_true_idx = min(true_indices)
-    max_true_idx = max(true_indices)
-    # Make sure boundary spans entire figure
-    if min_true_idx > 0:
-        mask[min_true_idx - 1] = True
-    if max_true_idx < len(mask) - 1:
-        mask[max_true_idx + 1] = True
+    if true_indices:
+        min_true_idx = min(true_indices)
+        max_true_idx = max(true_indices)
+        # Make sure boundary spans entire figure
+        if min_true_idx > 0:
+            mask[min_true_idx - 1] = True
+        if max_true_idx < len(mask) - 1:
+            mask[max_true_idx + 1] = True
     boundary_x_arr = boundary_x_arr[mask]
     boundary_y_arr = boundary_y_arr[mask]
     ax.plot(
@@ -300,8 +299,6 @@ def calc_live_and_dead_averages(data, path_to_variable, time_range):
         for agent, agent_data in agents_data.items():
             lst = expression_levels.setdefault(agent, [])
             value = get_in(agent_data, path_to_variable)
-            if value is not None:
-                lst.append(value)
             if get_in(agent_data, PATH_TO_DEAD, False):
                 die.add(agent)
             # Only count values when cell is alive
@@ -318,3 +315,34 @@ def calc_live_and_dead_averages(data, path_to_variable, time_range):
         else:
             live_averages[agent] = np.mean(levels)
     return live_averages, dead_averages
+
+
+def calc_live_and_dead_finals(data, path_to_variable, time_range):
+    values = {}
+    die = set()
+
+    end_time = max(data.keys())
+    for time, time_data in data.items():
+        if (time < time_range[0] * end_time
+                or time > time_range[1] * end_time):
+            continue
+        agents_data = get_in(time_data, PATH_TO_AGENTS)
+        for agent, agent_data in agents_data.items():
+            agent_values = values.setdefault(agent, {})
+            value = get_in(agent_data, path_to_variable)
+            if get_in(agent_data, PATH_TO_DEAD, False):
+                die.add(agent)
+            # Only count values when cell is alive
+            elif value is not None:
+                agent_values[time] = value
+
+    live_finals = {}
+    dead_finals = {}
+    for agent, agent_values in values.items():
+        if not agent_values:
+            continue
+        if agent in die:
+            dead_finals[agent] = agent_values[max(agent_values.keys())]
+        else:
+            live_finals[agent] = agent_values[max(agent_values.keys())]
+    return live_finals, dead_finals
