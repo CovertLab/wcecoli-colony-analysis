@@ -205,7 +205,7 @@ def plot_expression_survival_traces(
         (min(x_values) <= boundary_x_arr)
         & (boundary_x_arr <= max(x_values)))
     true_indices = np.where(mask)[0]
-    if true_indices:
+    if len(true_indices) > 0:
         min_true_idx = min(true_indices)
         max_true_idx = max(true_indices)
         # Make sure boundary spans entire figure
