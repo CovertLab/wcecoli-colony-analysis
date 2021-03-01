@@ -157,7 +157,6 @@ def make_expression_heterogeneity_fig(
         'filename': '{}.{}'.format(name_base, FILE_EXTENSION),
         'tag_path_name_map': TAG_PATH_NAME_MAP,
         'tag_label_size': 48,
-        'background_color': 'gray',
         'default_font_size': 48,
         'n_snapshots': NUM_SNAPSHOTS,
         'hues': {
