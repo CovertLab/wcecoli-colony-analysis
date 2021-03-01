@@ -88,6 +88,7 @@ EXPERIMENT_IDS = {
     'phylogeny': '20201228.211700',
 }
 METADATA_FILE = 'metadata.json'
+STATS_FILE = 'stats.json'
 
 
 def exec_shell(tokens, timeout=10):
@@ -235,16 +236,18 @@ def make_growth_fig(basal_data, anaerobic_data):
         'basal': basal_data,
         'anaerobic': anaerobic_data,
     }
-    fig = get_total_mass_plot(data_dict, tuple(COLORS.values()))
+    fig, stats = get_total_mass_plot(data_dict, tuple(COLORS.values()))
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'growth.{}'.format(FILE_EXTENSION)))
+    return stats
 
 
 def make_threshold_scan_fig(data_dict):
     '''Plot colony mass curves with various antibiotic thresholds.'''
-    fig = get_total_mass_plot(data_dict, tuple(COLORS.values()))
+    fig, stats = get_total_mass_plot(data_dict, tuple(COLORS.values()))
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'threshold_scan.{}'.format(FILE_EXTENSION)))
+    return stats
 
 
 def make_expression_survival_fig(data, search_data):
@@ -350,6 +353,7 @@ def main():
         os.makedirs(FIG_OUT_DIR)
     with open(os.path.join(FIG_OUT_DIR, METADATA_FILE), 'w') as f:
         json.dump(get_metadata(), f, indent=4)
+    stats = {}
     parser = argparse.ArgumentParser()
     Analyzer.add_connection_args(parser)
     parser.add_argument(
@@ -391,7 +395,7 @@ def main():
         all_data[experiment_id][0]
         for experiment_id in EXPERIMENT_IDS['growth_anaerobic']
     ]
-    make_growth_fig(basal_data, anaerobic_data)
+    stats['growth_fig'] = make_growth_fig(basal_data, anaerobic_data)
 
     for i, experiment_id in enumerate(
             EXPERIMENT_IDS['enviro_heterogeneity']):
@@ -409,7 +413,7 @@ def main():
     data_dict = dict()
     for key, exp_ids in EXPERIMENT_IDS['threshold_scan'].items():
         data_dict[key] = [all_data[exp_id][0] for exp_id in exp_ids]
-    make_threshold_scan_fig(data_dict)
+    stats['threshold_scan'] = make_threshold_scan_fig(data_dict)
 
     with open(args.search_data, 'r') as f:
         search_data = json.load(f)
@@ -429,6 +433,9 @@ def main():
     make_snapshots_figure(
         *all_data[EXPERIMENT_IDS['death_snapshots']],
         'death_snapshots', ['nitrocefin'], 'green')
+
+    with open(os.path.join(FIG_OUT_DIR, STATS_FILE), 'w') as f:
+        json.dump(stats, f, indent=4)
 
 
 if __name__ == '__main__':
