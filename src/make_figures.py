@@ -83,9 +83,9 @@ EXPERIMENT_IDS = {
         '0.05 mM': (
             '20210206.045834', '20210219.151929', '20210220.153658'),
     },
-    'expression_survival': '20201228.211700',
-    'death_snapshots': '20201228.211700',
-    'phylogeny': '20201228.211700',
+    'expression_survival': '20210301.030213',
+    'death_snapshots': '20210301.030213',
+    'phylogeny': '20210301.030213',
 }
 METADATA_FILE = 'metadata.json'
 STATS_FILE = 'stats.json'
