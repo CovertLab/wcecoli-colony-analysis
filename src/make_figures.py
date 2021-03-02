@@ -11,6 +11,7 @@ import sys
 import subprocess
 
 from matplotlib import colors as mcolors
+from vivarium.core.process import serialize_value
 from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
 
@@ -435,7 +436,7 @@ def main():
         'death_snapshots', ['nitrocefin'], 'green')
 
     with open(os.path.join(FIG_OUT_DIR, STATS_FILE), 'w') as f:
-        json.dump(stats, f, indent=4)
+        json.dump(serialize_value(stats), f, indent=4)
 
 
 if __name__ == '__main__':
