@@ -60,8 +60,8 @@ def get_total_mass_plot(
 
     Returns:
         A tuple of the figure and a dictionary that maps from group
-        label to tuples of the first and third quartiles of that group's
-        data.
+        label to tuples of the first, second, and third quartiles of
+        that group's data.
     '''
     fig, ax = plt.subplots()
     quartiles = {}
@@ -74,9 +74,9 @@ def get_total_mass_plot(
                 if key != min(replicate.keys())
             })
             filtered_replicates.append(filtered)
-        q25, q75 = plot_total_mass(
+        label_quartiles = plot_total_mass(
             filtered_replicates, ax, label, colors[i])
-        quartiles[label] = q25, q75
+        quartiles[label] = label_quartiles
     ax.set_ylabel('Total Cell Mass (fg)')
     ax.set_xlabel('Time (s)')
     fig.tight_layout()
@@ -85,7 +85,7 @@ def get_total_mass_plot(
 
 def plot_total_mass(
         replicates: List[RawData], ax: plt.Axes, label='',
-        color='black') -> Tuple[np.ndarray, np.ndarray]:
+        color='black') -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     '''Plot total mass data on an existing set of axes.
 
     Plots the median surrounded by a translucent band indicating the
@@ -100,8 +100,7 @@ def plot_total_mass(
         color: Color of median curve and IQR band.
 
     Returns:
-        A tuple of numpy arrays. The first is the first quartile, and
-        the second is the third.
+        A tuple of a numpy array for each quartile.
     '''
     times = sorted(replicates[0].keys())
     mass_timeseries = []
@@ -122,4 +121,4 @@ def plot_total_mass(
         ax.semilogy(times, mass_timeseries, color=color)  # type: ignore
         ax.fill_between(  # type: ignore
             times, q25, q75, color=color, alpha=0.2, edgecolor='none')
-    return cast(np.ndarray, q25), cast(np.ndarray, q75)
+    return cast(np.ndarray, q25), median, cast(np.ndarray, q75)

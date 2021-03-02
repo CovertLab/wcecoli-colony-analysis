@@ -9,8 +9,10 @@ import json
 import os
 import sys
 import subprocess
+from typing import Sequence, List, Dict, Tuple
 
 from matplotlib import colors as mcolors
+import numpy as np
 from vivarium.core.process import serialize_value
 from vivarium.core.experiment import get_in
 from vivarium_cell.analysis.analyze import Analyzer
@@ -169,6 +171,25 @@ def make_expression_heterogeneity_fig(
     plot_tags(tags_data, plot_config)
 
 
+def _calculate_distribution_stats(
+        replicates_data: List[Tuple[Dict[str, Sequence[float]], str]]
+        ) -> dict:
+    stats = {}
+    keys = replicates_data[0][0].keys()
+    for replicate, _ in replicates_data:
+        assert replicate.keys() == keys
+    for key in keys:
+        key_replicates = [
+            replicate[key]
+            for replicate, _ in replicates_data
+        ]
+        quartiles = np.percentile(
+            np.array(key_replicates),  # type: ignore
+            [25, 50, 75])
+        stats[key] = quartiles
+    return stats
+
+
 def make_expression_distributions_fig(replicates_raw_data):
     '''Figure shows the distributions of expression values.'''
     replicates_data = []
@@ -184,6 +205,7 @@ def make_expression_distributions_fig(replicates_raw_data):
             if key != VOLUME_KEY
         }
         replicates_data.append((data, color))
+    stats = _calculate_distribution_stats(replicates_data)
     fig = get_ridgeline_plot(
         replicates_data,
         point_alpha=1,
@@ -198,6 +220,7 @@ def make_expression_distributions_fig(replicates_raw_data):
             'expression_distributions.{}'.format(FILE_EXTENSION),
         )
     )
+    return stats
 
 
 def make_snapshots_figure(
@@ -334,11 +357,12 @@ def make_environment_section(data, base_name):
                 if name in ENVIRONMENT_SECTION_FIELDS
             }
     bounds = get_in(data[0][t_final], BOUNDS_PATH)
-    fig = get_enviro_sections_plot(fields_ts, bounds,
+    fig, stats = get_enviro_sections_plot(fields_ts, bounds,
         section_location=0.5)
     fig.savefig(
         os.path.join(FIG_OUT_DIR, '{}.{}'.format(
             base_name, FILE_EXTENSION)))
+    return stats
 
 
 def make_phylogeny_plot(data):
@@ -370,7 +394,10 @@ def main():
     for experiment_id in EXPERIMENT_IDS['expression_distributions']:
         data, _ = all_data[experiment_id]
         expression_distribution_data.append(data)
-    make_expression_distributions_fig(expression_distribution_data)
+    stats['expression_distributions'] = (
+        make_expression_distributions_fig(
+            expression_distribution_data
+        ))
 
     for i, experiment_id in enumerate(
             EXPERIMENT_IDS['expression_heterogeneity']):
@@ -408,7 +435,7 @@ def main():
     for i, experiment_id in enumerate(
             EXPERIMENT_IDS['enviro_section']):
         enviro_section_data.append(all_data[experiment_id][0])
-    make_environment_section(
+    stats['enviro_section'] = make_environment_section(
         enviro_section_data, 'enviro_section')
 
     data_dict = dict()

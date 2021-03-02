@@ -1,4 +1,4 @@
-from typing import Dict, Sequence, Union, List
+from typing import Dict, Sequence, Union, List, Tuple, cast
 
 from matplotlib import pyplot as plt
 from matplotlib import cm
@@ -8,7 +8,7 @@ import numpy as np
 
 SerializedField = Union[
     Sequence[Sequence[int]], Sequence[Sequence[float]]]
-DEFAULT_COLORMAP = cm.get_cmap('Greys')
+DEFAULT_COLORMAP = cm.get_cmap('Greys')  # type: ignore
 # This avoids plotting data in white
 MIN_COLOR_NORMALIZED = 0.2
 
@@ -17,11 +17,28 @@ def get_enviro_sections_plot(
         fields_ts_list: List[Dict[int, Dict[str, SerializedField]]],
         bounds: Sequence,
         section_location: float = 0.5,
-        cmap: Colormap = DEFAULT_COLORMAP) -> plt.Figure:
+        cmap: Colormap = DEFAULT_COLORMAP) -> Tuple[plt.Figure, dict]:
+    '''Get Environment Cross-Sections Plot
+
+    Args:
+        fields_ts_list: List of fields timeseries, one timeseries per
+            replicate.
+        bounds: The (x, y) bounds of the environment.
+        section_location: Location along vertical axis of cross-section
+            slice. Expressed as a fraction of the vertical height of the
+            environment.
+        cmap: Colormap from which to draw the colors used to represent
+            each timepoint.
+
+    Returns:
+        Tuple of the generated figure and a dictionary of statistics.
+        The dictionary maps from times to tuples of the first and third
+        quartiles of data across replicates.
+    '''
     sorted_times = sorted(fields_ts_list[0].keys())
     some_timepoint = fields_ts_list[0][sorted_times[0]]
     some_field = some_timepoint[list(some_timepoint.keys())[0]]
-    num_bins = np.array(some_field).shape
+    num_bins = np.array(some_field).shape  # type: ignore
     bin_width = bounds[0] / num_bins[0]
     x = []
     for i in range(num_bins[0]):
@@ -35,9 +52,10 @@ def get_enviro_sections_plot(
         for field in all_fields:
             y_values[field] = []
             for fields_ts in fields_ts_list:
-                matrix = np.array(fields_ts[time][field])
+                matrix = np.array(  # type: ignore
+                    fields_ts[time][field])
                 # Skip infinite fields
-                if np.any(np.isinf(matrix)):
+                if np.any(np.isinf(matrix)):  # type: ignore
                     continue
                 assert matrix.shape == num_bins
                 section_index = int(section_location * matrix.shape[0])
@@ -46,11 +64,14 @@ def get_enviro_sections_plot(
     field_names = list(y_values_ts[sorted_times[0]].keys())
     num_fields = len(field_names)
     figsize=(num_bins[1], num_fields * 4)
-    fig, axes = plt.subplots(
+    fig, tmp_axes = plt.subplots(
         num_fields, sharex=True, figsize=figsize)
+    # We assume axes is a list
     if num_fields == 1:
-        # We assume axes is a list
-        axes = [axes]
+        axes: List[plt.Axes] = [cast(plt.Axes, tmp_axes)]
+    else:
+        axes = tmp_axes
+    stats = {}
     for time in sorted_times:
         color_normalized = (
             (1 - MIN_COLOR_NORMALIZED)
@@ -62,10 +83,12 @@ def get_enviro_sections_plot(
             y_matrix = np.array(y_list)
             median = np.median(y_matrix, axis=0)
             q25, q75 = np.percentile(y_matrix, [25, 75], axis=0)
+            stats[time] = q25, q75
             ax = axes[field_i]
-            ax.plot(x, median, 'o', color=color, linestyle='-',
-                    label='{}s'.format(time))
-            ax.fill_between(
+            ax.plot(  # type: ignore
+                x, median, 'o', color=color, linestyle='-',
+                label='{}s'.format(time))
+            ax.fill_between(  # type: ignore
                 x, q25, q75, color=color, alpha=0.2, edgecolor='none')
     for i, ax in enumerate(axes):
         if num_fields != 1:
@@ -74,7 +97,9 @@ def get_enviro_sections_plot(
             ax.set_xlabel('Environment Horizontal Axis ($\\mu m$)')
             ax.legend(bbox_to_anchor=(1.5, 1), loc='upper right')
     # Make y label centered across all subplots
-    super_ax = fig.add_subplot(111, xticks=[], yticks=[], frameon=False)
-    super_ax.set_ylabel('Concentration ($mM$)', labelpad=75)
+    super_ax = fig.add_subplot(  # type: ignore
+        111, xticks=[], yticks=[], frameon=False)
+    super_ax.set_ylabel(  # type: ignore
+        'Concentration ($mM$)', labelpad=75)
     fig.tight_layout()
-    return fig
+    return fig, stats
