@@ -97,8 +97,8 @@ def plot_phylogeny(
     for node in tree.traverse():
         nstyle=NodeStyle()
         nstyle['size'] = 5
-        nstyle['vt_line_width'] = 3
-        nstyle['hz_line_width'] = 3
+        nstyle['vt_line_width'] = 1
+        nstyle['hz_line_width'] = 1
         if node.name in in_time_range_ids:
             if node.name in dead_ids:
                 nstyle['fgcolor'] = dead_color
