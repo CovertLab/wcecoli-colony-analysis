@@ -31,6 +31,7 @@ from src.ridgeline import get_ridgeline_plot
 from src.expression_survival_scan import (
     load_scan_data, plot_expression_survival_scan)
 from src.plot_snapshots import plot_snapshots, plot_tags
+from src.centrality import get_survival_against_centrality_plot
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
@@ -89,6 +90,7 @@ EXPERIMENT_IDS = {
     },
     'expression_survival': '20210301.030213',
     'death_snapshots': '20210301.030213',
+    'centrality': '20210301.030213',
     'phylogeny': '20210301.030213',
 }
 METADATA_FILE = 'metadata.json'
@@ -341,6 +343,15 @@ def make_expression_survival_scan_fig(data, parameters, search_data):
     ))
 
 
+def make_survival_centrality_fig(data):
+    '''Plot centrality figure.'''
+    fig = get_survival_against_centrality_plot(data)
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR,
+        'survival_centrality.{}'.format(FILE_EXTENSION)
+    ))
+
+
 def make_environment_section(data, base_name):
     '''Plot field concentrations in cross-section of final enviro.'''
     t_final = max(data[0].keys())
@@ -461,6 +472,9 @@ def main():
     make_snapshots_figure(
         *all_data[EXPERIMENT_IDS['death_snapshots']],
         'death_snapshots', ['nitrocefin'], 'green')
+
+    make_survival_centrality_fig(
+        all_data[EXPERIMENT_IDS['centrality']][0])
 
     with open(os.path.join(FIG_OUT_DIR, STATS_FILE), 'w') as f:
         json.dump(serialize_value(stats), f, indent=4)
