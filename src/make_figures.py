@@ -439,7 +439,7 @@ def main():
             EXPERIMENT_IDS['enviro_heterogeneity']):
         make_snapshots_figure(
             *all_data[experiment_id],
-            'enviro_heterogeneity_{}'.format(i), ['GLC'], 'black', 0.2)
+            'enviro_heterogeneity_{}'.format(i), ['GLC'], 'green', 0.4)
 
     enviro_section_data = []
     for i, experiment_id in enumerate(
