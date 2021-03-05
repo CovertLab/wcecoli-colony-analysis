@@ -92,7 +92,8 @@ def plot_phylogeny(
     tstyle = TreeStyle()
     tstyle.show_scale = False
     tstyle.show_leaf_name = False
-    tstyle.scale = 10
+    tstyle.scale = None
+    tstyle.optimal_scale_level = 'full'  # Avoid artificial branches
     tstyle.mode = 'c'
     for node in tree.traverse():
         nstyle=NodeStyle()
