@@ -46,7 +46,8 @@ def extract_spatial_data(data: RawData) -> Tuple[Locations, Locations]:
 
 
 def extract_center(data: RawData) -> Location:
-    bounds = get_in(data, BOUNDS_PATH)
+    end_time = max(data.keys())
+    bounds = get_in(data[end_time], BOUNDS_PATH)
     x, y = bounds
     return x / 2, y / 2
 
