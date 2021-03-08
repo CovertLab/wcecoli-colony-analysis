@@ -23,6 +23,7 @@ def get_survival_against_centrality_plot(data: RawData) -> plt.Figure:
     fig, ax = plt.subplots()
     plot_survival_against_centrality(
         survive_locations, die_locations, center, ax)
+    fig.tight_layout()
     return fig
 
 
@@ -73,8 +74,9 @@ def plot_survival_against_centrality(
     else:
         to_plot.append([])
 
+    median_props = {'color': 'black'}
     ax.boxplot(  # type: ignore
-        to_plot, labels=['Survive', 'Die'])
+        to_plot, labels=['Survive', 'Die'], medianprops=median_props)
     for i, y_values in enumerate(to_plot):
         ax.scatter(
             np.random.normal(i + 1, 0.04, size=len(y_values)),
