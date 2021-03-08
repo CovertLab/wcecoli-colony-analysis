@@ -68,7 +68,7 @@ def plot_survival_against_centrality(
     else:
         to_plot.append([])
     if len(die_array) != 0:
-        to_plot.append(die_distances = np.linalg.norm(  # type: ignore
+        to_plot.append(np.linalg.norm(  # type: ignore
             die_array - center_array, ord=2, axis=1)
         )
     else:
