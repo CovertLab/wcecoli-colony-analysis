@@ -83,6 +83,8 @@ def get_total_mass_plot(
     ax.set_ylabel(  # type: ignore
         'Total Cell Mass (fg)', fontsize=fontsize)
     ax.set_xlabel('Time (s)', fontsize=fontsize)  # type: ignore
+    for spine_name in ('top', 'right'):
+        ax.spines[spine_name].set_visible(False)  # type: ignore
     fig.tight_layout()
     return fig, quartiles
 
@@ -125,7 +127,7 @@ def plot_total_mass(
             times, median, label=label, color=color)
         ax.fill_between(  # type: ignore
             times, q25, q75, color=color, alpha=0.2, edgecolor='none')
-        ax.legend(prop={'size': fontsize})
+        ax.legend(prop={'size': fontsize})  # type: ignore
     else:
         ax.semilogy(times, mass_timeseries, color=color)  # type: ignore
         ax.fill_between(  # type: ignore
