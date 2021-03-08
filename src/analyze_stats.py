@@ -6,10 +6,12 @@ import numpy as np
 
 def analyze_expression_distributions_stats(stats: dict) -> dict:
     summary = {}
-    for protein, (q1, q2, q3) in stats.items():
+    for protein, (minimum, q1, q2, q3, maximum) in stats.items():
         summary[protein] = {
             'Median Concentration (counts/fL)': q2,
             'IQR': q3 - q1,
+            'Minimum': minimum,
+            'Maximum': maximum,
         }
     return summary
 

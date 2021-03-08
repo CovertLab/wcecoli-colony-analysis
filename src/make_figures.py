@@ -184,10 +184,17 @@ def _calculate_distribution_stats(
             replicate[key]
             for replicate, _ in replicates_data
         ]
-        quartiles = np.percentile(
-            np.array(key_replicates),  # type: ignore
-            [25, 50, 75])
-        stats[key] = quartiles
+        key_replicates_array = np.array(key_replicates)  # type: ignore
+        q1, q2, q3 = np.percentile(
+            key_replicates_array,
+            [25, 50, 75],
+            axis=1,
+        )
+        stats[key] = (
+            key_replicates_array.min(axis=1),  # type: ignore
+            q1, q2, q3,
+            key_replicates_array.max(axis=1),  # type: ignore
+        )
     return stats
 
 
@@ -201,7 +208,7 @@ def make_expression_distributions_fig(replicates_raw_data):
             raw_data,
             {val: key for key, val in TAG_PATH_NAME_MAP.items()})
         data = {
-            key: end_expression_table[key]
+            key: end_expression_table[key].tolist()
             for key in end_expression_table.columns
             if key != VOLUME_KEY
         }
