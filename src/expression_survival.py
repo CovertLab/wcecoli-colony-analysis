@@ -25,7 +25,7 @@ ALPHA = 0.5
 def plot_expression_survival(
     data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
     boundary_x, boundary_y, boundary_error, boundary_color='black',
-    scaling=1, time_range=(0, 1), label_agents=False,
+    scaling=1, time_range=(0, 1), label_agents=False, fontsize=36,
     trace_agents=tuple(),
 ):
     '''Create Expression Scatterplot Colored by Survival
@@ -67,6 +67,7 @@ def plot_expression_survival(
             ID.
         trace_agents (Iterable): The agent IDs of the agents to plot
             traces for.
+        fontsize (float): Text size for entire figure.
 
     Returns:
         plt.Figure: The finished figure.
@@ -90,11 +91,11 @@ def plot_expression_survival(
         for agent in live_finals_x:
             x = live_finals_x[agent] * scaling
             y = live_finals_y[agent] * scaling
-            ax.annotate(agent, (x, y), size=1)
+            ax.annotate(agent, (x, y), size=0.1)
         for agent in dead_finals_x:
             x = dead_finals_x[agent] * scaling
             y = dead_finals_y[agent] * scaling
-            ax.annotate(agent, (x, y), size=1)
+            ax.annotate(agent, (x, y), size=0.1)
     plot_expression_survival_traces(ax, data, path_to_x_variable,
             path_to_y_variable, scaling, time_range, trace_agents,
             LIVE_COLOR)
@@ -125,9 +126,10 @@ def plot_expression_survival(
         boundary_y_arr * scaling - boundary_error * scaling / 2,
         boundary_y_arr * scaling + boundary_error * scaling / 2,
         color=boundary_color, alpha=0.2)
-    ax.legend()
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.legend(prop={'size': fontsize})
+    ax.set_xlabel(xlabel, fontsize=fontsize)
+    ax.set_ylabel(ylabel, fontsize=fontsize)
+    ax.tick_params(axis='both', which='major', labelsize=fontsize)
     for spine_name in ('top', 'right'):
         ax.spines[spine_name].set_visible(False)
     fig.tight_layout()
@@ -181,7 +183,8 @@ def plot_expression_survival_traces(
 
 
 def plot_expression_survival_dotplot(
-    data, path_to_variable, xlabel, scaling=1, time_range=(0, 1)
+    data, path_to_variable, xlabel, scaling=1, time_range=(0, 1),
+    fontsize=36
 ):
     '''Create Expression Dotplot Colored by Survival
 
@@ -205,6 +208,7 @@ def plot_expression_survival_dotplot(
             fractions of the total simulated time period. These
             fractions indicate the start and end points (inclusive) of
             the time range to consider.
+        fontsize (float): size of all text in figure.
 
     Returns:
         plt.Figure: The finished figure.
@@ -222,8 +226,8 @@ def plot_expression_survival_dotplot(
         [0.1] * len(dead_finals),
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
-    ax.legend()
-    ax.set_xlabel(xlabel)
+    ax.legend(prop={'size': fontsize})
+    ax.set_xlabel(xlabel, fontsize=fontsize)
     ax.set_ylim([0, 1.25])
     ax.get_yaxis().set_visible(False)
     for spine_name in ('left', 'top', 'right'):

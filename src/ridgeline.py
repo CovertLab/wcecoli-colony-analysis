@@ -54,6 +54,8 @@ def get_ridgeline_plot(
         figsize: Optional[Tuple[Number, Number]] = None,
         x_label: str = '',
         y_label: str = '',
+        data_bounds: Optional[Tuple[Number, Number]] = None,
+        fontsize: float = 36,
         ) -> plt.Figure:
     '''Generate a ridgeline plot.
 
@@ -84,11 +86,11 @@ def get_ridgeline_plot(
     colors = [replicate[1] for replicate in replicates]
     plot_ridgeline(
         data, ax, colors, 0.2, point_alpha, num_bins, overlap,
-        horizontal_extra, jitter)
+        horizontal_extra, jitter, data_bounds, fontsize)
     if x_label:
-        ax.set_xlabel(x_label)
+        ax.set_xlabel(x_label, fontsize=fontsize)  # type: ignore
     if y_label:
-        ax.set_ylabel(y_label)
+        ax.set_ylabel(y_label, fontsize=fontsize)  # type: ignore
     for spine_name in ('top', 'right'):
         ax.spines[spine_name].set_visible(False)  # type: ignore
     fig.tight_layout()
@@ -139,6 +141,7 @@ def plot_ridgeline(
         horizontal_extra: float = 0.2,
         jitter: Optional[float] = None,
         data_bounds: Optional[Tuple[Number, Number]] = None,
+        fontsize: float = 36,
         ) -> None:
     '''Plot data as a ridgeline plot.
 
@@ -176,6 +179,7 @@ def plot_ridgeline(
             If ``None``, the range is calculated from ``data``. This may
             be useful when ``data`` is only some of the data that will
             be plotted, e.g. with replicates.
+        fontsize: The size to use for all text.
     '''
     if data_bounds is None:
         flat_data = flatten([data_elem.values() for data_elem in data])
@@ -225,3 +229,5 @@ def plot_ridgeline(
                 alpha=point_alpha)
     ax.set_yticks(list(y_values.values()))
     ax.set_yticklabels(list(y_values.keys()))
+    ax.tick_params(  # type: ignore
+        axis='both', which='major', labelsize=fontsize)

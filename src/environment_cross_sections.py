@@ -17,7 +17,9 @@ def get_enviro_sections_plot(
         fields_ts_list: List[Dict[int, Dict[str, SerializedField]]],
         bounds: Sequence,
         section_location: float = 0.5,
-        cmap: Colormap = DEFAULT_COLORMAP) -> Tuple[plt.Figure, dict]:
+        cmap: Colormap = DEFAULT_COLORMAP,
+        fontsize: float = 36,
+        ) -> Tuple[plt.Figure, dict]:
     '''Get Environment Cross-Sections Plot
 
     Args:
@@ -29,6 +31,7 @@ def get_enviro_sections_plot(
             environment.
         cmap: Colormap from which to draw the colors used to represent
             each timepoint.
+        fontsize: Size of all text in figure.
 
     Returns:
         Tuple of the generated figure and a dictionary of statistics.
@@ -87,19 +90,26 @@ def get_enviro_sections_plot(
             ax = axes[field_i]
             ax.plot(  # type: ignore
                 x, median, 'o', color=color, linestyle='-',
-                label='{}s'.format(time))
+                label='{:.0f}s'.format(time))
             ax.fill_between(  # type: ignore
                 x, q25, q75, color=color, alpha=0.2, edgecolor='none')
     for i, ax in enumerate(axes):
+        ax.tick_params(  # type: ignore
+            axis='both', which='major', labelsize=fontsize)
         if num_fields != 1:
-            ax.set_title(field_names[i])
+            ax.set_title(  # type: ignore
+                field_names[i], fontsize=fontsize)
         if i == num_fields - 1:
-            ax.set_xlabel('Environment Horizontal Axis ($\\mu m$)')
-            ax.legend(bbox_to_anchor=(1.5, 1), loc='upper right')
+            ax.set_xlabel(  # type: ignore
+                'Environment Horizontal Axis ($\\mu m$)',
+                fontsize=fontsize)
+            ax.legend(  # type: ignore
+                bbox_to_anchor=(1.05, 0.5), loc='center left',
+                prop={'size': fontsize})
     # Make y label centered across all subplots
     super_ax = fig.add_subplot(  # type: ignore
         111, xticks=[], yticks=[], frameon=False)
     super_ax.set_ylabel(  # type: ignore
-        'Concentration ($mM$)', labelpad=75)
+        'Concentration ($mM$)', labelpad=75, fontsize=fontsize)
     fig.tight_layout()
     return fig, stats

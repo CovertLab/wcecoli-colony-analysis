@@ -26,6 +26,7 @@ EXPERIMENT_IDS = {
     'expression_survival': '20210125.182506',
     'death_snapshots': '20210125.182506',
     'phylogeny': '20210125.182506',
+    'centrality': '20210125.182506',
 }
 ENVIRONMENT_SECTION_TIMES = (1, 21, 41, 60, 80, 100)
 AGENTS_TO_TRACE = ('0_wcecoli',)

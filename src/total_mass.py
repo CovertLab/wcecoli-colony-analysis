@@ -46,7 +46,9 @@ def get_total_mass_timeseries(data: RawData) -> List[float]:
 
 def get_total_mass_plot(
         datasets: Dict[str, List[RawData]],
-        colors: List[str]) -> Tuple[plt.Figure, dict]:
+        colors: List[str],
+        fontsize: float = 36,
+        ) -> Tuple[plt.Figure, dict]:
     '''Plot the total masses of colonies from groups of simulations.
 
     Each group's total mass over time is plotted as a curve on the
@@ -57,6 +59,7 @@ def get_total_mass_plot(
             simulations to a list of the datasets in that group.
         colors: Map from a group label to the color to show that group's
             data in.
+        fontsize: Size of all text on figure.
 
     Returns:
         A tuple of the figure and a dictionary that maps from group
@@ -75,17 +78,22 @@ def get_total_mass_plot(
             })
             filtered_replicates.append(filtered)
         label_quartiles = plot_total_mass(
-            filtered_replicates, ax, label, colors[i])
+            filtered_replicates, ax, label, colors[i], fontsize)
         quartiles[label] = label_quartiles
-    ax.set_ylabel('Total Cell Mass (fg)')
-    ax.set_xlabel('Time (s)')
+    ax.set_ylabel(  # type: ignore
+        'Total Cell Mass (fg)', fontsize=fontsize)
+    ax.set_xlabel('Time (s)', fontsize=fontsize)  # type: ignore
     fig.tight_layout()
     return fig, quartiles
 
 
 def plot_total_mass(
-        replicates: List[RawData], ax: plt.Axes, label='',
-        color='black') -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        replicates: List[RawData],
+        ax: plt.Axes,
+        label='',
+        color='black',
+        fontsize: float = 36,
+        ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     '''Plot total mass data on an existing set of axes.
 
     Plots the median surrounded by a translucent band indicating the
@@ -98,6 +106,7 @@ def plot_total_mass(
         label: Label to associate with the curve showing the median
             total mass.
         color: Color of median curve and IQR band.
+        fontsize: Size of all text in figure.
 
     Returns:
         A tuple of a numpy array for each quartile.
@@ -116,9 +125,12 @@ def plot_total_mass(
             times, median, label=label, color=color)
         ax.fill_between(  # type: ignore
             times, q25, q75, color=color, alpha=0.2, edgecolor='none')
-        ax.legend()
+        ax.legend(prop={'size': fontsize})
     else:
         ax.semilogy(times, mass_timeseries, color=color)  # type: ignore
         ax.fill_between(  # type: ignore
             times, q25, q75, color=color, alpha=0.2, edgecolor='none')
+    for tick_type in ('major', 'minor'):
+        ax.tick_params(  # type: ignore
+            axis='both', which=tick_type, labelsize=fontsize)
     return cast(np.ndarray, q25), median, cast(np.ndarray, q75)

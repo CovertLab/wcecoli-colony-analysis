@@ -6,7 +6,7 @@ from vivarium.core.experiment import get_in
 
 from src.types import RawData
 from src.investigate_utils import (
-    split_raw_data_by_survival, filter_raw_data_by_time)
+    split_raw_data_by_survival)
 from src.constants import AGENTS_PATH, BOUNDS_PATH
 
 
@@ -59,14 +59,23 @@ def plot_survival_against_centrality(
     die_array = np.array(die_locations)  # type: ignore
     center_array = np.array(center)  # type: ignore
 
-    survive_distances = np.linalg.norm(  # type: ignore
-        survive_array - center_array, ord=2, axis=1)
-    die_distances = np.linalg.norm(  # type: ignore
-        die_array - center_array, ord=2, axis=1)
+    to_plot = []
+    if len(survive_array) != 0:
+        to_plot.append(np.linalg.norm(  # type: ignore
+            survive_array - center_array, ord=2, axis=1)
+        )
+    else:
+        to_plot.append([])
+    if len(die_array) != 0:
+        to_plot.append(die_distances = np.linalg.norm(  # type: ignore
+            die_array - center_array, ord=2, axis=1)
+        )
+    else:
+        to_plot.append([])
 
     ax.boxplot(  # type: ignore
-        [survive_distances, die_distances], labels=['Survive', 'Die'])
-    for i, y_values in enumerate((survive_distances, die_distances)):
+        to_plot, labels=['Survive', 'Die'])
+    for i, y_values in enumerate(to_plot):
         ax.scatter(
             np.random.normal(i + 1, 0.04, size=len(y_values)),
             y_values,

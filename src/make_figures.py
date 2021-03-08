@@ -211,10 +211,13 @@ def make_expression_distributions_fig(replicates_raw_data):
         replicates_data,
         point_alpha=1,
         overlap=-0.1,
+        horizontal_extra=0,
         num_bins=100,
         jitter=0,
         x_label='Protein Concentration (counts/fL)',
-        y_label='Distribution Density')
+        y_label='Distribution Density',
+        fontsize=20,
+    )
     fig.savefig(
         os.path.join(
             FIG_OUT_DIR,
@@ -261,7 +264,8 @@ def make_growth_fig(basal_data, anaerobic_data):
         'basal': basal_data,
         'anaerobic': anaerobic_data,
     }
-    fig, stats = get_total_mass_plot(data_dict, tuple(COLORS.values()))
+    fig, stats = get_total_mass_plot(
+        data_dict, tuple(COLORS.values()), fontsize=16)
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'growth.{}'.format(FILE_EXTENSION)))
     return stats
@@ -269,7 +273,8 @@ def make_growth_fig(basal_data, anaerobic_data):
 
 def make_threshold_scan_fig(data_dict):
     '''Plot colony mass curves with various antibiotic thresholds.'''
-    fig, stats = get_total_mass_plot(data_dict, tuple(COLORS.values()))
+    fig, stats = get_total_mass_plot(
+        data_dict, tuple(COLORS.values()), fontsize=16)
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'threshold_scan.{}'.format(FILE_EXTENSION)))
     return stats
@@ -288,6 +293,7 @@ def make_expression_survival_fig(data, search_data):
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
         trace_agents=AGENTS_TO_TRACE,
+        fontsize=12,
     )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival.{}'.format(
@@ -304,6 +310,7 @@ def make_expression_survival_fig(data, search_data):
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
         label_agents=True,
+        fontsize=12,
     )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival_labeled.{}'.format(
@@ -316,14 +323,18 @@ def make_expression_survival_dotplots(data):
     fig = plot_expression_survival_dotplot(
         data, PUMP_PATH, 'Final [AcrAB-TolC] (µM)',
         scaling=1e3,
-        time_range=EXPRESSION_SURVIVAL_TIME_RANGE)
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
+        fontsize=12,
+    )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival_pump.{}'.format(
             FILE_EXTENSION)))
     fig = plot_expression_survival_dotplot(
         data, BETA_LACTAMASE_PATH, 'Final [AmpC] (µM)',
         scaling=1e3,
-        time_range=EXPRESSION_SURVIVAL_TIME_RANGE)
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
+        fontsize=12,
+    )
     fig.savefig(os.path.join(
         FIG_OUT_DIR,
         'expression_survival_beta_lactamase.{}'.format(
@@ -367,8 +378,8 @@ def make_environment_section(data, base_name):
                 if name in ENVIRONMENT_SECTION_FIELDS
             }
     bounds = get_in(data[0][t_final], BOUNDS_PATH)
-    fig, stats = get_enviro_sections_plot(fields_ts, bounds,
-        section_location=0.5)
+    fig, stats = get_enviro_sections_plot(
+        fields_ts, bounds, section_location=0.5, fontsize=18)
     fig.savefig(
         os.path.join(FIG_OUT_DIR, '{}.{}'.format(
             base_name, FILE_EXTENSION)))
