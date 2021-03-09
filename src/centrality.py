@@ -87,4 +87,4 @@ def plot_survival_against_centrality(
             c='black', alpha=0.2,
         )
     ax.set_ylabel(  # type: ignore
-        'Euclidian Distance from Center ($\mu m$)', fontsize=fontsize)
+        'Distance from Center ($\mu m$)', fontsize=fontsize)
