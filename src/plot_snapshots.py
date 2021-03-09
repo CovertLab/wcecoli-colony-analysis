@@ -248,6 +248,9 @@ def plot_snapshots(data, plot_config):
 
             * **n_snapshots** (:py:class:`int`): Number of snapshots to
               show per row (i.e. for each molecule). Defaults to 6.
+            * **snapshot_times** (:py:class:`Iterable`): Times to plot
+              snapshots for. Defaults to None, in which case n_snapshots
+              is used.
             * **agent_shape** (:py:class:`str`): the shape of the agents.
               select from **rectangle**, **segment**
             * **phylogeny_names** (:py:class:`bool`): This selects agent
@@ -277,6 +280,7 @@ def plot_snapshots(data, plot_config):
     check_plt_backend()
 
     n_snapshots = plot_config.get('n_snapshots', 6)
+    snapshot_times = plot_config.get('snapshot_times')
     out_dir = plot_config.get('out_dir', 'out')
     filename = plot_config.get('filename', 'snapshots')
     agent_shape = plot_config.get('agent_shape', 'segment')
@@ -308,8 +312,12 @@ def plot_snapshots(data, plot_config):
     else:
         raise Exception('No agents or field data')
 
-    time_indices = np.round(np.linspace(0, len(time_vec) - 1, n_snapshots)).astype(int)
-    snapshot_times = [time_vec[i] for i in time_indices]
+    if snapshot_times:
+        time_indices = [
+            time_vec.index(time) for time in snapshot_times]
+    else:
+        time_indices = np.round(np.linspace(0, len(time_vec) - 1, n_snapshots)).astype(int)
+        snapshot_times = [time_vec[i] for i in time_indices]
 
     # get fields id and range
     field_ids = []

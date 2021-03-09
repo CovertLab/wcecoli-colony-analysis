@@ -16,13 +16,14 @@ Location = Sequence[float]
 Locations = Sequence[Location]
 
 
-def get_survival_against_centrality_plot(data: RawData) -> plt.Figure:
+def get_survival_against_centrality_plot(
+        data: RawData, fontsize: float = 20) -> plt.Figure:
     survive_locations, die_locations = extract_spatial_data(data)
     center = extract_center(data)
 
     fig, ax = plt.subplots()
     plot_survival_against_centrality(
-        survive_locations, die_locations, center, ax)
+        survive_locations, die_locations, center, ax, fontsize)
     fig.tight_layout()
     return fig
 
@@ -55,7 +56,7 @@ def extract_center(data: RawData) -> Location:
 
 def plot_survival_against_centrality(
         survive_locations: Locations, die_locations: Locations,
-        center: Location, ax: plt.Axes) -> None:
+        center: Location, ax: plt.Axes, fontsize: float = 20) -> None:
     survive_array = np.array(survive_locations)  # type: ignore
     die_array = np.array(die_locations)  # type: ignore
     center_array = np.array(center)  # type: ignore
@@ -77,10 +78,13 @@ def plot_survival_against_centrality(
     median_props = {'color': 'black'}
     ax.boxplot(  # type: ignore
         to_plot, labels=['Survive', 'Die'], medianprops=median_props)
+    ax.tick_params(  # type: ignore
+        axis='both', which='major', labelsize=fontsize)
     for i, y_values in enumerate(to_plot):
         ax.scatter(
             np.random.normal(i + 1, 0.04, size=len(y_values)),
             y_values,
             c='black', alpha=0.2,
         )
-    ax.set_ylabel('Euclidian Distance from Environment Center')
+    ax.set_ylabel(  # type: ignore
+        'Euclidian Distance from Center ($\mu m$)', fontsize=fontsize)

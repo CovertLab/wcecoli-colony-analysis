@@ -236,7 +236,7 @@ def make_expression_distributions_fig(replicates_raw_data):
 
 def make_snapshots_figure(
         data, environment_config, name, fields, agent_fill_color=None,
-        agent_alpha=1):
+        agent_alpha=1, num_snapshots=NUM_SNAPSHOTS, snapshot_times=None):
     '''Make a figure of snapshots
 
     Parameters:
@@ -260,7 +260,8 @@ def make_snapshots_figure(
         'default_font_size': 54,
         'agent_fill_color': agent_fill_color,
         'agent_alpha': agent_alpha,
-        'n_snapshots': NUM_SNAPSHOTS,
+        'n_snapshots': num_snapshots,
+        'snapshot_times': snapshot_times,
     }
     plot_snapshots(snapshots_data, plot_config)
 
@@ -486,9 +487,11 @@ def main():
     make_phylogeny_plot(
         all_data[EXPERIMENT_IDS['phylogeny']][0])
 
+    death_data, death_enviro_config = all_data[
+        EXPERIMENT_IDS['death_snapshots']]
     make_snapshots_figure(
-        *all_data[EXPERIMENT_IDS['death_snapshots']],
-        'death_snapshots', ['nitrocefin'], 'green')
+        death_data, death_enviro_config, 'death_snapshots', [], 'green',
+        snapshot_times=[max(death_data.keys())])
 
     make_survival_centrality_fig(
         all_data[EXPERIMENT_IDS['centrality']][0])

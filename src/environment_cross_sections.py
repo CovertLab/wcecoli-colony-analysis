@@ -66,7 +66,7 @@ def get_enviro_sections_plot(
                 y_values[field].append(section.tolist())
     field_names = list(y_values_ts[sorted_times[0]].keys())
     num_fields = len(field_names)
-    figsize=(num_bins[1], num_fields * 4)
+    figsize=(num_bins[1] * 0.8, num_fields * 4)
     fig, tmp_axes = plt.subplots(
         num_fields, sharex=True, figsize=figsize)
     # We assume axes is a list
@@ -96,6 +96,7 @@ def get_enviro_sections_plot(
     for i, ax in enumerate(axes):
         ax.tick_params(  # type: ignore
             axis='both', which='major', labelsize=fontsize)
+        ax.set_xticks(np.linspace(0, bounds[0], 6))
         if num_fields != 1:
             ax.set_title(  # type: ignore
                 field_names[i], fontsize=fontsize)
