@@ -76,7 +76,11 @@ def plot_expression_survival(
         data, path_to_x_variable, time_range)
     live_finals_y, dead_finals_y = calc_live_and_dead_finals(
         data, path_to_y_variable, time_range)
-    fig, ax = plt.subplots()
+    if label_agents:
+        fig, ax = plt.subplots(figsize=(50, 50))
+    else:
+        fig, ax = plt.subplots()
+
     ax.scatter(
         np.array(list(live_finals_x.values())) * scaling,
         np.array(list(live_finals_y.values())) * scaling,
