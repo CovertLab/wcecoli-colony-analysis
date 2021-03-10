@@ -55,8 +55,14 @@ TAG_PATH_NAME_MAP = {
 ENVIRONMENT_SECTION_FIELDS = ('GLC',)
 ENVIRONMENT_SECTION_TIMES = (231, 6006, 11781, 17325, 23100)
 AGENTS_TO_TRACE = (
-    '0_wcecoli0101011000', '0_wcecoli101101', '0_wcecoli1011010',
-    '0_wcecoli10011100101', '0_wcecoli001110011')
+    '0_wcecoli01010101111',
+    '0_wcecoli00100110',
+    '0_wcecoli111111',
+    '0_wcecoli01010100',
+    '0_wcecoli0101011011',
+    '0_wcecoli010110',
+    '0_wcecoli1111010',
+)
 COLONY_MASS_PATH = ('mass',)
 EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
 NUM_SNAPSHOTS = 5
