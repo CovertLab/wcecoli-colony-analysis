@@ -78,6 +78,9 @@ def plot_expression_survival(
         data, path_to_y_variable, time_range)
     if label_agents:
         fig, ax = plt.subplots(figsize=(50, 50))
+        # Always trace all agents when labeling
+        trace_agents = (
+            list(live_finals_x.keys()) + list(dead_finals_x.keys()))
     else:
         fig, ax = plt.subplots()
 
