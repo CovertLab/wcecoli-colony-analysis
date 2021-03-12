@@ -164,6 +164,10 @@ def plot_agents(
             if agent_data['boundary']['dead']:
                 color = dead_color
         plot_agent(ax, agent_data, color, agent_shape, alpha)
+    if len(agents) == 1:
+        ax.set_title('1 agent', y=1.1)
+    else:
+        ax.set_title(f'{len(agents)} agents', y=1.1)
 
 def mutate_color(baseline_hsv):
     mutation = 0.1
@@ -332,6 +336,7 @@ def plot_snapshots(data, plot_config):
         raise Exception('No agents or field data')
 
     if snapshot_times:
+        n_snapshots = len(snapshot_times)
         time_indices = [
             time_vec.index(time) for time in snapshot_times]
     else:
@@ -382,6 +387,32 @@ def plot_snapshots(data, plot_config):
     grid = plt.GridSpec(n_rows, n_cols, wspace=0.2, hspace=0.2)
     original_fontsize = plt.rcParams['font.size']
     plt.rcParams.update({'font.size': default_font_size})
+
+    # Add time axis across subplots
+    super_spec = matplotlib.gridspec.SubplotSpec(
+        grid, 0, n_snapshots - 1)
+    grid_params = grid.get_subplot_params()
+    if n_snapshots > 1:
+        time_per_snapshot = (
+            snapshot_times[-1] - snapshot_times[0]) / (
+            (n_snapshots - 1) * (grid_params.wspace + 1))
+    else:
+        time_per_snapshot = 1  # Arbitrary
+    super_ax = fig.add_subplot(  # type: ignore
+        super_spec,
+        xticks=snapshot_times,
+        xlim=(
+            snapshot_times[0] - time_per_snapshot / 2,
+            snapshot_times[-1] + time_per_snapshot / 2,
+        ),
+        yticks=[],
+    )
+    super_ax.set_xlabel(  # type: ignore
+        'Time (s)', labelpad=50)
+    super_ax.xaxis.set_tick_params(width=2, length=8)
+    for spine_name in ('top', 'right', 'left'):
+        super_ax.spines[spine_name].set_visible(False)
+    super_ax.spines['bottom'].set_linewidth(2)
 
     # Make the colormap
     min_rgb = matplotlib.colors.to_rgb(min_color)
