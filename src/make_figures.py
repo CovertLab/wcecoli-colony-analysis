@@ -174,6 +174,8 @@ def make_expression_heterogeneity_fig(
             tag: mcolors.rgb_to_hsv(mcolors.to_rgb(colors[i]))[0]
             for i, tag in enumerate(tagged_molecules)
         },
+        'scale_bar_length': 10,
+        'scale_bar_color': 'white',
     }
     plot_tags(tags_data, plot_config)
 
@@ -268,6 +270,8 @@ def make_snapshots_figure(
         'agent_alpha': agent_alpha,
         'n_snapshots': num_snapshots,
         'snapshot_times': snapshot_times,
+        'scale_bar_length': 10,
+        'scale_bar_color': 'white' if fields else 'black',
     }
     plot_snapshots(snapshots_data, plot_config)
 

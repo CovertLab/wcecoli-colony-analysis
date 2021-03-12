@@ -15,7 +15,8 @@ import matplotlib.patches as patches
 import matplotlib.lines as mlines
 from matplotlib.lines import Line2D
 from matplotlib.colors import hsv_to_rgb
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1 import (
+    make_axes_locatable, anchored_artists)
 from matplotlib.collections import LineCollection
 import numpy as np
 from vivarium.library.dict_utils import get_value_from_path
@@ -276,6 +277,10 @@ def plot_snapshots(data, plot_config):
               for all agent fills.
             * **agent_alpha** (:py:class:`float`): Alpha for agent
               plots.
+            * **scale_bar_length** (:py:class:`float`): Length of scale
+              bar.  Defaults to 1 (in units of micrometers). If 0, no
+              bar plotted.
+            * **scale_bar_color** (:py:class:`str`): Color of scale bar
     '''
     check_plt_backend()
 
@@ -292,6 +297,9 @@ def plot_snapshots(data, plot_config):
     dead_color = plot_config.get('dead_color', [0, 0, 0])
     agent_fill_color = plot_config.get('agent_fill_color', None)
     agent_alpha = plot_config.get('agent_alpha', 1)
+    scale_bar_length = plot_config.get('scale_bar_length', 1)
+    scale_bar_color = plot_config.get('scale_bar_color', 'black')
+
 
     # get data
     agents = data.get('agents', {})
@@ -406,6 +414,17 @@ def plot_snapshots(data, plot_config):
                     cax = divider.append_axes("left", size="5%", pad=0.0)
                     fig.colorbar(im, cax=cax, format='%.3f')
                     ax.axis('off')
+                # Scale bar in first snapshot of each row
+                if col_idx == 0 and scale_bar_length:
+                    scale_bar = anchored_artists.AnchoredSizeBar(
+                        ax.transData, scale_bar_length,
+                        f'${scale_bar_length} \mu m$', 'lower left',
+                        color=scale_bar_color,
+                        frameon=False,
+                        sep = scale_bar_length,
+                        size_vertical = scale_bar_length / 5,
+                    )
+                    ax.add_artist(scale_bar)
         else:
             row_idx = 0
             ax = init_axes(
@@ -418,12 +437,24 @@ def plot_snapshots(data, plot_config):
                 plot_agents(
                     ax, agents_now, agent_colors, agent_shape,
                     dead_color, agent_alpha)
+            # Scale bar in first snapshot of each row
+            if col_idx == 0 and scale_bar_length:
+                scale_bar = anchored_artists.AnchoredSizeBar(
+                    ax.transData, scale_bar_length,
+                    f'${scale_bar_length} \\mu m$', 'lower left',
+                    color=scale_bar_color,
+                    frameon=False,
+                    sep = scale_bar_length,
+                    size_vertical = scale_bar_length / 5,
+                )
+                ax.add_artist(scale_bar)
 
     fig_path = os.path.join(out_dir, filename)
     fig.subplots_adjust(wspace=0.7, hspace=0.1)
     fig.savefig(fig_path, bbox_inches='tight')
     plt.close(fig)
     plt.rcParams.update({'font.size': original_fontsize})
+
 
 def get_fluorescent_color(baseline_hsv, tag_color, intensity):
     # move color towards bright fluoresence color when intensity = 1
@@ -485,6 +516,10 @@ def plot_tags(data, plot_config):
               titles and axis labels.
             * **hues** (:py:class:`dict`): Map from tag ID in
               tagged_molecules to a hue value in the HSV color space.
+            * **scale_bar_length** (:py:class:`float`): Length of scale
+              bar.  Defaults to 1 (in units of micrometers). If 0, no
+              bar plotted.
+            * **scale_bar_color** (:py:class:`str`): Color of scale bar
     '''
     check_plt_backend()
 
@@ -499,6 +534,8 @@ def plot_tags(data, plot_config):
     default_font_size = plot_config.get('default_font_size', 36)
     convert_to_concs = plot_config.get('convert_to_concs', True)
     hues = plot_config.get('hues', {})
+    scale_bar_length = plot_config.get('scale_bar_length', 1)
+    scale_bar_color = plot_config.get('scale_bar_color', 'white')
 
     if tagged_molecules == []:
         raise ValueError('At least one molecule must be tagged.')
@@ -623,6 +660,18 @@ def plot_tags(data, plot_config):
                 cax = divider.append_axes("left", size="5%", pad=0.0)
                 mappable = matplotlib.cm.ScalarMappable(norm, cmap)
                 fig.colorbar(mappable, cax=cax, format='%.0f')
+
+            # Scale bar in first snapshot of each row
+            if col_idx == 0 and scale_bar_length:
+                scale_bar = anchored_artists.AnchoredSizeBar(
+                    ax.transData, scale_bar_length,
+                    f'${scale_bar_length} \\mu m$', 'lower left',
+                    color=scale_bar_color,
+                    frameon=False,
+                    sep = scale_bar_length,
+                    size_vertical = scale_bar_length / 5,
+                )
+                ax.add_artist(scale_bar)
 
     fig_path = os.path.join(out_dir, filename)
     fig.subplots_adjust(wspace=0.7, hspace=0.1)
