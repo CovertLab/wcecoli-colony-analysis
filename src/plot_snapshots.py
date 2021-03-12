@@ -32,7 +32,7 @@ PI = math.pi
 HUES = [hue/360 for hue in np.linspace(0,360,30)]
 DEFAULT_HUE = HUES[0]
 DEFAULT_SV = [100.0/100.0, 70.0/100.0]
-BASELINE_TAG_COLOR = [220/360, 1.0, 0.2]  # HSV
+BASELINE_TAG_COLOR = [0, 0, 1]  # HSV
 FLOURESCENT_SV = [0.75, 1.0]  # SV for fluorescent colors
 
 def check_plt_backend():
@@ -102,7 +102,7 @@ def plot_agent(ax, data, color, agent_shape, alpha=1):
         width = data['boundary']['width']
 
         membrane_width = 0.1
-        membrane_color = [1, 1, 1]
+        membrane_color = [0, 0, 0]
         radius = width / 2
 
         # get the two ends

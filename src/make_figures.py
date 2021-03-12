@@ -165,6 +165,7 @@ def make_expression_heterogeneity_fig(
     plot_config = {
         'out_dir': FIG_OUT_DIR,
         'tagged_molecules': tagged_molecules,
+        'background_color': 'white',
         'filename': '{}.{}'.format(name_base, FILE_EXTENSION),
         'tag_path_name_map': TAG_PATH_NAME_MAP,
         'tag_label_size': 48,
@@ -175,7 +176,7 @@ def make_expression_heterogeneity_fig(
             for tag in tagged_molecules
         },
         'scale_bar_length': 10,
-        'scale_bar_color': 'white',
+        'scale_bar_color': 'black',
         'xlim': (10, 40),
         'ylim': (10, 40),
     }
