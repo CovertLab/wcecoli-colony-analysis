@@ -171,8 +171,8 @@ def make_expression_heterogeneity_fig(
         'default_font_size': 48,
         'n_snapshots': NUM_SNAPSHOTS,
         'hues': {
-            tag: mcolors.rgb_to_hsv(mcolors.to_rgb(colors[i]))[0]
-            for i, tag in enumerate(tagged_molecules)
+            tag: mcolors.rgb_to_hsv(mcolors.to_rgb(colors[0]))[0]
+            for tag in tagged_molecules
         },
         'scale_bar_length': 10,
         'scale_bar_color': 'white',
