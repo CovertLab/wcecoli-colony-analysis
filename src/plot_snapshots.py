@@ -285,6 +285,10 @@ def plot_snapshots(data, plot_config):
               of lower and upper x-axis limits.
             * **ylim** (:py:class:`tuple` of :py:class:`float`): Tuple
               of lower and upper y-axis limits.
+            * **min_color** (any valid matplotlib color): Color for
+              minimum field values.
+            * **max_color** (any valid matplotlib color): Color for
+              maximum field values.
     '''
     check_plt_backend()
 
@@ -305,7 +309,8 @@ def plot_snapshots(data, plot_config):
     scale_bar_color = plot_config.get('scale_bar_color', 'black')
     xlim = plot_config.get('xlim')
     ylim = plot_config.get('ylim')
-
+    min_color = plot_config.get('min_color', 'white')
+    max_color = plot_config.get('max_color', 'gray')
 
     # get data
     agents = data.get('agents', {})
@@ -378,6 +383,26 @@ def plot_snapshots(data, plot_config):
     original_fontsize = plt.rcParams['font.size']
     plt.rcParams.update({'font.size': default_font_size})
 
+    # Make the colormap
+    min_rgb = matplotlib.colors.to_rgb(min_color)
+    max_rgb = matplotlib.colors.to_rgb(max_color)
+    colors_dict = {
+        'red': [
+            [0, min_rgb[0], min_rgb[0]],
+            [1, max_rgb[0], max_rgb[0]],
+        ],
+        'green': [
+            [0, min_rgb[1], min_rgb[1]],
+            [1, max_rgb[1], max_rgb[1]],
+        ],
+        'blue': [
+            [0, min_rgb[2], min_rgb[2]],
+            [1, max_rgb[2], max_rgb[2]],
+        ],
+    }
+    cmap = matplotlib.colors.LinearSegmentedColormap(
+        'field', segmentdata=colors_dict, N=512)
+
     # plot snapshot data in each subsequent column
     for col_idx, (time_idx, time) in enumerate(zip(time_indices, snapshot_times)):
         if field_ids:
@@ -400,7 +425,7 @@ def plot_snapshots(data, plot_config):
                                 extent=[0, edge_length_x, 0, edge_length_y],
                                 vmin=vmin,
                                 vmax=vmax,
-                                cmap='BuPu')
+                                cmap=cmap)
                 if agents:
                     agents_now = agents[time]
                     plot_agents(

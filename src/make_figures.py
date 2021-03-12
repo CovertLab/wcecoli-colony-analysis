@@ -277,6 +277,8 @@ def make_snapshots_figure(
         'scale_bar_color': 'white' if fields else 'black',
         'xlim': (10, 40),
         'ylim': (10, 40),
+        'min_color': '#CCCCCC',
+        'max_color': '#404040',
     }
     plot_snapshots(snapshots_data, plot_config)
 
@@ -473,7 +475,7 @@ def main():
             EXPERIMENT_IDS['enviro_heterogeneity']):
         make_snapshots_figure(
             *all_data[experiment_id],
-            'enviro_heterogeneity_{}'.format(i), ['GLC'], 'green', 0.4)
+            'enviro_heterogeneity_{}'.format(i), ['GLC'], 'white', 0.4)
 
     enviro_section_data = []
     for i, experiment_id in enumerate(
