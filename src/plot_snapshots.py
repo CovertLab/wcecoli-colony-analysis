@@ -281,6 +281,10 @@ def plot_snapshots(data, plot_config):
               bar.  Defaults to 1 (in units of micrometers). If 0, no
               bar plotted.
             * **scale_bar_color** (:py:class:`str`): Color of scale bar
+            * **xlim** (:py:class:`tuple` of :py:class:`float`): Tuple
+              of lower and upper x-axis limits.
+            * **ylim** (:py:class:`tuple` of :py:class:`float`): Tuple
+              of lower and upper y-axis limits.
     '''
     check_plt_backend()
 
@@ -299,6 +303,8 @@ def plot_snapshots(data, plot_config):
     agent_alpha = plot_config.get('agent_alpha', 1)
     scale_bar_length = plot_config.get('scale_bar_length', 1)
     scale_bar_color = plot_config.get('scale_bar_color', 'black')
+    xlim = plot_config.get('xlim')
+    ylim = plot_config.get('ylim')
 
 
     # get data
@@ -401,6 +407,11 @@ def plot_snapshots(data, plot_config):
                         ax, agents_now, agent_colors, agent_shape,
                         dead_color, agent_alpha)
 
+                if xlim:
+                    ax.set_xlim(*xlim)
+                if ylim:
+                    ax.set_ylim(*ylim)
+
                 # colorbar in new column after final snapshot
                 if col_idx == n_snapshots - 1:
                     cbar_col = col_idx + 1
@@ -422,7 +433,7 @@ def plot_snapshots(data, plot_config):
                         color=scale_bar_color,
                         frameon=False,
                         sep = scale_bar_length,
-                        size_vertical = scale_bar_length / 5,
+                        size_vertical = scale_bar_length / 20,
                     )
                     ax.add_artist(scale_bar)
         else:
@@ -437,6 +448,10 @@ def plot_snapshots(data, plot_config):
                 plot_agents(
                     ax, agents_now, agent_colors, agent_shape,
                     dead_color, agent_alpha)
+            if xlim:
+                ax.set_xlim(*xlim)
+            if ylim:
+                ax.set_ylim(*ylim)
             # Scale bar in first snapshot of each row
             if col_idx == 0 and scale_bar_length:
                 scale_bar = anchored_artists.AnchoredSizeBar(
@@ -445,7 +460,7 @@ def plot_snapshots(data, plot_config):
                     color=scale_bar_color,
                     frameon=False,
                     sep = scale_bar_length,
-                    size_vertical = scale_bar_length / 5,
+                    size_vertical = scale_bar_length / 20,
                 )
                 ax.add_artist(scale_bar)
 
@@ -520,6 +535,10 @@ def plot_tags(data, plot_config):
               bar.  Defaults to 1 (in units of micrometers). If 0, no
               bar plotted.
             * **scale_bar_color** (:py:class:`str`): Color of scale bar
+            * **xlim** (:py:class:`tuple` of :py:class:`float`): Tuple
+              of lower and upper x-axis limits.
+            * **ylim** (:py:class:`tuple` of :py:class:`float`): Tuple
+              of lower and upper y-axis limits.
     '''
     check_plt_backend()
 
@@ -536,6 +555,8 @@ def plot_tags(data, plot_config):
     hues = plot_config.get('hues', {})
     scale_bar_length = plot_config.get('scale_bar_length', 1)
     scale_bar_color = plot_config.get('scale_bar_color', 'white')
+    xlim = plot_config.get('xlim')
+    ylim = plot_config.get('ylim')
 
     if tagged_molecules == []:
         raise ValueError('At least one molecule must be tagged.')
@@ -646,6 +667,11 @@ def plot_tags(data, plot_config):
 
             plot_agents(ax, agents[time], agent_tag_colors, agent_shape)
 
+            if xlim:
+                ax.set_xlim(*xlim)
+            if ylim:
+                ax.set_ylim(*ylim)
+
             # colorbar in new column after final snapshot
             if col_idx == n_snapshots - 1:
                 cbar_col = col_idx + 1
@@ -669,7 +695,7 @@ def plot_tags(data, plot_config):
                     color=scale_bar_color,
                     frameon=False,
                     sep = scale_bar_length,
-                    size_vertical = scale_bar_length / 5,
+                    size_vertical = scale_bar_length / 20,
                 )
                 ax.add_artist(scale_bar)
 

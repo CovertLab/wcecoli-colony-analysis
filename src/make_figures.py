@@ -176,6 +176,8 @@ def make_expression_heterogeneity_fig(
         },
         'scale_bar_length': 10,
         'scale_bar_color': 'white',
+        'xlim': (10, 40),
+        'ylim': (10, 40),
     }
     plot_tags(tags_data, plot_config)
 
@@ -272,6 +274,8 @@ def make_snapshots_figure(
         'snapshot_times': snapshot_times,
         'scale_bar_length': 10,
         'scale_bar_color': 'white' if fields else 'black',
+        'xlim': (10, 40),
+        'ylim': (10, 40),
     }
     plot_snapshots(snapshots_data, plot_config)
 
