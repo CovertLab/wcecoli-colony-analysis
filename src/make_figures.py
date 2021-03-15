@@ -28,8 +28,6 @@ from src.phylogeny import plot_phylogeny
 from src.process_expression_data import (
     raw_data_to_end_expression_table, VOLUME_KEY)
 from src.ridgeline import get_ridgeline_plot
-from src.expression_survival_scan import (
-    load_scan_data, plot_expression_survival_scan)
 from src.plot_snapshots import plot_snapshots, plot_tags
 from src.centrality import get_survival_against_centrality_plot
 
@@ -366,18 +364,6 @@ def make_expression_survival_dotplots(data):
             FILE_EXTENSION)))
 
 
-def make_expression_survival_scan_fig(data, parameters, search_data):
-    '''Plot expression-survival parameter scan figure.'''
-    fig = plot_expression_survival_scan(
-        data, parameters['agent_name'], '[AcrAB-TolC] (µM)',
-        '[AmpC] (µM)', search_data['x_values'], search_data['y_values'],
-        search_data['precision'], scaling=1e3)
-    fig.savefig(os.path.join(
-        FIG_OUT_DIR,
-        'expression_survival_scan.{}'.format(FILE_EXTENSION)
-    ))
-
-
 def make_survival_centrality_fig(data):
     '''Plot centrality figure.'''
     fig = get_survival_against_centrality_plot(data)
@@ -427,8 +413,6 @@ def main():
     stats = {}
     parser = argparse.ArgumentParser()
     Analyzer.add_connection_args(parser)
-    parser.add_argument(
-        'scan_data', type=str, help='Path to parameter scan data.')
     parser.add_argument(
         'search_data', type=str, help='Path to boundary search data.')
     args = parser.parse_args()
@@ -497,9 +481,6 @@ def main():
 
     make_expression_survival_dotplots(
         all_data[EXPERIMENT_IDS['expression_survival']][0])
-
-    make_expression_survival_scan_fig(
-        *load_scan_data(args.scan_data), search_data)
 
     make_phylogeny_plot(
         all_data[EXPERIMENT_IDS['phylogeny']][0])
