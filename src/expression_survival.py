@@ -25,7 +25,8 @@ ALPHA = 0.5
 def plot_expression_survival(
     data, path_to_x_variable, path_to_y_variable, xlabel, ylabel,
     boundary_x, boundary_y, boundary_error, boundary_color='black',
-    scaling=1, time_range=(0, 1), label_agents=False, fontsize=36,
+    scaling=1, time_range=(0, 1), label_agents=False,
+    plot_agents=tuple(), fontsize=36,
     trace_agents=tuple(),
 ):
     '''Create Expression Scatterplot Colored by Survival
@@ -66,16 +67,18 @@ def plot_expression_survival(
         label_agents (bool): Whether to label each point with the agent
             ID.
         trace_agents (Iterable): The agent IDs of the agents to plot
-            traces for.
+            traces for. By default, no traces are shown.
+        plot_agents(Iterable): The agent IDs of the agents to plot. By
+            default, all agents are plotted.
         fontsize (float): Text size for entire figure.
 
     Returns:
         plt.Figure: The finished figure.
     '''
     live_finals_x, dead_finals_x = calc_live_and_dead_finals(
-        data, path_to_x_variable, time_range)
+        data, path_to_x_variable, time_range, plot_agents)
     live_finals_y, dead_finals_y = calc_live_and_dead_finals(
-        data, path_to_y_variable, time_range)
+        data, path_to_y_variable, time_range, plot_agents)
     if label_agents:
         fig, ax = plt.subplots(figsize=(50, 50))
         # Always trace all agents when labeling
@@ -244,7 +247,8 @@ def plot_expression_survival_dotplot(
     return fig
 
 
-def calc_live_and_dead_finals(data, path_to_variable, time_range):
+def calc_live_and_dead_finals(
+        data, path_to_variable, time_range, agents=tuple()):
     values = {}
     die = set()
 
@@ -255,6 +259,8 @@ def calc_live_and_dead_finals(data, path_to_variable, time_range):
             continue
         agents_data = get_in(time_data, PATH_TO_AGENTS)
         for agent, agent_data in agents_data.items():
+            if agents and agent not in agents:
+                continue
             agent_values = values.setdefault(agent, {})
             value = get_in(agent_data, path_to_variable)
             if get_in(agent_data, PATH_TO_DEAD, False):

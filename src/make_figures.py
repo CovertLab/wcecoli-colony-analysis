@@ -304,7 +304,23 @@ def make_threshold_scan_fig(data_dict):
 
 
 def make_expression_survival_fig(data, search_data):
-    '''Make expression-survival figure.'''
+    '''Make expression-survival figures.'''
+    fig = plot_expression_survival(
+        data, PUMP_PATH, BETA_LACTAMASE_PATH,
+        'Final [AcrAB-TolC] (µM)',
+        'Final [AmpC] (µM)',
+        search_data['x_values'],
+        search_data['y_values'],
+        search_data['precision'],
+        boundary_color=COLORS['magenta'],
+        scaling=1e3,
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
+        fontsize=12,
+    )
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR, 'expression_survival.{}'.format(
+            FILE_EXTENSION)
+    ))
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Final [AcrAB-TolC] (µM)',
@@ -316,10 +332,11 @@ def make_expression_survival_fig(data, search_data):
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
         trace_agents=AGENTS_TO_TRACE,
+        plot_agents=AGENTS_TO_TRACE,
         fontsize=12,
     )
     fig.savefig(os.path.join(
-        FIG_OUT_DIR, 'expression_survival.{}'.format(
+        FIG_OUT_DIR, 'expression_survival_traces.{}'.format(
             FILE_EXTENSION)
     ))
     fig = plot_expression_survival(
