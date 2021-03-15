@@ -1008,7 +1008,7 @@ def init_axes(
     if col_idx == 0:
         ax.set_ylabel(
             molecule, fontsize=ylabel_size, rotation='horizontal',
-            horizontalalignment='right',
+            horizontalalignment='right', labelpad=50,
         )
     ax.set(xlim=[0, edge_length_x], ylim=[0, edge_length_y], aspect=1)
     ax.set_yticklabels([])
