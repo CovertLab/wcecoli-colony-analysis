@@ -383,11 +383,12 @@ def make_expression_survival_dotplots(data):
 
 def make_survival_centrality_fig(data):
     '''Plot centrality figure.'''
-    fig = get_survival_against_centrality_plot(data)
+    fig, stats = get_survival_against_centrality_plot(data)
     fig.savefig(os.path.join(
         FIG_OUT_DIR,
         'survival_centrality.{}'.format(FILE_EXTENSION)
     ))
+    return stats
 
 
 def make_environment_section(data, base_name):
@@ -508,7 +509,7 @@ def main():
         death_data, death_enviro_config, 'death_snapshots', [], 'green',
         snapshot_times=[max(death_data.keys())])
 
-    make_survival_centrality_fig(
+    stats['centrality'] = make_survival_centrality_fig(
         all_data[EXPERIMENT_IDS['centrality']][0])
 
     with open(os.path.join(FIG_OUT_DIR, STATS_FILE), 'w') as f:

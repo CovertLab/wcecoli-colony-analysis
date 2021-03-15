@@ -22,10 +22,10 @@ def get_survival_against_centrality_plot(
     center = extract_center(data)
 
     fig, ax = plt.subplots()
-    plot_survival_against_centrality(
+    stats = plot_survival_against_centrality(
         survive_locations, die_locations, center, ax, fontsize)
     fig.tight_layout()
-    return fig
+    return fig, stats
 
 
 def extract_spatial_data(data: RawData) -> Tuple[Locations, Locations]:
@@ -56,7 +56,8 @@ def extract_center(data: RawData) -> Location:
 
 def plot_survival_against_centrality(
         survive_locations: Locations, die_locations: Locations,
-        center: Location, ax: plt.Axes, fontsize: float = 20) -> None:
+        center: Location, ax: plt.Axes,
+        fontsize: float = 20) -> dict:
     survive_array = np.array(survive_locations)  # type: ignore
     die_array = np.array(die_locations)  # type: ignore
     center_array = np.array(center)  # type: ignore
@@ -88,3 +89,9 @@ def plot_survival_against_centrality(
         )
     ax.set_ylabel(  # type: ignore
         'Distance from Center ($\mu m$)', fontsize=fontsize)
+
+    stats = {
+        'survive_distances': to_plot[0],
+        'die_distances': to_plot[1],
+    }
+    return stats
