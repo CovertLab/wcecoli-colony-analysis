@@ -30,9 +30,11 @@ def analyze_growth_fig_stats(stats: dict) -> dict:
 
 def analyze_enviro_section_stats(stats: dict) -> dict:
     summary = {}
-    for timepoint, (q1, q3) in stats.items():
+    for timepoint, (q1, q2, q3) in stats.items():
         summary[timepoint] = {
             'Maximum IQR (mM)': (np.array(q3) - np.array(q1)).max(),
+            'Maximum Median (mM)': q2.max(),
+            'Minimum Median (mM)': q2.min(),
         }
     return summary
 

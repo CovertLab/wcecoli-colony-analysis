@@ -86,7 +86,7 @@ def get_enviro_sections_plot(
             y_matrix = np.array(y_list)
             median = np.median(y_matrix, axis=0)
             q25, q75 = np.percentile(y_matrix, [25, 75], axis=0)
-            stats[time] = q25, q75
+            stats[time] = q25, median, q75
             ax = axes[field_i]
             ax.plot(  # type: ignore
                 x, median, 'o', color=color, linestyle='-',
