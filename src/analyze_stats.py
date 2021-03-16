@@ -23,7 +23,8 @@ def analyze_growth_fig_stats(stats: dict) -> dict:
     for condition, (q1, q2, q3) in stats.items():
         summary[condition] = {
             'Median Total Mass Fold-Change': q2[-1] / q2[0],
-            'Maximum IQR (fg)': (np.array(q3) - np.array(q1)).max(),
+            'Maximum IQR / Median': (
+                (np.array(q3) - np.array(q1)) / q2).max(),
         }
     return summary
 
