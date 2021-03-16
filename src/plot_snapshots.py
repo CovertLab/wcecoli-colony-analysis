@@ -434,8 +434,16 @@ def plot_snapshots(data, plot_config):
     cmap = matplotlib.colors.LinearSegmentedColormap(
         'field', segmentdata=colors_dict, N=512)
 
+    stats = {
+        'agents': {},
+    }
+    if field_ids:
+        stats['fields'] = {
+            field_id: {} for field_id in field_ids
+        }
     # plot snapshot data in each subsequent column
     for col_idx, (time_idx, time) in enumerate(zip(time_indices, snapshot_times)):
+        stats['agents'][time] = len(agents[time])
         if field_ids:
             for row_idx, field_id in enumerate(field_ids):
 
@@ -449,9 +457,11 @@ def plot_snapshots(data, plot_config):
                 )
 
                 # transpose field to align with agents
-                field = np.transpose(np.array(fields[time][field_id])).tolist()
+                field = np.transpose(np.array(fields[time][field_id]))
                 vmin, vmax = field_range[field_id]
-                im = plt.imshow(field,
+                q1, q2, q3 = np.percentile(field, [25, 50, 75])
+                stats['fields'][field_id][time] = vmin, q1, q2, q3, vmax
+                im = plt.imshow(field.tolist(),
                                 origin='lower',
                                 extent=[0, edge_length_x, 0, edge_length_y],
                                 vmin=vmin,
@@ -525,6 +535,7 @@ def plot_snapshots(data, plot_config):
     fig.savefig(fig_path, bbox_inches='tight')
     plt.close(fig)
     plt.rcParams.update({'font.size': original_fontsize})
+    return stats
 
 
 def get_fluorescent_color(baseline_hsv, tag_color, intensity):

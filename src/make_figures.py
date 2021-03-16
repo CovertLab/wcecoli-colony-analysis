@@ -245,7 +245,8 @@ def make_expression_distributions_fig(replicates_raw_data):
 
 def make_snapshots_figure(
         data, environment_config, name, fields, agent_fill_color=None,
-        agent_alpha=1, num_snapshots=NUM_SNAPSHOTS, snapshot_times=None):
+        agent_alpha=1, num_snapshots=NUM_SNAPSHOTS,
+        snapshot_times=None):
     '''Make a figure of snapshots
 
     Parameters:
@@ -278,7 +279,8 @@ def make_snapshots_figure(
         'min_color': '#DDDDDD',
         'max_color': '#333333',
     }
-    plot_snapshots(snapshots_data, plot_config)
+    stats = plot_snapshots(snapshots_data, plot_config)
+    return stats
 
 
 def make_growth_fig(basal_data, anaerobic_data):
@@ -453,13 +455,18 @@ def main():
             *all_data[experiment_id],
             'expression_heterogeneity_{}'.format(i))
 
+    stats['growth_snapshots'] = {
+        'basal': {},
+        'anaerobic': {},
+    }
     for i, experiment_id in enumerate(EXPERIMENT_IDS['growth_basal']):
-        make_snapshots_figure(
+        stats['growth_snapshots']['basal'][i] = make_snapshots_figure(
             *all_data[experiment_id], 'growth_basal_{}'.format(i), [])
 
     for i, experiment_id in enumerate(
             EXPERIMENT_IDS['growth_anaerobic']):
-        make_snapshots_figure(
+        stats['growth_snapshots'][
+            'anaerobic'][i] = make_snapshots_figure(
             *all_data[experiment_id], 'growth_anaerobic_{}'.format(i),
             [])
 
@@ -473,9 +480,10 @@ def main():
     ]
     stats['growth_fig'] = make_growth_fig(basal_data, anaerobic_data)
 
+    stats['enviro_heterogeneity'] = {}
     for i, experiment_id in enumerate(
             EXPERIMENT_IDS['enviro_heterogeneity']):
-        make_snapshots_figure(
+        stats['enviro_heterogeneity'][i] = make_snapshots_figure(
             *all_data[experiment_id],
             'enviro_heterogeneity_{}'.format(i), ['GLC'], 'white', 0.7)
 
@@ -505,7 +513,7 @@ def main():
 
     death_data, death_enviro_config = all_data[
         EXPERIMENT_IDS['death_snapshots']]
-    make_snapshots_figure(
+    stats['death_snapshots'] = make_snapshots_figure(
         death_data, death_enviro_config, 'death_snapshots', [], 'green',
         snapshot_times=[max(death_data.keys())])
 
