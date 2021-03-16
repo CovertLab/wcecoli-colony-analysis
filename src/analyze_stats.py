@@ -34,8 +34,8 @@ def analyze_enviro_section_stats(stats: dict) -> dict:
     for timepoint, (q1, q2, q3) in stats.items():
         summary[timepoint] = {
             'Maximum IQR (mM)': (np.array(q3) - np.array(q1)).max(),
-            'Maximum Median (mM)': q2.max(),
-            'Minimum Median (mM)': q2.min(),
+            'Maximum Median (mM)': max(q2),
+            'Minimum Median (mM)': min(q2),
         }
     return summary
 
@@ -58,7 +58,7 @@ def _mann_whitney_u_power(
     p_values = []
     for _ in range(iters):
         points = np.random.uniform(
-            -colony_radius, colony_radius, size=(2, 10 * num_points))
+            -colony_radius, colony_radius, size=(10 * num_points, 2))
         mask = np.linalg.norm(  # type: ignore
             points, ord=2, axis=1) <= colony_radius
         points = points[mask]
@@ -106,11 +106,12 @@ def analyze_centrality_stats(stats: dict) -> dict:
     summary['hypothesis testing'] = {
         'Mann-Whitney U statistic': u_stat,
         'Mann-Whitney p-value': p_value,
-        'Power for 0.01 diff in p(death)': _mann_whitney_u_power(
+        'Power (alpha=0.2)for 0.5 diff in p(death)': _mann_whitney_u_power(
             len(stats['survive_distances']),
             len(stats['die_distances']),
             10,
-            lambda x: 0.495 + x / 10 / 100
+            lambda x: 0.25 + x / 10 / 2,
+            alpha=0.2,
         ),
     }
     return summary
