@@ -117,11 +117,31 @@ def analyze_centrality_stats(stats: dict) -> dict:
     return summary
 
 
+def analyze_growth_snapshot_stats(stats: dict) -> dict:
+    summary = {}
+    for condition, condition_stats in stats.items():
+        final_agent_counts = []
+        for replicate_stats in condition_stats.values():
+            times = [
+                float(time)
+                for time in replicate_stats['agents'].keys()]
+            initial_agents = replicate_stats['agents'][str(min(times))]
+            final_agents = replicate_stats['agents'][str(max(times))]
+            assert initial_agents == 1
+            final_agent_counts.append(final_agents)
+        assert len(set(final_agent_counts)) == 1
+        summary[condition] = {
+            'Final number of agents': final_agent_counts[0],
+        }
+    return summary
+
+
 SECTION_ANALYZER_MAP = {
     'expression_distributions': analyze_expression_distributions_stats,
     'growth_fig': analyze_growth_fig_stats,
     'enviro_section': analyze_enviro_section_stats,
     'centrality': analyze_centrality_stats,
+    'growth_snapshots': analyze_growth_snapshot_stats,
 }
 
 
