@@ -93,7 +93,6 @@ def main():
 
     data, _ = Analyzer.get_data(args, args.experiment_id)
     moles = assert_antibiotic_conserved(data)
-    import ipdb; ipdb.set_trace()
 
 
 if __name__ == '__main__':
