@@ -50,14 +50,15 @@ def analyze_threshold_scan_stats(stats: dict) -> dict:
     return summary
 
 
-def _mann_whitney_u_power(
+def _u_power(
         num_a: int, num_b: int, colony_radius: float,
         get_prob_a: Callable[[float], float], iters: int = 10000,
-        alpha: float = 0.05) -> float:
+        alpha: float = 0.05, seed: int = 530) -> float:
     num_points = num_a + num_b
     p_values = []
+    random = np.random.default_rng(seed)  # type: ignore
     for _ in range(iters):
-        points = np.random.uniform(
+        points = random.uniform(
             -colony_radius, colony_radius, size=(10 * num_points, 2))
         mask = np.linalg.norm(  # type: ignore
             points, ord=2, axis=1) <= colony_radius
@@ -68,7 +69,7 @@ def _mann_whitney_u_power(
         for point in points:
             dist = np.linalg.norm(point, ord=2)  # type: ignore
             prob_a = get_prob_a(dist)
-            is_a = np.random.random() < prob_a  # type: ignore
+            is_a = random.random() < prob_a  # type: ignore
             if is_a and len(a_points) < num_a:
                 a_points.append(point)
             elif len(b_points) < num_b:
@@ -106,7 +107,7 @@ def analyze_centrality_stats(stats: dict) -> dict:
     summary['hypothesis testing'] = {
         'Mann-Whitney U statistic': u_stat,
         'Mann-Whitney p-value': p_value,
-        'Power (alpha=0.2)for 0.5 diff in p(death)': _mann_whitney_u_power(
+        'Power (alpha=0.2)for 0.5 diff in p(death)': _u_power(
             len(stats['survive_distances']),
             len(stats['die_distances']),
             10,
