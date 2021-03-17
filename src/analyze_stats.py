@@ -29,6 +29,17 @@ def analyze_growth_fig_stats(stats: dict) -> dict:
     return summary
 
 
+def analyze_threshold_scan_stats(stats: dict) -> dict:
+    summary = analyze_growth_fig_stats(stats)
+    for threshold, (q1, q2, q3) in stats.items():
+        end_summary = {
+            'Median Final Mass (fg)': q2[-1],
+            'Final Mass IQR (fg)': q3[-1] - q1[-1],
+        }
+        summary[threshold].update(end_summary)
+    return summary
+
+
 def analyze_enviro_section_stats(stats: dict) -> dict:
     summary = {}
     for timepoint, (q1, q2, q3) in stats.items():
@@ -36,16 +47,6 @@ def analyze_enviro_section_stats(stats: dict) -> dict:
             'Maximum IQR (mM)': (np.array(q3) - np.array(q1)).max(),
             'Maximum Median (mM)': max(q2),
             'Minimum Median (mM)': min(q2),
-        }
-    return summary
-
-
-def analyze_threshold_scan_stats(stats: dict) -> dict:
-    summary = {}
-    for threshold, (q1, q2, q3) in stats.items():
-        summary[threshold] = {
-            'Median Final Mass (fg)': q2[-1],
-            'Final Mass IQR (fg)': (np.array(q3) - np.array(q1))[-1],
         }
     return summary
 
@@ -95,12 +96,12 @@ def analyze_centrality_stats(stats: dict) -> dict:
     die_q1, die_q2, die_q3 = np.percentile(
         stats['die_distances'], [25, 50, 75])
     summary['survive'] = {
-        'Median Euclidian distance from center': survive_q2,
-        'IQR': survive_q3 - survive_q1,
+        'Median Euclidian distance from center (um)': survive_q2,
+        'IQR (um)': survive_q3 - survive_q1,
     }
     summary['die'] = {
-        'Median Euclidian distance from center': die_q2,
-        'IQR': die_q3 - die_q1,
+        'Median Euclidian distance from center (um)': die_q2,
+        'IQR (um)': die_q3 - die_q1,
     }
     u_stat, p_value = scipy_stats.mannwhitneyu(
         stats['survive_distances'], stats['die_distances'])
@@ -137,12 +138,45 @@ def analyze_growth_snapshot_stats(stats: dict) -> dict:
     return summary
 
 
+def analyze_enviro_heterogeneity_stats(stats: dict) -> dict:
+    summary: dict = {}
+    replicate_summaries: dict = {}
+    for replicate_stats in stats.values():
+        for field, field_stats in replicate_stats['fields'].items():
+            field_summary = replicate_summaries.setdefault(
+                field,
+                {key: [] for key in ('min', 'median', 'max', 'iqr')})
+            times = [float(time) for time in field_stats]
+            for name, func in {'initial': min, 'final': max}.items():
+                field_summary[name] = {}
+                time = func(times)
+                time_min, q1, q2, q3, time_max = field_stats[str(time)]
+                field_summary[name]['min'].append(time_min)
+                field_summary[name]['median'].append(q2)
+                field_summary[name]['max'].append(time_max)
+                field_summary[name]['iqr'].append(q3 - q1)
+
+    for field, field_summary in replicate_summaries.items():
+        summary[field] = {}
+        for time, time_summary in field_summary.items():
+            summary[field][time] = {}
+            for key, array in field_summary.items():
+                q1, q2, q3 = np.percentile(array, [25, 50, 75])
+                summary[field][time][key] = {
+                    'Median across replicates (mM)': q2,
+                    'IQR across replicates (mM)': q3 - q1,
+                }
+    return summary
+
+
 SECTION_ANALYZER_MAP = {
     'expression_distributions': analyze_expression_distributions_stats,
     'growth_fig': analyze_growth_fig_stats,
+    'threshold_scan': analyze_threshold_scan_stats,
     'enviro_section': analyze_enviro_section_stats,
     'centrality': analyze_centrality_stats,
     'growth_snapshots': analyze_growth_snapshot_stats,
+    'enviro_heterogeneity': analyze_enviro_heterogeneity_stats,
 }
 
 
