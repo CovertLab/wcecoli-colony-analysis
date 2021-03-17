@@ -143,12 +143,16 @@ def analyze_enviro_heterogeneity_stats(stats: dict) -> dict:
     replicate_summaries: dict = {}
     for replicate_stats in stats.values():
         for field, field_stats in replicate_stats['fields'].items():
-            field_summary = replicate_summaries.setdefault(
-                field,
-                {key: [] for key in ('min', 'median', 'max', 'iqr')})
+            field_summary = replicate_summaries.setdefault(field, {})
             times = [float(time) for time in field_stats]
             for name, func in {'initial': min, 'final': max}.items():
-                field_summary[name] = {}
+                field_summary.setdefault(
+                    name,
+                    {
+                        key: []
+                        for key in ('min', 'median', 'max', 'iqr')
+                    },
+                )
                 time = func(times)
                 time_min, q1, q2, q3, time_max = field_stats[str(time)]
                 field_summary[name]['min'].append(time_min)
@@ -160,7 +164,7 @@ def analyze_enviro_heterogeneity_stats(stats: dict) -> dict:
         summary[field] = {}
         for time, time_summary in field_summary.items():
             summary[field][time] = {}
-            for key, array in field_summary.items():
+            for key, array in time_summary.items():
                 q1, q2, q3 = np.percentile(array, [25, 50, 75])
                 summary[field][time][key] = {
                     'Median across replicates (mM)': q2,
