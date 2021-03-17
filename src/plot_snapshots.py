@@ -460,7 +460,8 @@ def plot_snapshots(data, plot_config):
                 field = np.transpose(np.array(fields[time][field_id]))
                 vmin, vmax = field_range[field_id]
                 q1, q2, q3 = np.percentile(field, [25, 50, 75])
-                stats['fields'][field_id][time] = vmin, q1, q2, q3, vmax
+                stats['fields'][field_id][time] = (
+                    field.min(), q1, q2, q3, field.max())
                 im = plt.imshow(field.tolist(),
                                 origin='lower',
                                 extent=[0, edge_length_x, 0, edge_length_y],
