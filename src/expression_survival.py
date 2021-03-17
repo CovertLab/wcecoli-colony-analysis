@@ -18,8 +18,19 @@ PATH_TO_AGENTS = ('agents',)
 PATH_TO_DEAD = ('boundary', 'dead')
 LIVE_COLOR = 'green'
 DEAD_COLOR = 'black'
-MARKERS = ('.', 'v', '^', 's', 'p', '*', '+', 'x', 'D')
 ALPHA = 0.5
+
+
+def _get_final_live_agents(data, time_range=(0, 1)):
+    data = filter_raw_data_by_time(data, time_range)
+    max_time = max(data.keys())
+    agents = []
+    agents_data = get_in(data[max_time], PATH_TO_AGENTS)
+    for agent, agent_data in agents_data.items():
+        dead = get_in(agent_data, PATH_TO_DEAD)
+        if not dead:
+            agents.append(agent)
+    return agents
 
 
 def plot_expression_survival(
@@ -27,7 +38,7 @@ def plot_expression_survival(
     boundary_x, boundary_y, boundary_error, boundary_color='black',
     scaling=1, time_range=(0, 1), label_agents=False,
     plot_agents=tuple(), fontsize=36,
-    trace_agents=tuple(),
+    dead_trace_agents=tuple(), agents_for_phylogeny_trace=tuple(),
 ):
     '''Create Expression Scatterplot Colored by Survival
 
@@ -66,10 +77,12 @@ def plot_expression_survival(
             the time range to consider.
         label_agents (bool): Whether to label each point with the agent
             ID.
-        trace_agents (Iterable): The agent IDs of the agents to plot
-            traces for. By default, no traces are shown.
+        dead_trace_agents (Iterable): The agent IDs of the agents to
+            plot traces for. By default, no traces are shown.
         plot_agents(Iterable): The agent IDs of the agents to plot. By
             default, all agents are plotted.
+        agents_for_phylogeny_trace (Iterable): Agent IDs for the agents
+            whose phylogenies will be traced.
         fontsize (float): Text size for entire figure.
 
     Returns:
@@ -82,8 +95,10 @@ def plot_expression_survival(
     if label_agents:
         fig, ax = plt.subplots(figsize=(50, 50))
         # Always trace all agents when labeling
-        trace_agents = (
-            list(live_finals_x.keys()) + list(dead_finals_x.keys()))
+        dead_trace_agents = (
+            list(dead_finals_x.keys()))
+        agents_for_phylogeny_trace = _get_final_live_agents(
+            data, time_range)
     else:
         fig, ax = plt.subplots()
 
@@ -107,8 +122,8 @@ def plot_expression_survival(
             y = dead_finals_y[agent] * scaling
             ax.annotate(agent, (x, y), size=0.1)
     plot_expression_survival_traces(ax, data, path_to_x_variable,
-            path_to_y_variable, scaling, time_range, trace_agents,
-            LIVE_COLOR)
+            path_to_y_variable, scaling, time_range, dead_trace_agents,
+            DEAD_COLOR, agents_for_phylogeny_trace, LIVE_COLOR)
     finals = list(live_finals_x.values()) + list(
         dead_finals_x.values())
     boundary_x_arr = np.array(boundary_x)
@@ -148,7 +163,8 @@ def plot_expression_survival(
 
 def plot_expression_survival_traces(
     ax, data, path_to_x_variable, path_to_y_variable, scaling=1,
-    time_range=(0, 1), agents=tuple(), trace_color='black',
+    time_range=(0, 1), dead_agents=tuple(), dead_trace_color='black',
+    agents_for_phylogeny_trace=tuple(), phylogeny_trace_color='green',
 ):
     '''Create Expression Traces Colored by Survival
 
@@ -172,13 +188,18 @@ def plot_expression_survival_traces(
             fractions of the total simulated time period. These
             fractions indicate the start and end points (inclusive) of
             the time range to consider.
-        agents (Iterable): The agent IDs of the agents to plot traces
-            for.
-        trace_color (str): Color of trace line.
+        dead_agents (Iterable): The agent IDs of the agents to plot
+            traces for. These agents should die.
+        dead_trace_color (str): Color of trace line for dead cells.
+        agents_for_phylogeny_trace (Iterable): Agent IDs for the agents
+            whose phylogenies will be traced.
+        phylogeny_trace_color (str): Color of trace line for phylogeny.
     '''
     data = filter_raw_data_by_time(data, time_range)
     path_timeseries = path_timeseries_from_data(data)
-    for agent in agents:
+
+    # Plot dead traces
+    for agent in dead_agents:
         x_timeseries = path_timeseries[
             PATH_TO_AGENTS + (agent,)
             + path_to_x_variable]
@@ -188,8 +209,34 @@ def plot_expression_survival_traces(
         ax.plot(
             np.array(x_timeseries) * scaling,
             np.array(y_timeseries) * scaling,
-            color=trace_color,
+            color=dead_trace_color,
             linewidth=0.5)
+
+    # Plot phylogeny traces
+    for agent in agents_for_phylogeny_trace:
+        last_end_point = tuple()
+        for i in range(len(agent) + 1):
+            ancestor = agent[:i]
+            x_path = PATH_TO_AGENTS + (ancestor,) + path_to_x_variable
+            y_path = PATH_TO_AGENTS + (ancestor,) + path_to_y_variable
+            if x_path in path_timeseries:
+                # else ancestor does not exist
+                x_timeseries = path_timeseries[x_path]
+                y_timeseries = path_timeseries[y_path]
+                ax.plot(
+                    np.array(x_timeseries) * scaling,
+                    np.array(y_timeseries) * scaling,
+                    color=phylogeny_trace_color,
+                    linewidth=0.5)
+                if last_end_point:
+                    ax.plot(
+                        [last_end_point[0], x_timeseries[-1]],
+                        [last_end_point[1], y_timeseries[-1]],
+                        color=phylogeny_trace_color,
+                        linewidth=0.5,
+                        linestyle='--',
+                    )
+                last_end_point = x_timeseries[-1], y_timeseries[-1]
 
 
 def plot_expression_survival_dotplot(

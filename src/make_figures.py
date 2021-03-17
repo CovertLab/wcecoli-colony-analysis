@@ -333,7 +333,7 @@ def make_expression_survival_fig(data, search_data):
         boundary_color=COLORS['magenta'],
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
-        trace_agents=AGENTS_TO_TRACE,
+        dead_trace_agents=AGENTS_TO_TRACE,
         plot_agents=AGENTS_TO_TRACE,
         fontsize=12,
     )
