@@ -230,8 +230,8 @@ def plot_expression_survival_traces(
                     linewidth=0.5)
                 if last_end_point:
                     ax.plot(
-                        [last_end_point[0], x_timeseries[-1]],
-                        [last_end_point[1], y_timeseries[-1]],
+                        [last_end_point[0], x_timeseries[0]],
+                        [last_end_point[1], y_timeseries[0]],
                         color=phylogeny_trace_color,
                         linewidth=0.5,
                         linestyle='--',
