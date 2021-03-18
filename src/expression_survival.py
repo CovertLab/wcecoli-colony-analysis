@@ -210,7 +210,8 @@ def plot_expression_survival_traces(
             np.array(x_timeseries) * scaling,
             np.array(y_timeseries) * scaling,
             color=dead_trace_color,
-            linewidth=0.5)
+            linewidth=0.5,
+        )
 
     # Plot phylogeny traces
     for agent in agents_for_phylogeny_trace:
@@ -227,11 +228,18 @@ def plot_expression_survival_traces(
                     np.array(x_timeseries) * scaling,
                     np.array(y_timeseries) * scaling,
                     color=phylogeny_trace_color,
-                    linewidth=0.5)
+                    linewidth=0.5,
+                )
                 if last_end_point:
                     ax.plot(
-                        [last_end_point[0], x_timeseries[0]],
-                        [last_end_point[1], y_timeseries[0]],
+                        [
+                            last_end_point[0] * scaling,
+                            x_timeseries[0] * scaling
+                        ],
+                        [
+                            last_end_point[1] * scaling,
+                            y_timeseries[0] * scaling
+                        ],
                         color=phylogeny_trace_color,
                         linewidth=0.5,
                         linestyle='--',
