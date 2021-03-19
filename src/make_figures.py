@@ -159,7 +159,6 @@ def make_expression_heterogeneity_fig(
     '''Figure shows heterogeneous expression within wcEcoli agents.'''
     tags_data = Analyzer.format_data_for_tags(data, environment_config)
     tagged_molecules = list(TAG_PATH_NAME_MAP.keys())
-    colors = tuple(COLORS[name] for name in ('orange', 'cyan'))
     plot_config = {
         'out_dir': FIG_OUT_DIR,
         'tagged_molecules': tagged_molecules,
@@ -169,8 +168,8 @@ def make_expression_heterogeneity_fig(
         'tag_label_size': 48,
         'default_font_size': 48,
         'n_snapshots': NUM_SNAPSHOTS,
-        'hues': {
-            tag: mcolors.rgb_to_hsv(mcolors.to_rgb(colors[0]))[0]
+        'tag_colors': {
+            tag: ('white', 'black')
             for tag in tagged_molecules
         },
         'scale_bar_length': 10,
@@ -210,7 +209,7 @@ def _calculate_distribution_stats(
 def make_expression_distributions_fig(replicates_raw_data):
     '''Figure shows the distributions of expression values.'''
     replicates_data = []
-    colors = list(COLORS.values())
+    colors = ('#333333', '#777777', '#BBBBBB')
     for i, raw_data in enumerate(replicates_raw_data):
         color = colors[i]
         end_expression_table = raw_data_to_end_expression_table(

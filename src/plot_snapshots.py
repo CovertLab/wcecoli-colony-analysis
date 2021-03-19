@@ -600,8 +600,8 @@ def plot_tags(data, plot_config):
               the tag name label
             * **default_font_size** (:py:class:`float`): Font size for
               titles and axis labels.
-            * **hues** (:py:class:`dict`): Map from tag ID in
-              tagged_molecules to a hue value in the HSV color space.
+            * **tag_colors** (:py:class:`dict`): Map from tag ID in
+              tagged_molecules to a tuple (min_color, max_color).
             * **scale_bar_length** (:py:class:`float`): Length of scale
               bar.  Defaults to 1 (in units of micrometers). If 0, no
               bar plotted.
@@ -623,7 +623,7 @@ def plot_tags(data, plot_config):
     tag_label_size = plot_config.get('tag_label_size', 20)
     default_font_size = plot_config.get('default_font_size', 36)
     convert_to_concs = plot_config.get('convert_to_concs', True)
-    hues = plot_config.get('hues', {})
+    tag_colors = plot_config.get('tag_colors', {})
     scale_bar_length = plot_config.get('scale_bar_length', 1)
     scale_bar_color = plot_config.get('scale_bar_color', 'white')
     xlim = plot_config.get('xlim')
@@ -647,7 +647,6 @@ def plot_tags(data, plot_config):
 
     # get tag ids and range
     tag_ranges = {}
-    tag_colors = {}
 
     for time, time_data in agents.items():
         for agent_id, agent_data in time_data.items():
@@ -663,11 +662,6 @@ def plot_tags(data, plot_config):
                 else:
                     # add new tag
                     tag_ranges[tag_id] = [level, level]
-
-                    # select random initial hue
-                    hue = hues.get(tag_id, random.choice(HUES))
-                    tag_color = [hue] + FLOURESCENT_SV
-                    tag_colors[tag_id] = tag_color
 
     # make the figure
     n_rows = len(tagged_molecules)
@@ -712,13 +706,9 @@ def plot_tags(data, plot_config):
     for row_idx, tag_id in enumerate(tag_ranges.keys()):
         tag_name = tag_path_name_map.get(tag_id, tag_id)
         min_tag, max_tag = tag_ranges[tag_id]
-        tag_color = tag_colors[tag_id]
-        min_hsv = get_fluorescent_color(
-            BASELINE_TAG_COLOR, tag_color, 0)
-        max_hsv = get_fluorescent_color(
-            BASELINE_TAG_COLOR, tag_color, 1)
-        min_rgb = matplotlib.colors.hsv_to_rgb(min_hsv)
-        max_rgb = matplotlib.colors.hsv_to_rgb(max_hsv)
+        min_color, max_color = tag_colors[tag_id]
+        min_rgb = matplotlib.colors.to_rgb(min_color)
+        max_rgb = matplotlib.colors.to_rgb(max_color)
         colors_dict = {
             'red': [
                 [0, min_rgb[0], min_rgb[0]],
