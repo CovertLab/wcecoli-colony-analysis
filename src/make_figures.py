@@ -276,8 +276,8 @@ def make_snapshots_figure(
         'scale_bar_color': 'white' if fields else 'black',
         'xlim': (10, 40),
         'ylim': (10, 40),
-        'min_color': '#EEEEEE',
-        'max_color': '#000000',
+        'min_color': '#000000',
+        'max_color': '#FFFFFF',
     }
     stats = plot_snapshots(snapshots_data, plot_config)
     return stats
