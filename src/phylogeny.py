@@ -4,6 +4,7 @@ import os
 from typing import Dict, List, Set, Iterable, Tuple
 
 from ete3 import TreeNode, TreeStyle, NodeStyle
+import pandas as pd
 from vivarium.core.experiment import get_in
 
 from src.types import RawData
@@ -109,3 +110,10 @@ def plot_phylogeny(
             nstyle['fgcolor'] = ignore_color
         node.set_style(nstyle)
     tree.render(out, tree_style=tstyle, w=400)
+    survive_col = []
+    agents_col = []
+    for agent in in_time_range_ids:
+        agents_col.append(agent)
+        survive_col.append(0 if agent in dead_ids else 1)
+    df = pd.DataFrame({'agents': agents_col, 'survival': survival_col})
+    return tree, df

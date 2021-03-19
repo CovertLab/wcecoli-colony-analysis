@@ -419,9 +419,17 @@ def make_environment_section(data, base_name):
 
 def make_phylogeny_plot(data):
     '''Plot phylogenetic tree'''
-    plot_phylogeny(data, os.path.join(
+    tree, df = plot_phylogeny(data, os.path.join(
         FIG_OUT_DIR, 'phylogeny.{}').format(FILE_EXTENSION),
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE)
+    tree.write(
+        format=1,
+        outfile=os.path.join(FIG_OUT_DIR, 'phylogeny.nw'),
+    )
+    df.to_csv(
+        os.path.join(FIG_OUT_DIR, 'agent_survival.csv'),
+        index=False,
+    )
 
 
 def main():
