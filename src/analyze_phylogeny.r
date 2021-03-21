@@ -10,8 +10,8 @@ args <- parser$parse_args()
 tree <- read.newick(file = args$phylogeny)
 survival <- read.csv(args$survival)
 
-x <- survival[["deaths"]]
+x <- survival[["survival"]]
 names(x) <- survival[["agents"]]
 
-phylosig(tree, x, method = "K", test = TRUE)
+phylosig(tree, x, method = "K", test = TRUE, nsim = 1e5)
 phylosig(tree, x, method = "lambda", test = TRUE)
