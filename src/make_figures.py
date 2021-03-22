@@ -61,6 +61,7 @@ AGENTS_TO_TRACE = (
     '0_wcecoli010110',
     '0_wcecoli1111010',
 )
+AGENTS_FOR_PHYLOGENY_TRACE = ('0_wcecoli101001101110',)
 COLONY_MASS_PATH = ('mass',)
 EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
 NUM_SNAPSHOTS = 5
@@ -322,6 +323,10 @@ def make_expression_survival_fig(data, search_data):
         FIG_OUT_DIR, 'expression_survival.{}'.format(
             FILE_EXTENSION)
     ))
+    plot_agents = set(AGENTS_TO_TRACE)
+    for agent in AGENTS_FOR_PHYLOGENY_TRACE:
+        for i in range(len('0_wcecoli') + 1, len(agent) + 1):
+            plot_agents.add(agent[:i])
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Final [AcrAB-TolC] (µM)',
@@ -333,7 +338,8 @@ def make_expression_survival_fig(data, search_data):
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
         dead_trace_agents=AGENTS_TO_TRACE,
-        plot_agents=AGENTS_TO_TRACE,
+        plot_agents=plot_agents,
+        agents_for_phylogeny_trace=AGENTS_FOR_PHYLOGENY_TRACE,
         fontsize=12,
     )
     fig.savefig(os.path.join(
