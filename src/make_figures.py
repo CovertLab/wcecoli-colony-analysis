@@ -361,7 +361,8 @@ def make_expression_survival_fig(data, search_data):
 
 def make_expression_survival_dotplots(data):
     '''Make expression-survival dotplots.'''
-    fig = plot_expression_survival_dotplot(
+    stats = {}
+    fig, stats['AcrAB-TolC'] = plot_expression_survival_dotplot(
         data, PUMP_PATH, 'Final [AcrAB-TolC] (µM)',
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
@@ -370,7 +371,7 @@ def make_expression_survival_dotplots(data):
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'expression_survival_pump.{}'.format(
             FILE_EXTENSION)))
-    fig = plot_expression_survival_dotplot(
+    fig, stats['AmpC'] = plot_expression_survival_dotplot(
         data, BETA_LACTAMASE_PATH, 'Final [AmpC] (µM)',
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
@@ -380,6 +381,7 @@ def make_expression_survival_dotplots(data):
         FIG_OUT_DIR,
         'expression_survival_beta_lactamase.{}'.format(
             FILE_EXTENSION)))
+    return stats
 
 
 def make_survival_centrality_fig(data):
@@ -512,7 +514,7 @@ def main():
     make_expression_survival_fig(
         all_data[EXPERIMENT_IDS['expression_survival']][0], search_data)
 
-    make_expression_survival_dotplots(
+    stats['dotplots'] = make_expression_survival_dotplots(
         all_data[EXPERIMENT_IDS['expression_survival']][0])
 
     make_phylogeny_plot(

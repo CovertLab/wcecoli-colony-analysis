@@ -299,7 +299,11 @@ def plot_expression_survival_dotplot(
         ax.spines[spine_name].set_visible(False)
     ax.spines['bottom'].set_position('zero')
     fig.tight_layout()
-    return fig
+    stats = {
+        'live': list(live_finals.values()),
+        'dead': list(dead_finals.values()),
+    }
+    return fig, stats
 
 
 def calc_live_and_dead_finals(

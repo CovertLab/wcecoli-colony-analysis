@@ -6,6 +6,14 @@ import numpy as np
 from scipy import stats as scipy_stats
 
 
+# From the "expression_distributions" stats in figs42
+EXPRESSION_IQRS = {
+    'AmpC': (68.36393149003717, 85.45342670347938, 99.41098877494602),
+    'AcrAB-TolC': (
+        18.06286132322007, 16.957394256525866, 19.251988781503236),
+}
+
+
 def analyze_expression_distributions_stats(stats: dict) -> dict:
     summary = {}
     for protein, (minimum, q1, q2, q3, maximum) in stats.items():
@@ -51,7 +59,7 @@ def analyze_enviro_section_stats(stats: dict) -> dict:
     return summary
 
 
-def _u_power(
+def _u_power_centrality(
         num_a: int, num_b: int, colony_radius: float,
         get_prob_a: Callable[[float], float], iters: int = 10000,
         alpha: float = 0.05, seed: int = 530) -> float:
@@ -81,7 +89,11 @@ def _u_power(
         b_dists = np.linalg.norm(  # type: ignore
             b_points, ord=2, axis=1)
 
-        _, p_value = scipy_stats.mannwhitneyu(a_dists, b_dists)
+        _, p_value = scipy_stats.mannwhitneyu(
+            a_dists,
+            b_dists,
+            alternative='two-sided',
+        )
         p_values.append(p_value)
 
     p_arr = np.array(p_values)
@@ -104,11 +116,14 @@ def analyze_centrality_stats(stats: dict) -> dict:
         'IQR (um)': die_q3 - die_q1,
     }
     u_stat, p_value = scipy_stats.mannwhitneyu(
-        stats['survive_distances'], stats['die_distances'])
+        stats['survive_distances'],
+        stats['die_distances'],
+        alternative='two-sided',
+    )
     summary['hypothesis testing'] = {
         'Mann-Whitney U statistic': u_stat,
         'Mann-Whitney p-value': p_value,
-        'Power (alpha=0.2)for 0.5 diff in p(death)': _u_power(
+        'Power (alpha=0.2)for 0.5 diff in p(death)': _u_power_centrality(
             len(stats['survive_distances']),
             len(stats['die_distances']),
             10,
@@ -173,6 +188,57 @@ def analyze_enviro_heterogeneity_stats(stats: dict) -> dict:
     return summary
 
 
+def _u_power_concentrations(
+        num_a: int, num_b: int, a_stdev: float, b_stdev: float,
+        diff: float, iters: int = 10000, seed: int = 620,
+        alpha: float = 0.05) -> float:
+    random = np.random.default_rng(seed)  # type: ignore
+    a_values = random.normal(size=(iters, num_a), scale=a_stdev)
+    b_values = random.normal(
+        size=(iters, num_b), loc=diff, scale=b_stdev)
+    p_values = []
+    for i in range(iters):
+        a = a_values[i, :]
+        b = b_values[i, :]
+        _, p_value = scipy_stats.mannwhitneyu(a, b, alternative='two-sided')
+        p_values.append(p_value)
+    p_arr = np.array(p_values)
+    power = (p_arr < alpha).sum() / len(p_arr)
+    return power
+
+
+def analyze_dotplot_stats(stats: dict) -> dict:
+    summary: dict = {}
+    stdevs = {
+        protein: np.mean(iqrs) / (  # type: ignore
+            scipy_stats.norm.ppf(0.75) - scipy_stats.norm.ppf(0.25))
+        for protein, iqrs in EXPRESSION_IQRS.items()
+    }
+    for protein, protein_stats in stats.items():
+        summary[protein] = {}
+        for status, concentrations in protein_stats.items():
+            q1, q2, q3 = np.percentile(concentrations, [25, 50, 75])
+            summary[protein][status] = {
+                'Median (mM)': q2,
+                'IQR (mM)': q3 - q1,
+            }
+        u_stat, p_value = scipy_stats.mannwhitneyu(
+            protein_stats['live'],
+            protein_stats['dead'],
+            alternative='two-sided',
+        )
+        summary[protein]['Mann-Whitney U-test'] = {
+            'U-statistic': u_stat,
+            'p-value': p_value,
+            'power': _u_power_concentrations(
+                len(protein_stats['live']),
+                len(protein_stats['dead']),
+                stdevs[protein], stdevs[protein], 2e-4,
+            ),
+        }
+    return summary
+
+
 SECTION_ANALYZER_MAP = {
     'expression_distributions': analyze_expression_distributions_stats,
     'growth_fig': analyze_growth_fig_stats,
@@ -181,6 +247,7 @@ SECTION_ANALYZER_MAP = {
     'centrality': analyze_centrality_stats,
     'growth_snapshots': analyze_growth_snapshot_stats,
     'enviro_heterogeneity': analyze_enviro_heterogeneity_stats,
+    'dotplots': analyze_dotplot_stats,
 }
 
 
