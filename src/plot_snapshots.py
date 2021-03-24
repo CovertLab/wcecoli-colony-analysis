@@ -293,6 +293,9 @@ def plot_snapshots(data, plot_config):
               minimum field values.
             * **max_color** (any valid matplotlib color): Color for
               maximum field values.
+            * **grid_color** (any valid matplotlib color): Whether to
+              show. Defaults to an empty string, in which case no
+              gridlines are shown.
     '''
     check_plt_backend()
 
@@ -315,6 +318,7 @@ def plot_snapshots(data, plot_config):
     ylim = plot_config.get('ylim')
     min_color = plot_config.get('min_color', 'white')
     max_color = plot_config.get('max_color', 'gray')
+    grid_color = plot_config.get('grid_color', '')
 
     # get data
     agents = data.get('agents', {})
@@ -474,11 +478,22 @@ def plot_snapshots(data, plot_config):
                                 vmin=vmin,
                                 vmax=vmax,
                                 cmap=cmap)
+                ax.set_yticks(
+                    np.linspace(0, edge_length_y, field.shape[0] + 1))
+                ax.set_xticks(
+                    np.linspace(0, edge_length_x, field.shape[1] + 1))
                 if agents:
                     agents_now = agents[time]
                     plot_agents(
                         ax, agents_now, agent_colors, agent_shape,
                         dead_color, agent_alpha)
+                if grid_color:
+                    ax.grid(
+                        which='both',
+                        color=grid_color,
+                        linestyle='-',
+                        linewidth=1,
+                    )
 
                 if xlim:
                     ax.set_xlim(*xlim)
@@ -514,6 +529,10 @@ def plot_snapshots(data, plot_config):
             ax = init_axes(
                 fig, bounds[0], bounds[1], grid, row_idx, col_idx,
                 time, ""
+            )
+            ax.tick_params(
+                axis='both', which='both', bottom=False, top=False,
+                left=False, right=False,
             )
 
             if agents:
