@@ -100,17 +100,18 @@ def plot_expression_survival(
         agents_for_phylogeny_trace = _get_final_live_agents(
             data, time_range)
     else:
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(6.4, 7))
 
     ax.scatter(
         np.array(list(live_finals_x.values())) * scaling,
         np.array(list(live_finals_y.values())) * scaling,
-        label='Survive', color=LIVE_COLOR, alpha=ALPHA,
+        label='Final Location at Division (Cell Survives)',
+        color=LIVE_COLOR, alpha=ALPHA,
     )
     ax.scatter(
         np.array(list(dead_finals_x.values())) * scaling,
         np.array(list(dead_finals_y.values())) * scaling,
-        label='Die', color=DEAD_COLOR, alpha=ALPHA,
+        label='Final Location at Death', color=DEAD_COLOR, alpha=ALPHA,
     )
     if label_agents:
         for agent in live_finals_x:
@@ -151,7 +152,9 @@ def plot_expression_survival(
         boundary_y_arr * scaling - boundary_error * scaling / 2,
         boundary_y_arr * scaling + boundary_error * scaling / 2,
         color=boundary_color, alpha=0.2)
-    ax.legend(prop={'size': fontsize})
+    ax.legend(  # type: ignore
+        bbox_to_anchor=(0.5, 1.05), loc='lower center',
+        prop={'size': fontsize})
     ax.set_xlabel(xlabel, fontsize=fontsize)
     ax.set_ylabel(ylabel, fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=fontsize)
@@ -199,7 +202,7 @@ def plot_expression_survival_traces(
     path_timeseries = path_timeseries_from_data(data)
 
     # Plot dead traces
-    for agent in dead_agents:
+    for i, agent in enumerate(dead_agents):
         x_timeseries = path_timeseries[
             PATH_TO_AGENTS + (agent,)
             + path_to_x_variable]
@@ -211,9 +214,12 @@ def plot_expression_survival_traces(
             np.array(y_timeseries) * scaling,
             color=dead_trace_color,
             linewidth=0.5,
+            label='Agent path until death' if i == 0 else '',
         )
 
     # Plot phylogeny traces
+    plotted_solid = False
+    plotted_dashed = False
     for agent in agents_for_phylogeny_trace:
         last_end_point = tuple()
         for i in range(len(agent) + 1):
@@ -229,7 +235,12 @@ def plot_expression_survival_traces(
                     np.array(y_timeseries) * scaling,
                     color=phylogeny_trace_color,
                     linewidth=0.5,
+                    label=(
+                        'Agent path until division'
+                        if not plotted_solid else ''
+                    ),
                 )
+                plotted_solid = True
                 if last_end_point:
                     ax.plot(
                         [
@@ -243,7 +254,13 @@ def plot_expression_survival_traces(
                         color=phylogeny_trace_color,
                         linewidth=0.5,
                         linestyle='--',
+                        label=(
+                            'From final mother location to initial '
+                            'daughter location'
+                            if not plotted_dashed else ''
+                        ),
                     )
+                    plotted_dashed = True
                 last_end_point = x_timeseries[-1], y_timeseries[-1]
 
 
