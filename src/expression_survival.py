@@ -240,6 +240,15 @@ def plot_expression_survival_traces(
                         if not plotted_solid else ''
                     ),
                 )
+                if not plotted_solid:
+                    # This is the first agent in the lineage
+                    ax.scatter(
+                        x_timeseries[0] * scaling,
+                        y_timeseries[0] * scaling,
+                        color=phylogeny_trace_color,
+                        marker='s',
+                        label='Lineage start',
+                    )
                 plotted_solid = True
                 if last_end_point:
                     ax.plot(
