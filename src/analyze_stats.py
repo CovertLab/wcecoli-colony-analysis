@@ -4,9 +4,10 @@ from typing import Callable, List
 
 import numpy as np
 from scipy import stats as scipy_stats
+from scipy.constants import N_A
 
 
-# From the "expression_distributions" stats in figs42
+# From the "expression_distributions" stats in figs42. In counts/fL
 EXPRESSION_IQRS = {
     'AmpC': (68.36393149003717, 85.45342670347938, 99.41098877494602),
     'AcrAB-TolC': (
@@ -210,7 +211,8 @@ def _u_power_concentrations(
 def analyze_dotplot_stats(stats: dict) -> dict:
     summary: dict = {}
     stdevs = {
-        protein: np.mean(iqrs) / (  # type: ignore
+        # Convert IQRs from counts/fL to mM
+        protein: (np.array(iqrs) * 1e15 / 1e3 / N_A).mean() / (  # type: ignore
             scipy_stats.norm.ppf(0.75) - scipy_stats.norm.ppf(0.25))
         for protein, iqrs in EXPRESSION_IQRS.items()
     }
@@ -233,7 +235,7 @@ def analyze_dotplot_stats(stats: dict) -> dict:
             'power': _u_power_concentrations(
                 len(protein_stats['live']),
                 len(protein_stats['dead']),
-                stdevs[protein], stdevs[protein], 2e-4,
+                stdevs[protein], stdevs[protein], 1e-4,
             ),
         }
     return summary
