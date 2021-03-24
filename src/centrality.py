@@ -89,6 +89,8 @@ def plot_survival_against_centrality(
         )
     ax.set_ylabel(  # type: ignore
         'Distance from Center ($\mu m$)', fontsize=fontsize)
+    for spine_name in ('top', 'right'):
+        ax.spines[spine_name].set_visible(False)
 
     stats = {
         'survive_distances': to_plot[0],
