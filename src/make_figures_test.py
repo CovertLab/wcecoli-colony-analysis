@@ -30,6 +30,7 @@ EXPERIMENT_IDS = {
 }
 ENVIRONMENT_SECTION_TIMES = (1, 21, 41, 60, 80, 100)
 AGENTS_TO_TRACE = ('0_wcecoli',)
+AGENTS_FOR_PHYLOGENY_TRACE = ('0_wcecoli',)
 FIG_OUT_DIR = os.path.join(make_figures.OUT_DIR, 'figs_test')
 
 
@@ -38,6 +39,7 @@ def main():
     make_figures.FIG_OUT_DIR = FIG_OUT_DIR
     make_figures.ENVIRONMENT_SECTION_TIMES = ENVIRONMENT_SECTION_TIMES
     make_figures.AGENTS_TO_TRACE = AGENTS_TO_TRACE
+    make_figures.AGENTS_FOR_PHYLOGENY_TRACE = AGENTS_FOR_PHYLOGENY_TRACE
     make_figures.main()
 
 

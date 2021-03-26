@@ -324,7 +324,7 @@ def make_expression_survival_fig(data, search_data):
         FIG_OUT_DIR, 'expression_survival.{}'.format(
             FILE_EXTENSION)
     ))
-    plot_agents = set(AGENTS_TO_TRACE)
+    plot_agents = set()
     for agent in AGENTS_FOR_PHYLOGENY_TRACE:
         for i in range(len('0_wcecoli') + 1, len(agent) + 1):
             plot_agents.add(agent[:i])
@@ -338,13 +338,30 @@ def make_expression_survival_fig(data, search_data):
         boundary_color=COLORS['magenta'],
         scaling=1e3,
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
-        dead_trace_agents=AGENTS_TO_TRACE,
         plot_agents=plot_agents,
         agents_for_phylogeny_trace=AGENTS_FOR_PHYLOGENY_TRACE,
         fontsize=12,
     )
     fig.savefig(os.path.join(
-        FIG_OUT_DIR, 'expression_survival_traces.{}'.format(
+        FIG_OUT_DIR, 'expression_survival_lineage_traces.{}'.format(
+            FILE_EXTENSION)
+    ))
+    fig = plot_expression_survival(
+        data, PUMP_PATH, BETA_LACTAMASE_PATH,
+        'Final [AcrAB-TolC] (µM)',
+        'Final [AmpC] (µM)',
+        search_data['x_values'],
+        search_data['y_values'],
+        search_data['precision'],
+        boundary_color=COLORS['magenta'],
+        scaling=1e3,
+        time_range=EXPRESSION_SURVIVAL_TIME_RANGE,
+        dead_trace_agents=AGENTS_TO_TRACE,
+        plot_agents=AGENTS_TO_TRACE,
+        fontsize=12,
+    )
+    fig.savefig(os.path.join(
+        FIG_OUT_DIR, 'expression_survival_lineage_traces.{}'.format(
             FILE_EXTENSION)
     ))
     fig = plot_expression_survival(
