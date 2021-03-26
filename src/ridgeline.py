@@ -103,9 +103,10 @@ def _calculate_density_curves(
         overlap: float):
     y_values: Dict[str, List[float]] = {}
     density_curves: Dict[str, List[Sequence[float]]] = {}
-    # Reverse order since we plot from bottom to top
+    offset = 0
     for data_dict in data:
         y = 0.
+        # Reverse order since we plot from bottom to top
         for y_label in reversed(list(data_dict.keys())):
             data_values = data_dict[y_label]
             if len(data_values) > 1:
@@ -122,11 +123,12 @@ def _calculate_density_curves(
             density_curves.setdefault(y_label, []).append(density_curve)
             y_values.setdefault(y_label, []).append(y)
             y += max(density_curve) * (1 - overlap)
+            offset = max(offset, max(density_curve) * abs(overlap) / 2)
     max_y_values = {
         y_label: max(values)
         for y_label, values in y_values.items()
     }
-    return max_y_values, density_curves
+    return max_y_values, density_curves, offset
 
 
 
@@ -193,7 +195,7 @@ def plot_ridgeline(
     extra = data_range * horizontal_extra
     x_values = np.linspace(
         data_min - extra, data_max + extra, num_bins)
-    y_values, density_curves = _calculate_density_curves(
+    y_values, density_curves, offset = _calculate_density_curves(
         data, x_values, overlap)
     num_replicates = len(density_curves[list(y_values.keys())[0]])
     assert len(colors) == num_replicates
@@ -224,7 +226,7 @@ def plot_ridgeline(
             ) * 2 * jitter
             # pylint: enable=no-member
             ax.scatter(points,  # type: ignore
-                np.ones(len(points)) * y - 0.1, color=cast(str, color),
+                np.ones(len(points)) * y - offset, color=cast(str, color),
                 marker='|', s=20, linewidths=0.1, zorder=zorder,
                 alpha=point_alpha)
     ax.set_yticks(list(y_values.values()))
