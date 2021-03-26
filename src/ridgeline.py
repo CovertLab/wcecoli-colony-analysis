@@ -224,7 +224,7 @@ def plot_ridgeline(
             ) * 2 * jitter
             # pylint: enable=no-member
             ax.scatter(points,  # type: ignore
-                np.ones(len(points)) * y, color=cast(str, color),
+                np.ones(len(points)) * y - 0.1, color=cast(str, color),
                 marker='|', s=20, linewidths=0.1, zorder=zorder,
                 alpha=point_alpha)
     ax.set_yticks(list(y_values.values()))
