@@ -127,7 +127,7 @@ def plot_expression_survival(
         time_range, dead_trace_agents, DEAD_COLOR)
     plot_expression_survival_lineage_traces(
         ax, data, path_to_x_variable, path_to_y_variable, scaling,
-        time_range, agents_for_phylogeny_trace, LIVE_COLOR)
+        time_range, agents_for_phylogeny_trace, LIVE_COLOR, ALPHA)
     finals = list(live_finals_x.values()) + list(
         dead_finals_x.values())
     plot_expression_survival_boundary(
@@ -247,7 +247,7 @@ def plot_expression_survival_death_traces(
 def plot_expression_survival_lineage_traces(
     ax, data, path_to_x_variable, path_to_y_variable, scaling=1,
     time_range=(0, 1), agents_for_phylogeny_trace=tuple(),
-    phylogeny_trace_color='green',
+    phylogeny_trace_color='green', alpha=1,
 ):
     '''Create expression traces for a lineage of cells.
 
@@ -271,6 +271,7 @@ def plot_expression_survival_lineage_traces(
         agents_for_phylogeny_trace (Iterable): Agent IDs for the agents
             whose phylogenies will be traced.
         phylogeny_trace_color (str): Color of trace line for phylogeny.
+        alpha (float): Transparency for starting point.
     '''
     data = filter_raw_data_by_time(data, time_range)
     path_timeseries = path_timeseries_from_data(data)
@@ -306,6 +307,7 @@ def plot_expression_survival_lineage_traces(
                         color=phylogeny_trace_color,
                         marker='s',
                         label='Lineage start',
+                        alpha=alpha,
                     )
                 plotted_solid = True
                 if last_end_point:
