@@ -102,17 +102,20 @@ def plot_expression_survival(
     else:
         fig, ax = plt.subplots(figsize=(6.4, 7))
 
-    ax.scatter(
-        np.array(list(live_finals_x.values())) * scaling,
-        np.array(list(live_finals_y.values())) * scaling,
-        label='Final Location at Division (Cell Survives)',
-        color=LIVE_COLOR, alpha=ALPHA,
-    )
-    ax.scatter(
-        np.array(list(dead_finals_x.values())) * scaling,
-        np.array(list(dead_finals_y.values())) * scaling,
-        label='Final Location at Death', color=DEAD_COLOR, alpha=ALPHA,
-    )
+    if live_finals_x:
+        ax.scatter(
+            np.array(list(live_finals_x.values())) * scaling,
+            np.array(list(live_finals_y.values())) * scaling,
+            label='Final Location at Division (Cell Survives)',
+            color=LIVE_COLOR, alpha=ALPHA,
+        )
+    if dead_finals_x:
+        ax.scatter(
+            np.array(list(dead_finals_x.values())) * scaling,
+            np.array(list(dead_finals_y.values())) * scaling,
+            label='Final Location at Death', color=DEAD_COLOR,
+            alpha=ALPHA,
+        )
     if label_agents:
         for agent in live_finals_x:
             x = live_finals_x[agent] * scaling
