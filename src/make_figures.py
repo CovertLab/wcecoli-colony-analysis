@@ -361,7 +361,7 @@ def make_expression_survival_fig(data, search_data):
         fontsize=12,
     )
     fig.savefig(os.path.join(
-        FIG_OUT_DIR, 'expression_survival_lineage_traces.{}'.format(
+        FIG_OUT_DIR, 'expression_survival_death_traces.{}'.format(
             FILE_EXTENSION)
     ))
     fig = plot_expression_survival(
