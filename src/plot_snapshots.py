@@ -427,17 +427,17 @@ def plot_snapshots(data, plot_config):
     colors_dict = {
         'red': [
             [0, min_rgb[0], min_rgb[0]],
-            [0.5, max_rgb[0], max_rgb[0]],
+            [0.95, max_rgb[0], max_rgb[0]],
             [1, max_rgb[0], max_rgb[0]],
         ],
         'green': [
             [0, min_rgb[1], min_rgb[1]],
-            [0.5, max_rgb[1], max_rgb[1]],
+            [0.95, max_rgb[1], max_rgb[1]],
             [1, max_rgb[1], max_rgb[1]],
         ],
         'blue': [
             [0, min_rgb[2], min_rgb[2]],
-            [0.5, max_rgb[2], max_rgb[2]],
+            [0.95, max_rgb[2], max_rgb[2]],
             [1, max_rgb[2], max_rgb[2]],
         ],
     }
