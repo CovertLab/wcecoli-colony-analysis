@@ -122,11 +122,53 @@ def plot_expression_survival(
             x = dead_finals_x[agent] * scaling
             y = dead_finals_y[agent] * scaling
             ax.annotate(agent, (x, y), size=0.1)
-    plot_expression_survival_traces(ax, data, path_to_x_variable,
-            path_to_y_variable, scaling, time_range, dead_trace_agents,
-            DEAD_COLOR, agents_for_phylogeny_trace, LIVE_COLOR)
+    plot_expression_survival_death_traces(
+        ax, data, path_to_x_variable, path_to_y_variable, scaling,
+        time_range, dead_trace_agents, DEAD_COLOR)
+    plot_expression_survival_lineage_traces(
+        ax, data, path_to_x_variable, path_to_y_variable, scaling,
+        time_range, agents_for_phylogeny_trace, LIVE_COLOR)
     finals = list(live_finals_x.values()) + list(
         dead_finals_x.values())
+    plot_expression_survival_boundary(
+        ax, boundary_x, boundary_y, boundary_error, finals, scaling,
+        boundary_color)
+    ax.legend(  # type: ignore
+        bbox_to_anchor=(0.5, 1.05), loc='lower center',
+        prop={'size': fontsize})
+    ax.set_xlabel(xlabel, fontsize=fontsize)
+    ax.set_ylabel(ylabel, fontsize=fontsize)
+    ax.tick_params(axis='both', which='major', labelsize=fontsize)
+    for spine_name in ('top', 'right'):
+        ax.spines[spine_name].set_visible(False)
+    fig.tight_layout()
+    return fig
+
+
+def plot_expression_survival_boundary(
+        ax, boundary_x, boundary_y, boundary_error, finals, scaling=1,
+        boundary_color='black'):
+    '''Plot the life-death boundary on an expression-survival plot.
+
+    Args:
+        ax: Axes to plot on.
+        boundary_x (list(float)): X-values of the boundary identified
+            numerically from the antibiotic model.
+        boundary_y (list(float)): Y-values of the boundary identified
+            numerically from the antibiotic model.
+        boundary_error (list(float)): Precision of the Y-value
+            predictions. This is the distance along the y axis between
+            the known dead point and known live point closest to the
+            prediction. The predicted y-value will be in the middle of
+            this range, so an error band can be drawn of width
+            boundary_error centered at boundary_y.
+        finals (list(float)): All final cell concentrations plotted on
+            the figure. This is used to ensure the boundary line spans
+            the figure.
+        scaling (str): Coefficient to multiply all data by. This is
+            intended to be used for changing the units plotted.
+        boundary_color (str): Color of boundary.
+    '''
     boundary_x_arr = np.array(boundary_x)
     boundary_y_arr = np.array(boundary_y)
     mask = (
@@ -152,27 +194,14 @@ def plot_expression_survival(
         boundary_y_arr * scaling - boundary_error * scaling / 2,
         boundary_y_arr * scaling + boundary_error * scaling / 2,
         color=boundary_color, alpha=0.2)
-    ax.legend(  # type: ignore
-        bbox_to_anchor=(0.5, 1.05), loc='lower center',
-        prop={'size': fontsize})
-    ax.set_xlabel(xlabel, fontsize=fontsize)
-    ax.set_ylabel(ylabel, fontsize=fontsize)
-    ax.tick_params(axis='both', which='major', labelsize=fontsize)
-    for spine_name in ('top', 'right'):
-        ax.spines[spine_name].set_visible(False)
-    fig.tight_layout()
-    return fig
 
 
-def plot_expression_survival_traces(
+
+def plot_expression_survival_death_traces(
     ax, data, path_to_x_variable, path_to_y_variable, scaling=1,
     time_range=(0, 1), dead_agents=tuple(), dead_trace_color='black',
-    agents_for_phylogeny_trace=tuple(), phylogeny_trace_color='green',
 ):
-    '''Create Expression Traces Colored by Survival
-
-    Plot a trace of expression values for each cell. The color of each
-    dot in the trace reflects whether the cell was alive at that point.
+    '''Create Expression Traces for Dead Cells
 
     Parameters:
         ax (Axes): Axes to plot on.
@@ -194,9 +223,6 @@ def plot_expression_survival_traces(
         dead_agents (Iterable): The agent IDs of the agents to plot
             traces for. These agents should die.
         dead_trace_color (str): Color of trace line for dead cells.
-        agents_for_phylogeny_trace (Iterable): Agent IDs for the agents
-            whose phylogenies will be traced.
-        phylogeny_trace_color (str): Color of trace line for phylogeny.
     '''
     data = filter_raw_data_by_time(data, time_range)
     path_timeseries = path_timeseries_from_data(data)
@@ -216,6 +242,38 @@ def plot_expression_survival_traces(
             linewidth=0.5,
             label='Agent path until death' if i == 0 else '',
         )
+
+
+def plot_expression_survival_lineage_traces(
+    ax, data, path_to_x_variable, path_to_y_variable, scaling=1,
+    time_range=(0, 1), agents_for_phylogeny_trace=tuple(),
+    phylogeny_trace_color='green',
+):
+    '''Create expression traces for a lineage of cells.
+
+    Parameters:
+        ax (Axes): Axes to plot on.
+        data (dict): The raw data emitted from the simulation.
+        path_to_x_variable (tuple): Path from the agent root to the
+            variable that holds the protein's expression level. We do
+            not adjust for cell volume, so this should be a
+            concentration. This protein will be plotted on the x axis.
+        path_to_y_variable (tuple): Path from the agent root to the
+            variable that holds the protein's expression level. We do
+            not adjust for cell volume, so this should be a
+            concentration. This protein will be plotted on the y axis.
+        scaling (str): Coefficient to multiply all data by. This is
+            intended to be used for changing the units plotted.
+        time_range (tuple): Tuple of two :py:class:`float`s that are
+            fractions of the total simulated time period. These
+            fractions indicate the start and end points (inclusive) of
+            the time range to consider.
+        agents_for_phylogeny_trace (Iterable): Agent IDs for the agents
+            whose phylogenies will be traced.
+        phylogeny_trace_color (str): Color of trace line for phylogeny.
+    '''
+    data = filter_raw_data_by_time(data, time_range)
+    path_timeseries = path_timeseries_from_data(data)
 
     # Plot phylogeny traces
     plotted_solid = False
