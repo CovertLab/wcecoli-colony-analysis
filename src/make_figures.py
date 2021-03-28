@@ -330,8 +330,8 @@ def make_expression_survival_fig(data, search_data):
             plot_agents.add(agent[:i])
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
-        'Final [AcrAB-TolC] (µM)',
-        'Final [AmpC] (µM)',
+        '[AcrAB-TolC] (µM)',
+        '[AmpC] (µM)',
         search_data['x_values'],
         search_data['y_values'],
         search_data['precision'],
@@ -348,8 +348,8 @@ def make_expression_survival_fig(data, search_data):
     ))
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
-        'Final [AcrAB-TolC] (µM)',
-        'Final [AmpC] (µM)',
+        '[AcrAB-TolC] (µM)',
+        '[AmpC] (µM)',
         search_data['x_values'],
         search_data['y_values'],
         search_data['precision'],
