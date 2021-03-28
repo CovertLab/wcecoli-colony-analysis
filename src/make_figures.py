@@ -11,7 +11,6 @@ import sys
 import subprocess
 from typing import Sequence, List, Dict, Tuple
 
-from matplotlib import colors as mcolors
 import numpy as np
 from vivarium.core.process import serialize_value
 from vivarium.core.experiment import get_in
@@ -549,6 +548,9 @@ def main():
     stats['death_snapshots'] = make_snapshots_figure(
         death_data, death_enviro_config, 'death_snapshots', [], 'green',
         snapshot_times=[max(death_data.keys())])
+    stats['death_snapshots_antibiotic'] = make_snapshots_figure(
+        death_data, death_enviro_config, 'death_snapshots_antibiotic',
+        ['nitrocefin'], 'green')
 
     stats['centrality'] = make_survival_centrality_fig(
         all_data[EXPERIMENT_IDS['centrality']][0])
