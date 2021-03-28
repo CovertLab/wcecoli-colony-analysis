@@ -325,7 +325,7 @@ def plot_expression_survival_lineage_traces(
                         ],
                         color=phylogeny_trace_color,
                         linewidth=0.5,
-                        linestyle='--',
+                        linestyle=(0, (5, 10)),
                         label=(
                             'From final mother location to initial '
                             'daughter location'
