@@ -189,6 +189,13 @@ def analyze_enviro_heterogeneity_stats(stats: dict) -> dict:
     return summary
 
 
+def analyze_death_snapshot_antibiotic_stats(stats: dict) -> dict:
+    replicates_stats = {
+        'replicate1': stats,
+    }
+    return analyze_enviro_heterogeneity_stats(replicates_stats)
+
+
 def _u_power_concentrations(
         num_a: int, num_b: int, a_stdev: float, b_stdev: float,
         diff: float, iters: int = 10000, seed: int = 620,
@@ -242,14 +249,16 @@ def analyze_dotplot_stats(stats: dict) -> dict:
 
 
 SECTION_ANALYZER_MAP = {
-    'expression_distributions': analyze_expression_distributions_stats,
-    'growth_fig': analyze_growth_fig_stats,
-    'threshold_scan': analyze_threshold_scan_stats,
-    'enviro_section': analyze_enviro_section_stats,
-    'centrality': analyze_centrality_stats,
-    'growth_snapshots': analyze_growth_snapshot_stats,
-    'enviro_heterogeneity': analyze_enviro_heterogeneity_stats,
-    'dotplots': analyze_dotplot_stats,
+    #'expression_distributions': analyze_expression_distributions_stats,
+    #'growth_fig': analyze_growth_fig_stats,
+    #'threshold_scan': analyze_threshold_scan_stats,
+    #'enviro_section': analyze_enviro_section_stats,
+    #'centrality': analyze_centrality_stats,
+    #'growth_snapshots': analyze_growth_snapshot_stats,
+    #'enviro_heterogeneity': analyze_enviro_heterogeneity_stats,
+    #'dotplots': analyze_dotplot_stats,
+    'death_snapshots_antibiotic': (
+        analyze_death_snapshot_antibiotic_stats),
 }
 
 
