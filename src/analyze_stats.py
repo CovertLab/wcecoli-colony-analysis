@@ -201,7 +201,7 @@ def _u_power_concentrations(
         diff: float, iters: int = 10000, seed: int = 620,
         alpha: float = 0.05) -> float:
     random = np.random.default_rng(seed)  # type: ignore
-    a_values = random.normal(size=(iters, num_a), scale=a_stdev)
+    a_values = random.normal(size=(iters, num_a), loc=0, scale=a_stdev)
     b_values = random.normal(
         size=(iters, num_b), loc=diff, scale=b_stdev)
     p_values = []
@@ -219,7 +219,7 @@ def analyze_dotplot_stats(stats: dict) -> dict:
     summary: dict = {}
     stdevs = {
         # Convert IQRs from counts/fL to mM
-        protein: (np.array(iqrs) * 1e15 / 1e3 / N_A).mean() / (  # type: ignore
+        protein: (np.array(iqrs) * 1e15 * 1e3 / N_A).mean() / (  # type: ignore
             scipy_stats.norm.ppf(0.75) - scipy_stats.norm.ppf(0.25))
         for protein, iqrs in EXPRESSION_IQRS.items()
     }
@@ -249,14 +249,14 @@ def analyze_dotplot_stats(stats: dict) -> dict:
 
 
 SECTION_ANALYZER_MAP = {
-    #'expression_distributions': analyze_expression_distributions_stats,
-    #'growth_fig': analyze_growth_fig_stats,
-    #'threshold_scan': analyze_threshold_scan_stats,
-    #'enviro_section': analyze_enviro_section_stats,
-    #'centrality': analyze_centrality_stats,
-    #'growth_snapshots': analyze_growth_snapshot_stats,
-    #'enviro_heterogeneity': analyze_enviro_heterogeneity_stats,
-    #'dotplots': analyze_dotplot_stats,
+    'expression_distributions': analyze_expression_distributions_stats,
+    'growth_fig': analyze_growth_fig_stats,
+    'threshold_scan': analyze_threshold_scan_stats,
+    'enviro_section': analyze_enviro_section_stats,
+    'centrality': analyze_centrality_stats,
+    'growth_snapshots': analyze_growth_snapshot_stats,
+    'enviro_heterogeneity': analyze_enviro_heterogeneity_stats,
+    'dotplots': analyze_dotplot_stats,
     'death_snapshots_antibiotic': (
         analyze_death_snapshot_antibiotic_stats),
 }
