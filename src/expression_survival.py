@@ -242,7 +242,7 @@ def plot_expression_survival_death_traces(
             np.array(x_timeseries) * scaling,
             np.array(y_timeseries) * scaling,
             color=dead_trace_color,
-            linewidth=0.5,
+            linewidth=1,
             label='Agent path until death' if i == 0 else '',
         )
 
@@ -296,7 +296,7 @@ def plot_expression_survival_lineage_traces(
                     np.array(x_timeseries) * scaling,
                     np.array(y_timeseries) * scaling,
                     color=phylogeny_trace_color,
-                    linewidth=0.5,
+                    linewidth=1,
                     label=(
                         'Agent path until division'
                         if not plotted_solid else ''
@@ -324,7 +324,7 @@ def plot_expression_survival_lineage_traces(
                             y_timeseries[0] * scaling
                         ],
                         color=phylogeny_trace_color,
-                        linewidth=0.5,
+                        linewidth=1,
                         linestyle=(0, (5, 10)),
                         label=(
                             'From final mother location to initial '
