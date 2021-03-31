@@ -124,12 +124,12 @@ def analyze_centrality_stats(stats: dict) -> dict:
     summary['hypothesis testing'] = {
         'Mann-Whitney U statistic': u_stat,
         'Mann-Whitney p-value': p_value,
-        'Power (alpha=0.2)for 0.5 diff in p(death)': _u_power_centrality(
+        'Power (alpha=0.05)for 0.5 diff in p(death)': _u_power_centrality(
             len(stats['survive_distances']),
             len(stats['die_distances']),
             10,
             lambda x: 0.25 + x / 10 / 2,
-            alpha=0.2,
+            alpha=0.05,
         ),
     }
     return summary
