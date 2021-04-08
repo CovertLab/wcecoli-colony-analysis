@@ -1,6 +1,6 @@
 '''Colony Total Mass'''
 
-from typing import Dict, List, Tuple, cast
+from typing import Dict, List, Tuple, Iterable, cast
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -48,6 +48,7 @@ def get_total_mass_plot(
         datasets: Dict[str, List[RawData]],
         colors: List[str],
         fontsize: float = 36,
+        vlines: Iterable[Tuple[float, float, str, str]] = tuple(),
         ) -> Tuple[plt.Figure, dict]:
     '''Plot the total masses of colonies from groups of simulations.
 
@@ -60,6 +61,9 @@ def get_total_mass_plot(
         colors: Map from a group label to the color to show that group's
             data in.
         fontsize: Size of all text on figure.
+        vlines: Tuple of vertical line specifiers. Each specifier is a
+            tuple of the line position, label position as fraction of x
+            range, color, and label.
 
     Returns:
         A tuple of the figure and a dictionary that maps from group
@@ -80,6 +84,12 @@ def get_total_mass_plot(
         label_quartiles = plot_total_mass(
             filtered_replicates, ax, label, colors[i], fontsize)
         quartiles[label] = label_quartiles
+    for x, label_x, vline_color, vline_label in vlines:
+        ax.axvline(  # type: ignore
+            x / 60 / 60, color=vline_color, linestyle='--')
+        ax.text(  # type: ignore
+            label_x, 0.95, vline_label, fontsize=fontsize,
+            transform=ax.transAxes)  # type: ignore
     ax.set_ylabel(  # type: ignore
         'Total Cell Mass (fg)', fontsize=fontsize)
     ax.set_xlabel('Time (hr)', fontsize=fontsize)  # type: ignore

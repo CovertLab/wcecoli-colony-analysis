@@ -106,14 +106,14 @@ def plot_expression_survival(
         ax.scatter(
             np.array(list(live_finals_x.values())) * scaling,
             np.array(list(live_finals_y.values())) * scaling,
-            label='Final Location at Division (Cell Survives)',
+            label='Concentrations at Division (Cell Survives)',
             color=LIVE_COLOR, alpha=ALPHA,
         )
     if dead_finals_x:
         ax.scatter(
             np.array(list(dead_finals_x.values())) * scaling,
             np.array(list(dead_finals_y.values())) * scaling,
-            label='Final Location at Death', color=DEAD_COLOR,
+            label='Concentrations at Death', color=DEAD_COLOR,
             alpha=ALPHA,
         )
     if label_agents:

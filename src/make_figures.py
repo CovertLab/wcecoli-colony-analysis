@@ -291,7 +291,7 @@ def make_growth_fig(basal_data, anaerobic_data):
         'anaerobic': anaerobic_data,
     }
     fig, stats = get_total_mass_plot(
-        data_dict, tuple(COLORS.values()), fontsize=16)
+        data_dict, tuple(COLORS.values()), fontsize=12)
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'growth.{}'.format(FILE_EXTENSION)))
     return stats
@@ -299,8 +299,18 @@ def make_growth_fig(basal_data, anaerobic_data):
 
 def make_threshold_scan_fig(data_dict):
     '''Plot colony mass curves with various antibiotic thresholds.'''
+    some_data = list(data_dict.values())[0][0]
+    vlines = (
+        (
+            max(some_data.keys()) / 2,
+            0.51,
+            'black',
+            'Nitrocefin\nIntroduced',
+        ),
+    )
     fig, stats = get_total_mass_plot(
-        data_dict, tuple(COLORS.values()), fontsize=16)
+        data_dict, tuple(COLORS.values()), fontsize=12, vlines=vlines,
+    )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'threshold_scan.{}'.format(FILE_EXTENSION)))
     return stats
