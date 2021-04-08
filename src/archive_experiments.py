@@ -12,7 +12,7 @@ from src.make_figures import (
 
 
 OUT_PATH = 'archived_simulations.tar.gz'
-TIMEOUT = 10 * 60  # seconds
+TIMEOUT = 30 * 60  # seconds
 ARCHIVES_FOLDER = 'archived_simulations'
 
 
