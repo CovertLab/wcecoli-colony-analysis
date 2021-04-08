@@ -3,7 +3,7 @@
 import os
 from typing import Dict, List, Set, Iterable, Tuple
 
-from ete3 import TreeNode, TreeStyle, NodeStyle
+from ete3 import TreeNode, TreeStyle, NodeStyle, CircleFace, TextFace
 import pandas as pd
 from vivarium.core.experiment import get_in
 
@@ -56,8 +56,9 @@ def make_ete_trees(agent_ids: Iterable[str]) -> List[TreeNode]:
 def plot_phylogeny(
         data: RawData, out: str = 'phylogeny.pdf',
         live_color: str = 'green', dead_color: str = 'black',
-        ignore_color: str = 'gray',
-        time_range: Tuple[float, float] = (0, 1)) -> None:
+        ignore_color: str = 'lightgray',
+        time_range: Tuple[float, float] = (0, 1)
+        ) -> Tuple[TreeNode, pd.DataFrame]:
     '''Plot phylogenetic tree from an experiment.
 
     Args:
@@ -90,12 +91,24 @@ def plot_phylogeny(
     trees = make_ete_trees(agent_ids)
     assert len(trees) == 1
     tree = trees[0]
+
+    # Set style for overall figure
     tstyle = TreeStyle()
     tstyle.show_scale = False
     tstyle.show_leaf_name = False
     tstyle.scale = None
     tstyle.optimal_scale_level = 'full'  # Avoid artificial branches
     tstyle.mode = 'c'
+    legend = {
+        'Die': dead_color,
+        'Survive': live_color,
+        'Divided Before Antibiotics Appeared': ignore_color,
+    }
+    for label, color in legend.items():
+        tstyle.legend.add_face(CircleFace(5, color), column=0)
+        tstyle.legend.add_face(TextFace(label), column=1)
+
+    # Set styles for each node
     for node in tree.traverse():
         nstyle=NodeStyle()
         nstyle['size'] = 5
