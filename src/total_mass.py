@@ -82,7 +82,7 @@ def get_total_mass_plot(
         quartiles[label] = label_quartiles
     ax.set_ylabel(  # type: ignore
         'Total Cell Mass (fg)', fontsize=fontsize)
-    ax.set_xlabel('Time (s)', fontsize=fontsize)  # type: ignore
+    ax.set_xlabel('Time (hr)', fontsize=fontsize)  # type: ignore
     for spine_name in ('top', 'right'):
         ax.spines[spine_name].set_visible(False)  # type: ignore
     fig.tight_layout()
@@ -122,16 +122,20 @@ def plot_total_mass(
     mass_matrix = np.array(mass_timeseries)
     median = np.median(mass_matrix, axis=0)
     q25, q75 = np.percentile(mass_matrix, [25, 75], axis=0)
+    times_hours = (time / 60 / 60 for time in times)
     if label:
         ax.semilogy(  # type: ignore
-            times, median, label=label, color=color)
+            times_hours, median, label=label, color=color)
         ax.fill_between(  # type: ignore
-            times, q25, q75, color=color, alpha=0.2, edgecolor='none')
+            times_hours, q25, q75, color=color, alpha=0.2,
+            edgecolor='none')
         ax.legend(prop={'size': fontsize})  # type: ignore
     else:
-        ax.semilogy(times, mass_timeseries, color=color)  # type: ignore
+        ax.semilogy(  # type: ignore
+            times_hours, mass_timeseries, color=color)
         ax.fill_between(  # type: ignore
-            times, q25, q75, color=color, alpha=0.2, edgecolor='none')
+            times_hours, q25, q75, color=color, alpha=0.2,
+            edgecolor='none')
     for tick_type in ('major', 'minor'):
         ax.tick_params(  # type: ignore
             axis='both', which=tick_type, labelsize=fontsize)

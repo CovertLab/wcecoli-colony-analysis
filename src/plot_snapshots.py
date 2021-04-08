@@ -407,7 +407,7 @@ def plot_snapshots(data, plot_config):
         time_per_snapshot = 1  # Arbitrary
     super_ax = fig.add_subplot(  # type: ignore
         super_spec,
-        xticks=snapshot_times,
+        xticks=(time / 60 / 60 for time in snapshot_times),
         xlim=(
             snapshot_times[0] - time_per_snapshot / 2,
             snapshot_times[-1] + time_per_snapshot / 2,
@@ -415,7 +415,7 @@ def plot_snapshots(data, plot_config):
         yticks=[],
     )
     super_ax.set_xlabel(  # type: ignore
-        'Time (s)', labelpad=50)
+        'Time (hr)', labelpad=50)
     super_ax.xaxis.set_tick_params(width=2, length=8)
     for spine_name in ('top', 'right', 'left'):
         super_ax.spines[spine_name].set_visible(False)
@@ -710,7 +710,7 @@ def plot_tags(data, plot_config):
         time_per_snapshot = 1  # Arbitrary
     super_ax = fig.add_subplot(  # type: ignore
         super_spec,
-        xticks=snapshot_times,
+        xticks=(time / 60 / 60 for time in snapshot_times),
         xlim=(
             snapshot_times[0] - time_per_snapshot / 2,
             snapshot_times[-1] + time_per_snapshot / 2,
@@ -718,7 +718,7 @@ def plot_tags(data, plot_config):
         yticks=[],
     )
     super_ax.set_xlabel(  # type: ignore
-        'Time (s)', labelpad=50)
+        'Time (hr)', labelpad=50)
     super_ax.xaxis.set_tick_params(width=2, length=8)
     for spine_name in ('top', 'right', 'left'):
         super_ax.spines[spine_name].set_visible(False)

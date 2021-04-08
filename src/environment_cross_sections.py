@@ -90,7 +90,7 @@ def get_enviro_sections_plot(
             ax = axes[field_i]
             ax.plot(  # type: ignore
                 x, median, 'o', color=color, linestyle='-',
-                label='{:.0f}s'.format(time))
+                label='{:.1f}hr'.format(time / 60 / 60))
             ax.fill_between(  # type: ignore
                 x, q25, q75, color=color, alpha=0.2, edgecolor='none')
     for i, ax in enumerate(axes):
