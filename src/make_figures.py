@@ -169,7 +169,7 @@ def make_expression_heterogeneity_fig(
         'default_font_size': 48,
         'n_snapshots': NUM_SNAPSHOTS,
         'tag_colors': {
-            tag: ('white', 'black')
+            tag: ('white', '#0000ff')
             for tag in tagged_molecules
         },
         'scale_bar_length': 10,
