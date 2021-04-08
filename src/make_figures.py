@@ -245,7 +245,7 @@ def make_expression_distributions_fig(replicates_raw_data):
 def make_snapshots_figure(
         data, environment_config, name, fields, agent_fill_color=None,
         agent_alpha=1, num_snapshots=NUM_SNAPSHOTS,
-        snapshot_times=None):
+        snapshot_times=None, xlim=(10, 40), ylim=(10, 40)):
     '''Make a figure of snapshots
 
     Parameters:
@@ -268,13 +268,14 @@ def make_snapshots_figure(
         'field_label_size': 54,
         'default_font_size': 54,
         'agent_fill_color': agent_fill_color,
+        'dead_color': (202 / 255,) * 3,
         'agent_alpha': agent_alpha,
         'n_snapshots': num_snapshots,
         'snapshot_times': snapshot_times,
         'scale_bar_length': 10,
         'scale_bar_color': 'white' if fields else 'black',
-        'xlim': (10, 40),
-        'ylim': (10, 40),
+        'xlim': xlim,
+        'ylim': ylim,
         'min_color': '#FFFFFF',
         'max_color': '#000000',
         'grid_color': 'white' if fields else '',
@@ -546,11 +547,19 @@ def main():
     death_data, death_enviro_config = all_data[
         EXPERIMENT_IDS['death_snapshots']]
     stats['death_snapshots'] = make_snapshots_figure(
-        death_data, death_enviro_config, 'death_snapshots', [], 'green',
-        snapshot_times=[max(death_data.keys())])
+        death_data, death_enviro_config, 'death_snapshots', [],
+        agent_fill_color='green',
+        snapshot_times=[max(death_data.keys())],
+        xlim=(5, 45),
+        ylim=(5, 45),
+    )
     stats['death_snapshots_antibiotic'] = make_snapshots_figure(
         death_data, death_enviro_config, 'death_snapshots_antibiotic',
-        ['nitrocefin'], 'green')
+        ['nitrocefin'],
+        agent_fill_color='green',
+        xlim=(5, 45),
+        ylim=(5, 45),
+    )
 
     stats['centrality'] = make_survival_centrality_fig(
         all_data[EXPERIMENT_IDS['centrality']][0])
