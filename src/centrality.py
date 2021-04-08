@@ -17,7 +17,8 @@ Locations = Sequence[Location]
 
 
 def get_survival_against_centrality_plot(
-        data: RawData, fontsize: float = 20) -> plt.Figure:
+        data: RawData,
+        fontsize: float = 20) -> Tuple[plt.Figure, dict]:
     survive_locations, die_locations = extract_spatial_data(data)
     center = extract_center(data)
 
@@ -77,20 +78,23 @@ def plot_survival_against_centrality(
         to_plot.append([])
 
     median_props = {'color': 'black'}
+    boxplot_labels = ('Survive', 'Die')
     ax.boxplot(  # type: ignore
-        to_plot, labels=['Survive', 'Die'], medianprops=median_props)
+        to_plot, labels=boxplot_labels, medianprops=median_props,
+        showfliers=False)
     ax.tick_params(  # type: ignore
         axis='both', which='major', labelsize=fontsize)
     for i, y_values in enumerate(to_plot):
         ax.scatter(
             np.random.normal(i + 1, 0.04, size=len(y_values)),
             y_values,
-            c='black', alpha=0.2,
+            c='black' if boxplot_labels[i] == 'Die' else 'green',
+            alpha=0.2,
         )
     ax.set_ylabel(  # type: ignore
-        'Distance from Center ($\mu m$)', fontsize=fontsize)
+        'Distance from Center ($\\mu m$)', fontsize=fontsize)
     for spine_name in ('top', 'right'):
-        ax.spines[spine_name].set_visible(False)
+        ax.spines[spine_name].set_visible(False)  # type: ignore
 
     stats = {
         'survive_distances': to_plot[0],
