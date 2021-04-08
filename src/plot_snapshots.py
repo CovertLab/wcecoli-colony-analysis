@@ -399,18 +399,20 @@ def plot_snapshots(data, plot_config):
         (n_rows - 1) * n_cols + n_snapshots - 1,
     )
     grid_params = grid.get_subplot_params()
+    snapshot_times_hrs = tuple(
+        time / 60 / 60 for time in snapshot_times)
     if n_snapshots > 1:
         time_per_snapshot = (
-            snapshot_times[-1] - snapshot_times[0]) / (
+            snapshot_times_hrs[-1] - snapshot_times_hrs[0]) / (
             (n_snapshots - 1) * (grid_params.wspace + 1))
     else:
         time_per_snapshot = 1  # Arbitrary
     super_ax = fig.add_subplot(  # type: ignore
         super_spec,
-        xticks=(time / 60 / 60 for time in snapshot_times),
+        xticks=snapshot_times_hrs,
         xlim=(
-            snapshot_times[0] - time_per_snapshot / 2,
-            snapshot_times[-1] + time_per_snapshot / 2,
+            snapshot_times_hrs[0] - time_per_snapshot / 2,
+            snapshot_times_hrs[-1] + time_per_snapshot / 2,
         ),
         yticks=[],
     )
@@ -702,18 +704,19 @@ def plot_tags(data, plot_config):
         (n_rows - 1) * n_cols + n_snapshots - 1,
     )
     grid_params = grid.get_subplot_params()
+    snapshot_times_hrs = tuple(time / 60 / 60 for time in snapshot_times)
     if n_snapshots > 1:
         time_per_snapshot = (
-            snapshot_times[-1] - snapshot_times[0]) / (
+            snapshot_times_hrs[-1] - snapshot_times_hrs[0]) / (
             (n_snapshots - 1) * (grid_params.wspace + 1))
     else:
         time_per_snapshot = 1  # Arbitrary
     super_ax = fig.add_subplot(  # type: ignore
         super_spec,
-        xticks=(time / 60 / 60 for time in snapshot_times),
+        xticks=snapshot_times_hrs,
         xlim=(
-            snapshot_times[0] - time_per_snapshot / 2,
-            snapshot_times[-1] + time_per_snapshot / 2,
+            snapshot_times_hrs[0] - time_per_snapshot / 2,
+            snapshot_times_hrs[-1] + time_per_snapshot / 2,
         ),
         yticks=[],
     )

@@ -122,7 +122,7 @@ def plot_total_mass(
     mass_matrix = np.array(mass_timeseries)
     median = np.median(mass_matrix, axis=0)
     q25, q75 = np.percentile(mass_matrix, [25, 75], axis=0)
-    times_hours = (time / 60 / 60 for time in times)
+    times_hours = tuple(time / 60 / 60 for time in times)
     if label:
         ax.semilogy(  # type: ignore
             times_hours, median, label=label, color=color)
