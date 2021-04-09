@@ -106,7 +106,7 @@ def get_enviro_sections_plot(
                 fontsize=fontsize)
             ax.legend(  # type: ignore
                 bbox_to_anchor=(1.05, 0.5), loc='center left',
-                prop={'size': fontsize})
+                frameon=False, prop={'size': fontsize})
     # Make y label centered across all subplots
     super_ax = fig.add_subplot(  # type: ignore
         111, xticks=[], yticks=[], frameon=False)

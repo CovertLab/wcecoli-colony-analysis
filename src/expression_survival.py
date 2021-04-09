@@ -138,7 +138,7 @@ def plot_expression_survival(
         boundary_color)
     ax.legend(  # type: ignore
         bbox_to_anchor=(0.5, 1.05), loc='lower center',
-        prop={'size': fontsize})
+        frameon=False, prop={'size': fontsize})
     ax.set_xlabel(xlabel, fontsize=fontsize)
     ax.set_ylabel(ylabel, fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=fontsize)
@@ -380,7 +380,7 @@ def plot_expression_survival_dotplot(
         [0.1] * len(dead_finals),
         label='Die', color=DEAD_COLOR, alpha=ALPHA,
     )
-    ax.legend(prop={'size': fontsize})
+    ax.legend(prop={'size': fontsize}, frameon=False)
     ax.set_xlabel(xlabel, fontsize=fontsize)
     ax.set_ylim([0, 1.25])
     ax.get_yaxis().set_visible(False)

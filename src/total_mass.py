@@ -139,7 +139,8 @@ def plot_total_mass(
         ax.fill_between(  # type: ignore
             times_hours, q25, q75, color=color, alpha=0.2,
             edgecolor='none')
-        ax.legend(prop={'size': fontsize})  # type: ignore
+        ax.legend(  # type: ignore
+            prop={'size': fontsize}, frameon=False)
     else:
         ax.semilogy(  # type: ignore
             times_hours, mass_timeseries, color=color)
