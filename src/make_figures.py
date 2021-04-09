@@ -11,6 +11,7 @@ import sys
 import subprocess
 from typing import Sequence, List, Dict, Tuple
 
+from matplotlib import rcParams
 import numpy as np
 from vivarium.core.process import serialize_value
 from vivarium.core.experiment import get_in
@@ -469,6 +470,8 @@ def make_phylogeny_plot(data):
 
 def main():
     '''Generate all figures.'''
+    rcParams['font.family'] = 'sans-serif'
+    rcParams['font.sans-serif'] = 'Arial'
     if not os.path.exists(FIG_OUT_DIR):
         os.makedirs(FIG_OUT_DIR)
     with open(os.path.join(FIG_OUT_DIR, METADATA_FILE), 'w') as f:
