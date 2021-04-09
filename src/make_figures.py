@@ -268,7 +268,7 @@ def make_snapshots_figure(
         'field_label_size': 54,
         'default_font_size': 54,
         'agent_fill_color': agent_fill_color,
-        'dead_color': (0, 0, 79),  # gray in HSV
+        'dead_color': (0, 0, 0.79),  # gray in HSV
         'agent_alpha': agent_alpha,
         'n_snapshots': num_snapshots,
         'snapshot_times': snapshot_times,
