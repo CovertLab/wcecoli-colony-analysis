@@ -470,8 +470,8 @@ def make_phylogeny_plot(data):
 
 def main():
     '''Generate all figures.'''
-    rcParams['font.family'] = 'sans-serif'
-    rcParams['font.sans-serif'] = 'Arial'
+    rcParams['font.family'] = ['sans-serif']
+    rcParams['font.sans-serif'] = ['Arial']
     if not os.path.exists(FIG_OUT_DIR):
         os.makedirs(FIG_OUT_DIR)
     with open(os.path.join(FIG_OUT_DIR, METADATA_FILE), 'w') as f:
