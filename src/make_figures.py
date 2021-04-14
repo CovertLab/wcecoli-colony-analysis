@@ -80,6 +80,12 @@ EXPERIMENT_IDS = {
         '20201119.150828', '20210112.185210', '20210125.152527'),
     'growth_anaerobic': (
         '20201221.194828', '20210205.163802', '20210205.183800'),
+    'growth': {
+        'basal': (
+            '20201119.150828', '20210112.185210', '20210125.152527'),
+        'anaerobic': (
+            '20201221.194828', '20210205.163802', '20210205.183800'),
+    },
     'threshold_scan': {
         '0.01 mM': (
             '20201228.172246', '20210209.174715', '20210209.192621'),
@@ -93,9 +99,61 @@ EXPERIMENT_IDS = {
             '20210206.045834', '20210219.151929', '20210220.153658'),
     },
     'expression_survival': '20210329.155953',
+    'expression_survival_dotplots': '20210329.155953',
     'death_snapshots': '20210329.155953',
+    'death_snapshots_antibiotic': '20210329.155953',
     'centrality': '20210329.155953',
     'phylogeny': '20210329.155953',
+}
+FIGURE_NUMBER_NAME_MAP = {
+    '3': {
+        'A': 'enviro_heterogeneity',
+        'B': 'enviro_section',
+        'C': 'growth_basal',
+        'D': 'growth_anaerobic',
+        'E': 'growth',
+        'F': 'expression_heterogeneity',
+        'G': 'expression_distributions',
+    },
+    '5': {
+        'A': 'threshold_scan',
+        'B': 'death_snapshots',
+        'C': 'centrality',
+        'D': 'phylogeny',
+        'E': 'expression_survival_dotplots',
+        'F': 'expression_survival_dotplots',
+        'G': 'expression_survival',
+        'H': 'expression_survival',
+        'I': 'expression_survival',
+    },
+    'X': {
+        '1': 'death_snapshots_antibiotic',
+    },
+}
+FIGURE_DESCRIPTIONS = {
+    '3': {
+        'A': 'snapshots of growing colony consuming glucose',
+        'B': 'environment cross-sections showing glucose depletion',
+        'C': 'snapshots in the basal condition',
+        'D': 'snapshots in the anaerobic condition',
+        'E': 'colony mass on basal and anaerobic media',
+        'F': 'snapshots showing expression heterogeneity',
+        'G': 'distributions of protein concentrations',
+    },
+    '5': {
+        'A': 'parameter scan for tolerance threshold',
+        'B': 'snapshot of final colony under nitrocefin',
+        'C': 'box plot showing distances from center',
+        'D': 'phylogenetic tree',
+        'E': 'dotplot of final [AmpC] colored by survival',
+        'F': 'dotplot of final [AcrAB-TolC] colored by survival',
+        'G': 'final [AmpC] and plotted against [AcrAB-TolC]',
+        'H': 'paths of dead agents through concentration space',
+        'I': 'paths of a lineage of agents through concentration space',
+    },
+    'X': {
+        '1': 'death_snapshots_antibiotic',
+    },
 }
 METADATA_FILE = 'metadata.json'
 STATS_FILE = 'stats.json'
@@ -155,30 +213,32 @@ def get_data(args, experiment_ids):
     return all_data
 
 
-def make_expression_heterogeneity_fig(
-        data, environment_config, name_base):
+def make_expression_heterogeneity_fig(replicates_data, _):
     '''Figure shows heterogeneous expression within wcEcoli agents.'''
-    tags_data = Analyzer.format_data_for_tags(data, environment_config)
-    tagged_molecules = list(TAG_PATH_NAME_MAP.keys())
-    plot_config = {
-        'out_dir': FIG_OUT_DIR,
-        'tagged_molecules': tagged_molecules,
-        'background_color': 'white',
-        'filename': '{}.{}'.format(name_base, FILE_EXTENSION),
-        'tag_path_name_map': TAG_PATH_NAME_MAP,
-        'tag_label_size': 54,
-        'default_font_size': 48,
-        'n_snapshots': NUM_SNAPSHOTS,
-        'tag_colors': {
-            tag: ('white', '#0000ff')
-            for tag in tagged_molecules
-        },
-        'scale_bar_length': 10,
-        'scale_bar_color': 'black',
-        'xlim': (10, 40),
-        'ylim': (10, 40),
-    }
-    plot_tags(tags_data, plot_config)
+    for i, (data, enviro_config) in enumerate(replicates_data):
+        tags_data = Analyzer.format_data_for_tags(data, enviro_config)
+        tagged_molecules = list(TAG_PATH_NAME_MAP.keys())
+        plot_config = {
+            'out_dir': FIG_OUT_DIR,
+            'tagged_molecules': tagged_molecules,
+            'background_color': 'white',
+            'filename': 'expression_heterogeneity_{}.{}'.format(
+               i, FILE_EXTENSION),
+            'tag_path_name_map': TAG_PATH_NAME_MAP,
+            'tag_label_size': 54,
+            'default_font_size': 48,
+            'n_snapshots': NUM_SNAPSHOTS,
+            'tag_colors': {
+                tag: ('white', '#0000ff')
+                for tag in tagged_molecules
+            },
+            'scale_bar_length': 10,
+            'scale_bar_color': 'black',
+            'xlim': (10, 40),
+            'ylim': (10, 40),
+        }
+        plot_tags(tags_data, plot_config)
+    return {}
 
 
 def _calculate_distribution_stats(
@@ -207,11 +267,11 @@ def _calculate_distribution_stats(
     return stats
 
 
-def make_expression_distributions_fig(replicates_raw_data):
+def make_expression_distributions_fig(replicates_raw_data, _):
     '''Figure shows the distributions of expression values.'''
     replicates_data = []
     colors = ('#333333', '#777777', '#BBBBBB')
-    for i, raw_data in enumerate(replicates_raw_data):
+    for i, (raw_data, _) in enumerate(replicates_raw_data):
         color = colors[i]
         end_expression_table = raw_data_to_end_expression_table(
             raw_data,
@@ -254,6 +314,13 @@ def make_snapshots_figure(
         environment_config (dict): Environment parameters.
         name (str): Name of the output file (excluding file extension).
         fields (list): List of the names of fields to include.
+        agent_fill_color (str): Fill color for agents.
+        agent_alpha (float): Transparency for agents.
+        num_snapshots (int): Number of snapshots.
+        snapshot_times (list(float)): Times to take snapshots at. If
+            None, they are evenly spaced.
+        xlim (tuple(float, float)): Limits of x-axis.
+        ylim (tuple(float, float)): Limits of y-axis.
     '''
     snapshots_data = Analyzer.format_data_for_snapshots(
         data, environment_config)
@@ -285,11 +352,11 @@ def make_snapshots_figure(
     return stats
 
 
-def make_growth_fig(basal_data, anaerobic_data):
+def make_growth_fig(raw_data, _):
     '''Make plot of colony mass of basal and anaerobic colonies.'''
     data_dict = {
-        'basal': basal_data,
-        'anaerobic': anaerobic_data,
+        'basal': [data for data, _ in raw_data['basal']],
+        'anaerobic': [data for data, _ in raw_data['anaerobic']],
     }
     fig, stats = get_total_mass_plot(
         data_dict, tuple(COLORS.values()), fontsize=12)
@@ -298,8 +365,14 @@ def make_growth_fig(basal_data, anaerobic_data):
     return stats
 
 
-def make_threshold_scan_fig(data_dict):
+def make_threshold_scan_fig(data_and_configs, _):
     '''Plot colony mass curves with various antibiotic thresholds.'''
+    data_dict = dict({
+        threshold: tuple(
+            data for data, enviro_config in threshold_ids
+        )
+        for threshold, threshold_ids in data_and_configs.items()
+    })
     some_data = list(data_dict.values())[0][0]
     vlines = (
         (
@@ -317,8 +390,9 @@ def make_threshold_scan_fig(data_dict):
     return stats
 
 
-def make_expression_survival_fig(data, search_data):
+def make_expression_survival_fig(data_and_config, search_data):
     '''Make expression-survival figures.'''
+    data, _ = data_and_config
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
         'Final [AcrAB-TolC] (µM)',
@@ -392,10 +466,12 @@ def make_expression_survival_fig(data, search_data):
         FIG_OUT_DIR, 'expression_survival_labeled.{}'.format(
             FILE_EXTENSION)
     ))
+    return {}
 
 
-def make_expression_survival_dotplots(data):
-    '''Make expression-survival dotplots.'''
+def make_expression_survival_dotplots(data_and_config, _):
+    '''Make dotplots of protein concentrations colored by survival.'''
+    data, _ = data_and_config
     stats = {}
     fig, stats['AcrAB-TolC'] = plot_expression_survival_dotplot(
         data, PUMP_PATH, 'Final [AcrAB-TolC] (µM)',
@@ -419,8 +495,9 @@ def make_expression_survival_dotplots(data):
     return stats
 
 
-def make_survival_centrality_fig(data):
-    '''Plot centrality figure.'''
+def make_survival_centrality_fig(data_and_config, _):
+    '''Plot box plot figure of agent distances from center.'''
+    data, _ = data_and_config
     fig, stats = get_survival_against_centrality_plot(data)
     fig.savefig(os.path.join(
         FIG_OUT_DIR,
@@ -429,13 +506,13 @@ def make_survival_centrality_fig(data):
     return stats
 
 
-def make_environment_section(data, base_name):
+def make_environment_section(data_and_configs, _):
     '''Plot field concentrations in cross-section of final enviro.'''
-    t_final = max(data[0].keys())
+    t_final = max(data_and_configs[0][0].keys())
     fields_ts = []
     section_times = [
         float(time) for time in ENVIRONMENT_SECTION_TIMES]
-    for i, replicate in enumerate(data):
+    for i, (replicate, _) in enumerate(data_and_configs):
         fields_ts.append(dict())
         for time in section_times:
             fields_ts[i][time] = {
@@ -444,17 +521,36 @@ def make_environment_section(data, base_name):
                     replicate[time], FIELDS_PATH).items()
                 if name in ENVIRONMENT_SECTION_FIELDS
             }
-    bounds = get_in(data[0][t_final], BOUNDS_PATH)
+    bounds = get_in(data_and_configs[0][0][t_final], BOUNDS_PATH)
     fig, stats = get_enviro_sections_plot(
         fields_ts, bounds, section_location=0.5, fontsize=18)
     fig.savefig(
-        os.path.join(FIG_OUT_DIR, '{}.{}'.format(
-            base_name, FILE_EXTENSION)))
+        os.path.join(FIG_OUT_DIR, 'enviro_section.{}'.format(
+            FILE_EXTENSION)))
     return stats
 
 
-def make_phylogeny_plot(data):
-    '''Plot phylogenetic tree'''
+def make_growth_basal_fig(replicates_data, _):
+    '''Create snapshots figure of colony on basal media.'''
+    stats = {}
+    for i, (data, enviro_config) in enumerate(replicates_data):
+        stats[i] = make_snapshots_figure(
+            data, enviro_config, 'growth_basal_{}'.format(i), [])
+    return stats
+
+
+def make_growth_anaerobic_fig(replicates_data, _):
+    '''Create snapshots figure of colony on anaerobic media.'''
+    stats = {}
+    for i, (data, enviro_config) in enumerate(replicates_data):
+        stats[i] = make_snapshots_figure(
+            data, enviro_config, 'growth_anaerobic_{}'.format(i), [])
+    return stats
+
+
+def make_phylogeny_plot(data_and_config, _):
+    '''Plot phylogenetic tree.'''
+    data, _ = data_and_config
     tree, df = plot_phylogeny(data, os.path.join(
         FIG_OUT_DIR, 'phylogeny.{}').format(FILE_EXTENSION),
         time_range=EXPRESSION_SURVIVAL_TIME_RANGE)
@@ -466,6 +562,91 @@ def make_phylogeny_plot(data):
         os.path.join(FIG_OUT_DIR, 'agent_survival.csv'),
         index=False,
     )
+    return {}
+
+
+def make_enviro_heterogeneity_fig(replicates_data, _):
+    '''Plot snapshots of colony consuming glucose.'''
+    stats = {}
+    for i, (data, enviro_config) in enumerate(replicates_data):
+        stats[i] = make_snapshots_figure(
+            data, enviro_config, 'enviro_heterogeneity_{}'.format(i),
+            ['GLC'], 'white',
+        )
+    return stats
+
+
+def make_death_snapshots(data_and_config, _):
+    '''Plot colony exposed to antibiotics with death coloration.'''
+    data, config = data_and_config
+    return make_snapshots_figure(
+        data, config, 'death_snapshots', [],
+        agent_fill_color='green',
+        snapshot_times=[max(data.keys())],
+        xlim=(5, 45),
+        ylim=(5, 45),
+    )
+
+def make_death_snapshots_antibiotic(data_and_config, _):
+    '''Plot colony consuming (or not) antibiotics.'''
+    data, config = data_and_config
+    return make_snapshots_figure(
+        data, config, 'death_snapshots_antibiotic',
+        ['nitrocefin'],
+        agent_fill_color='green',
+        xlim=(5, 45),
+        ylim=(5, 45),
+    )
+
+
+def create_data_dict(all_data, experiment_id_obj):
+    '''Create a dictionary of experiment simulation data.
+
+    Args:
+        all_data (dict(str, tuple(RawData, dict))): Map from experiment
+            ID to that experiment's simulation data and environment
+            config.
+        experiment_id_obj (Union(dict, str, tuple)): Object with one or
+            more experiment IDs. The returned data object will have the
+            same shape as this object. Dictionaries, strings, and tuples
+            are supported.
+
+    Returns: Data object of the same form as the experiment_id_obj.
+    '''
+    if isinstance(experiment_id_obj, str):
+        return all_data[experiment_id_obj]
+    if isinstance(experiment_id_obj, tuple):
+        return tuple(
+            create_data_dict(all_data, elem)
+            for elem in experiment_id_obj
+        )
+    if isinstance(experiment_id_obj, dict):
+        return dict({
+            key: create_data_dict(all_data, value)
+            for key, value in experiment_id_obj.items()
+        })
+    raise ValueError(
+        'experiment_id_obj %s of unsupported type %s' %
+        (experiment_id_obj, type(experiment_id_obj)),
+    )
+
+
+FIGURE_FUNCTION_MAP = {
+    'expression_distributions': make_expression_distributions_fig,
+    'expression_heterogeneity': make_expression_heterogeneity_fig,
+    'growth_basal': make_growth_basal_fig,
+    'growth_anaerobic': make_growth_anaerobic_fig,
+    'growth': make_growth_fig,
+    'enviro_heterogeneity': make_enviro_heterogeneity_fig,
+    'enviro_section': make_environment_section,
+    'threshold_scan': make_threshold_scan_fig,
+    'expression_survival': make_expression_survival_fig,
+    'expression_survival_dotplots': make_expression_survival_dotplots,
+    'phylogeny': make_phylogeny_plot,
+    'death_snapshots': make_death_snapshots,
+    'death_snapshots_antibiotic': make_death_snapshots_antibiotic,
+    'centrality': make_survival_centrality_fig,
+}
 
 
 def main():
@@ -477,105 +658,54 @@ def main():
     with open(os.path.join(FIG_OUT_DIR, METADATA_FILE), 'w') as f:
         json.dump(get_metadata(), f, indent=4)
     stats = {}
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=(
+            'Generate selected figures and associated stats from '
+            'simulation data.'
+        ),
+    )
     Analyzer.add_connection_args(parser)
     parser.add_argument(
         'search_data', type=str, help='Path to boundary search data.')
+    for figure, d in FIGURE_NUMBER_NAME_MAP.items():
+        for panel in d:
+            parser.add_argument(
+                '--{}{}'.format(figure, panel),
+                action='store_true',
+                help='Generate figure & stats for fig {}{}: {}'.format(
+                    figure, panel, FIGURE_DESCRIPTIONS[figure][panel]),
+            )
+    parser.add_argument(
+        '--all',
+        action='store_true',
+        help='Generate all figures and stats.',
+    )
     args = parser.parse_args()
-
-    experiment_ids = get_experiment_ids(EXPERIMENT_IDS)
-    all_data = get_data(args, experiment_ids)
-
-    expression_distribution_data = []
-    for experiment_id in EXPERIMENT_IDS['expression_distributions']:
-        data, _ = all_data[experiment_id]
-        expression_distribution_data.append(data)
-    stats['expression_distributions'] = (
-        make_expression_distributions_fig(
-            expression_distribution_data
-        ))
-
-    for i, experiment_id in enumerate(
-            EXPERIMENT_IDS['expression_heterogeneity']):
-        make_expression_heterogeneity_fig(
-            *all_data[experiment_id],
-            'expression_heterogeneity_{}'.format(i))
-
-    stats['growth_snapshots'] = {
-        'basal': {},
-        'anaerobic': {},
-    }
-    for i, experiment_id in enumerate(EXPERIMENT_IDS['growth_basal']):
-        stats['growth_snapshots']['basal'][i] = make_snapshots_figure(
-            *all_data[experiment_id], 'growth_basal_{}'.format(i), [])
-
-    for i, experiment_id in enumerate(
-            EXPERIMENT_IDS['growth_anaerobic']):
-        stats['growth_snapshots'][
-            'anaerobic'][i] = make_snapshots_figure(
-            *all_data[experiment_id], 'growth_anaerobic_{}'.format(i),
-            [])
-
-    basal_data = [
-        all_data[experiment_id][0]
-        for experiment_id in EXPERIMENT_IDS['growth_basal']
-    ]
-    anaerobic_data = [
-        all_data[experiment_id][0]
-        for experiment_id in EXPERIMENT_IDS['growth_anaerobic']
-    ]
-    stats['growth_fig'] = make_growth_fig(basal_data, anaerobic_data)
-
-    stats['enviro_heterogeneity'] = {}
-    for i, experiment_id in enumerate(
-            EXPERIMENT_IDS['enviro_heterogeneity']):
-        stats['enviro_heterogeneity'][i] = make_snapshots_figure(
-            *all_data[experiment_id],
-            'enviro_heterogeneity_{}'.format(i), ['GLC'], 'white')
-
-    enviro_section_data = []
-    for i, experiment_id in enumerate(
-            EXPERIMENT_IDS['enviro_section']):
-        enviro_section_data.append(all_data[experiment_id][0])
-    stats['enviro_section'] = make_environment_section(
-        enviro_section_data, 'enviro_section')
-
-    data_dict = dict()
-    for key, exp_ids in EXPERIMENT_IDS['threshold_scan'].items():
-        data_dict[key] = [all_data[exp_id][0] for exp_id in exp_ids]
-    stats['threshold_scan'] = make_threshold_scan_fig(data_dict)
+    args_dict = vars(args)
 
     with open(args.search_data, 'r') as f:
         search_data = json.load(f)
 
-    make_expression_survival_fig(
-        all_data[EXPERIMENT_IDS['expression_survival']][0], search_data)
+    data_cache = {}
+    generated_figures = set()
+    stats = {}
 
-    stats['dotplots'] = make_expression_survival_dotplots(
-        all_data[EXPERIMENT_IDS['expression_survival']][0])
-
-    make_phylogeny_plot(
-        all_data[EXPERIMENT_IDS['phylogeny']][0])
-
-    death_data, death_enviro_config = all_data[
-        EXPERIMENT_IDS['death_snapshots']]
-    stats['death_snapshots'] = make_snapshots_figure(
-        death_data, death_enviro_config, 'death_snapshots', [],
-        agent_fill_color='green',
-        snapshot_times=[max(death_data.keys())],
-        xlim=(5, 45),
-        ylim=(5, 45),
-    )
-    stats['death_snapshots_antibiotic'] = make_snapshots_figure(
-        death_data, death_enviro_config, 'death_snapshots_antibiotic',
-        ['nitrocefin'],
-        agent_fill_color='green',
-        xlim=(5, 45),
-        ylim=(5, 45),
-    )
-
-    stats['centrality'] = make_survival_centrality_fig(
-        all_data[EXPERIMENT_IDS['centrality']][0])
+    for fig, fig_dict in FIGURE_NUMBER_NAME_MAP.items():
+        for panel, fig_name in fig_dict.items():
+            if not (args_dict['{}{}'.format(fig, panel)] or args.all):
+                continue
+            if fig_name in generated_figures:
+                continue
+            generated_figures.add(fig_name)
+            experiment_ids = EXPERIMENT_IDS[fig_name]
+            for experiment_id in get_experiment_ids(experiment_ids):
+                if experiment_id in data_cache:
+                    continue
+                data_cache[experiment_id] = Analyzer.get_data(
+                    args, experiment_id)
+            data = create_data_dict(data_cache, experiment_ids)
+            func = FIGURE_FUNCTION_MAP[fig_name]
+            stats[fig_name] = func(data, search_data)
 
     with open(os.path.join(FIG_OUT_DIR, STATS_FILE), 'w') as f:
         json.dump(serialize_value(stats), f, indent=4)
