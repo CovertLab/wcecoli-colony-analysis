@@ -220,18 +220,6 @@ def get_experiment_ids(
     return id_obj
 
 
-def get_data(
-        args: argparse.Namespace,
-        experiment_ids: Iterable[str]
-        ) -> Dict[str, DataTuple]:
-    '''Load all the data we'll need to generate the figures.'''
-    unique_ids = set(experiment_ids)
-    all_data = {}
-    for experiment_id in unique_ids:
-        all_data[experiment_id] = Analyzer.get_data(args, experiment_id)
-    return all_data
-
-
 def make_expression_heterogeneity_fig(
         replicates_data: Iterable[DataTuple],
         _: SearchData,
@@ -711,6 +699,37 @@ def create_data_dict(
     )
 
 
+def get_experiment_data(
+        args: argparse.Namespace,
+        experiment_id: str,
+        ) -> DataTuple:
+    '''Get simulation data for an experiment.
+
+    If ``args.data_path`` is set, retrieve the experiment data from a
+    JSON file named ``<experiment_id>.json`` under ``args.data_path``.
+    Otherwise, retrieve the data from MongoDB.
+
+    Args:
+        args: Parsed CLI args.
+        experiment_id: ID of experiment.
+
+    Returns: Tuple of simulation data and environment config.
+    '''
+    if args.data_path:
+        path = os.path.join(
+            args.data_path, '{}.json'.format(experiment_id))
+        with open(path, 'r') as f:
+            loaded_file = json.load(f)
+            data = RawData({
+                float(time): value
+                for time, value in loaded_file['data'].items()
+            })
+            config = EnvironmentConfig(
+                loaded_file['environment_config'])
+            return data, config
+    return Analyzer.get_data(args, experiment_id)
+
+
 FIGURE_FUNCTION_MAP = {
     'expression_distributions': make_expression_distributions_fig,
     'expression_heterogeneity': make_expression_heterogeneity_fig,
@@ -747,6 +766,11 @@ def main() -> None:
     Analyzer.add_connection_args(parser)
     parser.add_argument(
         'search_data', type=str, help='Path to boundary search data.')
+    parser.add_argument(
+        '--data_path',
+        default='',
+        help='Folder of JSON files to read data from instead of Mongo',
+    )
     for figure, d in FIGURE_NUMBER_NAME_MAP.items():
         for panel in d:
             parser.add_argument(
@@ -781,7 +805,7 @@ def main() -> None:
             for experiment_id in get_experiment_ids(experiment_ids):
                 if experiment_id in data_cache:
                     continue
-                data_cache[experiment_id] = Analyzer.get_data(
+                data_cache[experiment_id] = get_experiment_data(
                     args, experiment_id)
             data = create_data_dict(data_cache, experiment_ids)
             func = FIGURE_FUNCTION_MAP[fig_name]
