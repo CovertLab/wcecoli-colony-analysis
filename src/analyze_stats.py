@@ -364,7 +364,8 @@ def main(tokens: Optional[Sequence[str]] = None) -> None:
 
     summary = {}
     for section, analyzer in SECTION_ANALYZER_MAP.items():
-        summary[section] = analyzer(stats[section])
+        if section in stats:
+            summary[section] = analyzer(stats[section])
 
     with open(args.out, 'w') as f:
         json.dump(summary, f, indent=4)
