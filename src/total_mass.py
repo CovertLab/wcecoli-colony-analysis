@@ -102,8 +102,8 @@ def get_total_mass_plot(
 def plot_total_mass(
         replicates: List[RawData],
         ax: plt.Axes,
-        label='',
-        color='black',
+        label: str = '',
+        color: str = 'black',
         fontsize: float = 36,
         ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     '''Plot total mass data on an existing set of axes.

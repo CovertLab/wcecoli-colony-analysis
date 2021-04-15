@@ -9,9 +9,10 @@ import json
 import os
 import sys
 import subprocess
-from typing import Sequence, List, Dict, Tuple
+from typing import (
+    Sequence, List, Dict, Tuple, Union, Iterable, Optional, Set, cast)
 
-from matplotlib import rcParams
+from matplotlib import rcParams  # type: ignore
 import numpy as np
 from vivarium.core.process import serialize_value
 from vivarium.core.experiment import get_in
@@ -22,14 +23,19 @@ from src.expression_survival import (
     plot_expression_survival_dotplot,
 )
 from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
+from src.types import RawData, EnvironmentConfig, SearchData
 from src.total_mass import get_total_mass_plot
-from src.environment_cross_sections import get_enviro_sections_plot
+from src.environment_cross_sections import (
+    get_enviro_sections_plot, SerializedField)
 from src.phylogeny import plot_phylogeny
 from src.process_expression_data import (
     raw_data_to_end_expression_table, VOLUME_KEY)
 from src.ridgeline import get_ridgeline_plot
-from src.plot_snapshots import plot_snapshots, plot_tags
+from src.plot_snapshots import plot_snapshots, plot_tags  # type: ignore
 from src.centrality import get_survival_against_centrality_plot
+
+
+DataTuple = Tuple[RawData, EnvironmentConfig]
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
@@ -51,8 +57,9 @@ TAG_PATH_NAME_MAP = {
     ): 'AcrAB-TolC',
 }
 ENVIRONMENT_SECTION_FIELDS = ('GLC',)
-ENVIRONMENT_SECTION_TIMES = (231, 6006, 11781, 17325, 23100)
-AGENTS_TO_TRACE = (
+ENVIRONMENT_SECTION_TIMES: Tuple[int, ...] = (
+    231, 6006, 11781, 17325, 23100)
+AGENTS_TO_TRACE: Tuple[str, ...] = (
     '0_wcecoli01010101111',
     '0_wcecoli00100110',
     '0_wcecoli111111',
@@ -67,7 +74,11 @@ EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
 NUM_SNAPSHOTS = 5
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
-EXPERIMENT_IDS = {
+ExperimentIdsType = Dict[
+    str,
+    Union[str, Tuple[str, ...], Dict[str, Tuple[str, ...]]],
+]
+EXPERIMENT_IDS: ExperimentIdsType = {
     'expression_distributions': (
         '20201119.150828', '20210112.185210', '20210125.152527'),
     'expression_heterogeneity': (
@@ -159,7 +170,10 @@ METADATA_FILE = 'metadata.json'
 STATS_FILE = 'stats.json'
 
 
-def exec_shell(tokens, timeout=10):
+def exec_shell(
+        tokens: Sequence[str],
+        timeout: int = 10,
+        ) -> Tuple[str, str]:
     '''Execute a shell command and return the output.'''
     proc = subprocess.run(
         tokens,
@@ -172,7 +186,7 @@ def exec_shell(tokens, timeout=10):
     return proc.stdout.rstrip(), proc.stderr.rstrip()
 
 
-def get_metadata():
+def get_metadata() -> dict:
     '''Get information on which experiments and code were used.'''
     metadata = {
         'git_hash': exec_shell(['git', 'rev-parse', 'HEAD'])[0],
@@ -187,7 +201,9 @@ def get_metadata():
     return metadata
 
 
-def get_experiment_ids(id_obj):
+def get_experiment_ids(
+        id_obj: Union[str, Tuple[str, ...], List[str], Set[str], dict]
+        ) -> List[str]:
     '''Get a flat list of all experiment IDs. May have duplicates.'''
     if isinstance(id_obj, str):
         return [id_obj]
@@ -204,7 +220,10 @@ def get_experiment_ids(id_obj):
     return id_obj
 
 
-def get_data(args, experiment_ids):
+def get_data(
+        args: argparse.Namespace,
+        experiment_ids: Iterable[str]
+        ) -> Dict[str, DataTuple]:
     '''Load all the data we'll need to generate the figures.'''
     unique_ids = set(experiment_ids)
     all_data = {}
@@ -213,7 +232,10 @@ def get_data(args, experiment_ids):
     return all_data
 
 
-def make_expression_heterogeneity_fig(replicates_data, _):
+def make_expression_heterogeneity_fig(
+        replicates_data: Iterable[DataTuple],
+        _: SearchData,
+        ) -> dict:
     '''Figure shows heterogeneous expression within wcEcoli agents.'''
     for i, (data, enviro_config) in enumerate(replicates_data):
         tags_data = Analyzer.format_data_for_tags(data, enviro_config)
@@ -242,7 +264,7 @@ def make_expression_heterogeneity_fig(replicates_data, _):
 
 
 def _calculate_distribution_stats(
-        replicates_data: List[Tuple[Dict[str, Sequence[float]], str]]
+        replicates_data: List[Tuple[Dict[str, Sequence[float]], str]],
         ) -> dict:
     stats = {}
     keys = replicates_data[0][0].keys()
@@ -267,7 +289,10 @@ def _calculate_distribution_stats(
     return stats
 
 
-def make_expression_distributions_fig(replicates_raw_data, _):
+def make_expression_distributions_fig(
+        replicates_raw_data: Iterable[DataTuple],
+        _search_data: SearchData
+        ) -> dict:
     '''Figure shows the distributions of expression values.'''
     replicates_data = []
     colors = ('#333333', '#777777', '#BBBBBB')
@@ -304,31 +329,42 @@ def make_expression_distributions_fig(replicates_raw_data, _):
 
 
 def make_snapshots_figure(
-        data, environment_config, name, fields, agent_fill_color=None,
-        agent_alpha=1, num_snapshots=NUM_SNAPSHOTS,
-        snapshot_times=None, xlim=(10, 40), ylim=(10, 40)):
-    '''Make a figure of snapshots
+        data: RawData,
+        environment_config: EnvironmentConfig,
+        name: str,
+        fields: Sequence[str],
+        agent_fill_color: Optional[str] = None,
+        agent_alpha: float = 1,
+        num_snapshots: int = NUM_SNAPSHOTS,
+        snapshot_times: Optional[Tuple[float, ...]] = None,
+        xlim: Tuple[float, float] = (10, 40),
+        ylim: Tuple[float, float] = (10, 40)
+        ) -> dict:
+    '''Make a figure of snapshots.
 
-    Parameters:
-        data (dict): The experiment data.
-        environment_config (dict): Environment parameters.
-        name (str): Name of the output file (excluding file extension).
-        fields (list): List of the names of fields to include.
-        agent_fill_color (str): Fill color for agents.
-        agent_alpha (float): Transparency for agents.
-        num_snapshots (int): Number of snapshots.
-        snapshot_times (list(float)): Times to take snapshots at. If
+    Args:
+        data: The experiment data.
+        environment_config: Environment parameters.
+        name: Name of the output file (excluding file extension).
+        fields: List of the names of fields to include.
+        agent_fill_color: Fill color for agents.
+        agent_alpha: Transparency for agents.
+        num_snapshots: Number of snapshots.
+        snapshot_times: Times to take snapshots at. If
             None, they are evenly spaced.
-        xlim (tuple(float, float)): Limits of x-axis.
-        ylim (tuple(float, float)): Limits of y-axis.
+        xlim: Limits of x-axis.
+        ylim: Limits of y-axis.
+
+    Returns:
+        Statistics.
     '''
     snapshots_data = Analyzer.format_data_for_snapshots(
         data, environment_config)
     if not fields:
-        data = {
+        data = RawData({
             key: val
             for key, val in data.items() if key != 'fields'
-        }
+        })
     plot_config = {
         'out_dir': FIG_OUT_DIR,
         'filename': '{}.{}'.format(name, FILE_EXTENSION),
@@ -352,23 +388,29 @@ def make_snapshots_figure(
     return stats
 
 
-def make_growth_fig(raw_data, _):
+def make_growth_fig(
+        raw_data: Dict[str, DataTuple],
+        _: SearchData,
+        ) -> dict:
     '''Make plot of colony mass of basal and anaerobic colonies.'''
     data_dict = {
         'basal': [data for data, _ in raw_data['basal']],
         'anaerobic': [data for data, _ in raw_data['anaerobic']],
     }
     fig, stats = get_total_mass_plot(
-        data_dict, tuple(COLORS.values()), fontsize=12)
+        data_dict, list(COLORS.values()), fontsize=12)
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'growth.{}'.format(FILE_EXTENSION)))
     return stats
 
 
-def make_threshold_scan_fig(data_and_configs, _):
+def make_threshold_scan_fig(
+        data_and_configs: Dict[str, DataTuple],
+        _: SearchData,
+        ) -> dict:
     '''Plot colony mass curves with various antibiotic thresholds.'''
     data_dict = dict({
-        threshold: tuple(
+        threshold: list(
             data for data, enviro_config in threshold_ids
         )
         for threshold, threshold_ids in data_and_configs.items()
@@ -383,14 +425,17 @@ def make_threshold_scan_fig(data_and_configs, _):
         ),
     )
     fig, stats = get_total_mass_plot(
-        data_dict, tuple(COLORS.values()), fontsize=12, vlines=vlines,
+        data_dict, list(COLORS.values()), fontsize=12, vlines=vlines,
     )
     fig.savefig(os.path.join(
         FIG_OUT_DIR, 'threshold_scan.{}'.format(FILE_EXTENSION)))
     return stats
 
 
-def make_expression_survival_fig(data_and_config, search_data):
+def make_expression_survival_fig(
+        data_and_config: DataTuple,
+        search_data: SearchData,
+        ) -> dict:
     '''Make expression-survival figures.'''
     data, _ = data_and_config
     fig = plot_expression_survival(
@@ -469,7 +514,10 @@ def make_expression_survival_fig(data_and_config, search_data):
     return {}
 
 
-def make_expression_survival_dotplots(data_and_config, _):
+def make_expression_survival_dotplots(
+        data_and_config: DataTuple,
+        _search_data: SearchData,
+        ) -> dict:
     '''Make dotplots of protein concentrations colored by survival.'''
     data, _ = data_and_config
     stats = {}
@@ -495,7 +543,10 @@ def make_expression_survival_dotplots(data_and_config, _):
     return stats
 
 
-def make_survival_centrality_fig(data_and_config, _):
+def make_survival_centrality_fig(
+        data_and_config: DataTuple,
+        _search_data: SearchData,
+        ) -> dict:
     '''Plot box plot figure of agent distances from center.'''
     data, _ = data_and_config
     fig, stats = get_survival_against_centrality_plot(data)
@@ -506,10 +557,13 @@ def make_survival_centrality_fig(data_and_config, _):
     return stats
 
 
-def make_environment_section(data_and_configs, _):
+def make_environment_section(
+        data_and_configs: Sequence[DataTuple],
+        _search_data: SearchData,
+        ) -> dict:
     '''Plot field concentrations in cross-section of final enviro.'''
     t_final = max(data_and_configs[0][0].keys())
-    fields_ts = []
+    fields_ts: List[Dict[float, Dict[str, SerializedField]]] = []
     section_times = [
         float(time) for time in ENVIRONMENT_SECTION_TIMES]
     for i, (replicate, _) in enumerate(data_and_configs):
@@ -530,7 +584,10 @@ def make_environment_section(data_and_configs, _):
     return stats
 
 
-def make_growth_basal_fig(replicates_data, _):
+def make_growth_basal_fig(
+        replicates_data: Iterable[DataTuple],
+        _: SearchData,
+        ) -> dict:
     '''Create snapshots figure of colony on basal media.'''
     stats = {}
     for i, (data, enviro_config) in enumerate(replicates_data):
@@ -539,7 +596,10 @@ def make_growth_basal_fig(replicates_data, _):
     return stats
 
 
-def make_growth_anaerobic_fig(replicates_data, _):
+def make_growth_anaerobic_fig(
+        replicates_data: Iterable[DataTuple],
+        _: SearchData,
+        ) -> dict:
     '''Create snapshots figure of colony on anaerobic media.'''
     stats = {}
     for i, (data, enviro_config) in enumerate(replicates_data):
@@ -548,7 +608,10 @@ def make_growth_anaerobic_fig(replicates_data, _):
     return stats
 
 
-def make_phylogeny_plot(data_and_config, _):
+def make_phylogeny_plot(
+        data_and_config: DataTuple,
+        _search_data: SearchData,
+        ) -> dict:
     '''Plot phylogenetic tree.'''
     data, _ = data_and_config
     tree, df = plot_phylogeny(data, os.path.join(
@@ -565,7 +628,10 @@ def make_phylogeny_plot(data_and_config, _):
     return {}
 
 
-def make_enviro_heterogeneity_fig(replicates_data, _):
+def make_enviro_heterogeneity_fig(
+        replicates_data: Iterable[DataTuple],
+        _: SearchData,
+        ) -> dict:
     '''Plot snapshots of colony consuming glucose.'''
     stats = {}
     for i, (data, enviro_config) in enumerate(replicates_data):
@@ -576,18 +642,24 @@ def make_enviro_heterogeneity_fig(replicates_data, _):
     return stats
 
 
-def make_death_snapshots(data_and_config, _):
+def make_death_snapshots(
+        data_and_config: DataTuple,
+        _: SearchData,
+        ) -> dict:
     '''Plot colony exposed to antibiotics with death coloration.'''
     data, config = data_and_config
     return make_snapshots_figure(
         data, config, 'death_snapshots', [],
         agent_fill_color='green',
-        snapshot_times=[max(data.keys())],
+        snapshot_times=(max(data.keys()),),
         xlim=(5, 45),
         ylim=(5, 45),
     )
 
-def make_death_snapshots_antibiotic(data_and_config, _):
+def make_death_snapshots_antibiotic(
+        data_and_config: DataTuple,
+        _: SearchData,
+        ) -> dict:
     '''Plot colony consuming (or not) antibiotics.'''
     data, config = data_and_config
     return make_snapshots_figure(
@@ -599,8 +671,14 @@ def make_death_snapshots_antibiotic(data_and_config, _):
     )
 
 
-def create_data_dict(all_data, experiment_id_obj):
+def create_data_dict(
+        all_data: Dict[str, DataTuple],
+        experiment_id_obj: Union[dict, str, Tuple[str, ...]],
+        ) -> Union[dict, DataTuple, Tuple[DataTuple, ...]]:
     '''Create a dictionary of experiment simulation data.
+
+    Note that we only support tuples of IDs, not tuples of dictionaries
+    or tuples of tuples.
 
     Args:
         all_data (dict(str, tuple(RawData, dict))): Map from experiment
@@ -616,10 +694,12 @@ def create_data_dict(all_data, experiment_id_obj):
     if isinstance(experiment_id_obj, str):
         return all_data[experiment_id_obj]
     if isinstance(experiment_id_obj, tuple):
-        return tuple(
-            create_data_dict(all_data, elem)
-            for elem in experiment_id_obj
-        )
+        to_return = []
+        for elem in experiment_id_obj:
+            assert isinstance(elem, str)
+            data_tuple = create_data_dict(all_data, elem)
+            to_return.append(cast(DataTuple, data_tuple))
+        return tuple(to_return)
     if isinstance(experiment_id_obj, dict):
         return dict({
             key: create_data_dict(all_data, value)
@@ -649,7 +729,7 @@ FIGURE_FUNCTION_MAP = {
 }
 
 
-def main():
+def main() -> None:
     '''Generate all figures.'''
     rcParams['font.family'] = ['sans-serif']
     rcParams['font.sans-serif'] = ['Arial']
@@ -657,7 +737,7 @@ def main():
         os.makedirs(FIG_OUT_DIR)
     with open(os.path.join(FIG_OUT_DIR, METADATA_FILE), 'w') as f:
         json.dump(get_metadata(), f, indent=4)
-    stats = {}
+    stats: dict = {}
     parser = argparse.ArgumentParser(
         description=(
             'Generate selected figures and associated stats from '
@@ -705,7 +785,7 @@ def main():
                     args, experiment_id)
             data = create_data_dict(data_cache, experiment_ids)
             func = FIGURE_FUNCTION_MAP[fig_name]
-            stats[fig_name] = func(data, search_data)
+            stats[fig_name] = func(data, search_data)  # type: ignore
 
     with open(os.path.join(FIG_OUT_DIR, STATS_FILE), 'w') as f:
         json.dump(serialize_value(stats), f, indent=4)

@@ -16,7 +16,8 @@ TIMEOUT = 30 * 60  # seconds
 ARCHIVES_FOLDER = 'archived_simulations'
 
 
-def main():
+def main() -> None:
+    '''Archive simulation data.'''
     experiment_ids = set(get_experiment_ids(EXPERIMENT_IDS))
 
     with tempfile.TemporaryDirectory() as archive_dir:

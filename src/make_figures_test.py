@@ -1,10 +1,9 @@
 import os
-from unittest.mock import patch
 
 from src import make_figures
 
 
-EXPERIMENT_IDS = {
+EXPERIMENT_IDS: make_figures.ExperimentIdsType = {
     'expression_distributions': (
         '20210125.180927', '20210125.182741', '20210125.184150'),
     'expression_heterogeneity': (
@@ -42,7 +41,8 @@ AGENTS_FOR_PHYLOGENY_TRACE = ('0_wcecoli',)
 FIG_OUT_DIR = os.path.join(make_figures.OUT_DIR, 'figs_test')
 
 
-def main():
+def main() -> None:
+    '''Generate figures after patching constants.'''
     make_figures.EXPERIMENT_IDS = EXPERIMENT_IDS
     make_figures.FIG_OUT_DIR = FIG_OUT_DIR
     make_figures.ENVIRONMENT_SECTION_TIMES = ENVIRONMENT_SECTION_TIMES

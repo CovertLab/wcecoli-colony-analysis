@@ -1,4 +1,4 @@
-from typing import Dict, Sequence, Union, List, Tuple, cast
+from typing import Dict, Sequence, List, Tuple, cast
 
 from matplotlib import pyplot as plt
 from matplotlib import cm
@@ -6,15 +6,14 @@ from matplotlib.colors import Colormap
 import numpy as np
 
 
-SerializedField = Union[
-    Sequence[Sequence[int]], Sequence[Sequence[float]]]
+SerializedField = Sequence[Sequence[float]]
 DEFAULT_COLORMAP = cm.get_cmap('Greys')  # type: ignore
 # This avoids plotting data in white
 MIN_COLOR_NORMALIZED = 0.2
 
 
 def get_enviro_sections_plot(
-        fields_ts_list: List[Dict[int, Dict[str, SerializedField]]],
+        fields_ts_list: List[Dict[float, Dict[str, SerializedField]]],
         bounds: Sequence,
         section_location: float = 0.5,
         cmap: Colormap = DEFAULT_COLORMAP,
@@ -41,24 +40,24 @@ def get_enviro_sections_plot(
     sorted_times = sorted(fields_ts_list[0].keys())
     some_timepoint = fields_ts_list[0][sorted_times[0]]
     some_field = some_timepoint[list(some_timepoint.keys())[0]]
-    num_bins = np.array(some_field).shape  # type: ignore
+    num_bins = np.array(some_field).shape
     bin_width = bounds[0] / num_bins[0]
     x = []
     for i in range(num_bins[0]):
         mid = i * bin_width + bin_width / 2
         x.append(mid)
 
-    y_values_ts: Dict[int, Dict[str, List[List[float]]]] = dict()
+    y_values_ts: Dict[float, Dict[str, List[List[float]]]] = dict()
     all_fields = list(some_timepoint.keys())
     for time in sorted_times:
         y_values = y_values_ts.setdefault(time, dict())
         for field in all_fields:
             y_values[field] = []
             for fields_ts in fields_ts_list:
-                matrix = np.array(  # type: ignore
+                matrix = np.array(
                     fields_ts[time][field])
                 # Skip infinite fields
-                if np.any(np.isinf(matrix)):  # type: ignore
+                if np.any(np.isinf(matrix)):
                     continue
                 assert matrix.shape == num_bins
                 section_index = int(section_location * matrix.shape[0])

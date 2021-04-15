@@ -1,13 +1,14 @@
 import argparse
 import json
-from typing import Callable, List
+from typing import Callable, List, Optional, Sequence
 
 import numpy as np
 from scipy import stats as scipy_stats
 from scipy.constants import N_A
 
 
-# From the "expression_distributions" stats in figs42. In counts/fL
+# From the "expression_distributions" stats in figs42 (an earlier set of
+# figures). In counts/fL
 EXPRESSION_IQRS = {
     'AmpC': (68.36393149003717, 85.45342670347938, 99.41098877494602),
     'AcrAB-TolC': (
@@ -16,6 +17,14 @@ EXPRESSION_IQRS = {
 
 
 def analyze_expression_distributions_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for expression distributions.
+
+    Args:
+        stats: Raw stats for expression distributions.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     summary = {}
     for protein, (minimum, q1, q2, q3, maximum) in stats.items():
         summary[protein] = {
@@ -28,6 +37,14 @@ def analyze_expression_distributions_stats(stats: dict) -> dict:
 
 
 def analyze_growth_fig_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for growth figure.
+
+    Args:
+        stats: Raw stats for growth figure.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     summary = {}
     for condition, (q1, q2, q3) in stats.items():
         summary[condition] = {
@@ -39,6 +56,14 @@ def analyze_growth_fig_stats(stats: dict) -> dict:
 
 
 def analyze_threshold_scan_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for threshold scan.
+
+    Args:
+        stats: Raw stats for threshold scan.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     summary = analyze_growth_fig_stats(stats)
     for threshold, (q1, q2, q3) in stats.items():
         end_summary = {
@@ -50,6 +75,14 @@ def analyze_threshold_scan_stats(stats: dict) -> dict:
 
 
 def analyze_enviro_section_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for environment cross-section.
+
+    Args:
+        stats: Raw stats for environment cross-section.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     summary = {}
     for timepoint, (q1, q2, q3) in stats.items():
         summary[timepoint] = {
@@ -61,9 +94,14 @@ def analyze_enviro_section_stats(stats: dict) -> dict:
 
 
 def _u_power_centrality(
-        num_a: int, num_b: int, colony_radius: float,
-        get_prob_a: Callable[[float], float], iters: int = 10000,
-        alpha: float = 0.05, seed: int = 530) -> float:
+        num_a: int,
+        num_b: int,
+        colony_radius: float,
+        get_prob_a: Callable[[float], float],
+        iters: int = 10000,
+        alpha: float = 0.05,
+        seed: int = 530,
+        ) -> float:
     num_points = num_a + num_b
     p_values = []
     random = np.random.default_rng(seed)  # type: ignore
@@ -103,6 +141,14 @@ def _u_power_centrality(
 
 
 def analyze_centrality_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for centrality box plot.
+
+    Args:
+        stats: Raw stats for centrality box plot.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     summary = {}
     survive_q1, survive_q2, survive_q3 = np.percentile(
         stats['survive_distances'], [25, 50, 75])
@@ -124,18 +170,28 @@ def analyze_centrality_stats(stats: dict) -> dict:
     summary['hypothesis testing'] = {
         'Mann-Whitney U statistic': u_stat,
         'Mann-Whitney p-value': p_value,
-        'Power (alpha=0.05)for 0.5 diff in p(death)': _u_power_centrality(
-            len(stats['survive_distances']),
-            len(stats['die_distances']),
-            10,
-            lambda x: 0.25 + x / 10 / 2,
-            alpha=0.05,
+        'Power (alpha=0.05) for 0.5 diff in p(death)': (
+            _u_power_centrality(
+                len(stats['survive_distances']),
+                len(stats['die_distances']),
+                10,
+                lambda x: 0.25 + x / 10 / 2,
+                alpha=0.05,
+            )
         ),
     }
     return summary
 
 
 def analyze_growth_snapshot_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for growth snapshots.
+
+    Args:
+        stats: Raw stats for growth snapshots.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     summary = {}
     for condition, condition_stats in stats.items():
         final_agent_counts = []
@@ -155,6 +211,14 @@ def analyze_growth_snapshot_stats(stats: dict) -> dict:
 
 
 def analyze_enviro_heterogeneity_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for environment snapshots.
+
+    Args:
+        stats: Raw stats for environment snapshots.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     summary: dict = {}
     replicate_summaries: dict = {}
     for replicate_stats in stats.values():
@@ -190,6 +254,14 @@ def analyze_enviro_heterogeneity_stats(stats: dict) -> dict:
 
 
 def analyze_death_snapshot_antibiotic_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for death snapshots.
+
+    Args:
+        stats: Raw stats for death snapshots with antibiotics.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     replicates_stats = {
         'replicate1': stats,
     }
@@ -208,7 +280,8 @@ def _u_power_concentrations(
     for i in range(iters):
         a = a_values[i, :]
         b = b_values[i, :]
-        _, p_value = scipy_stats.mannwhitneyu(a, b, alternative='two-sided')
+        _, p_value = scipy_stats.mannwhitneyu(
+            a, b, alternative='two-sided')
         p_values.append(p_value)
     p_arr = np.array(p_values)
     power = (p_arr < alpha).sum() / len(p_arr)
@@ -216,11 +289,22 @@ def _u_power_concentrations(
 
 
 def analyze_dotplot_stats(stats: dict) -> dict:
+    '''Calculate summary statistics for dotplots.
+
+    Args:
+        stats: Raw stats for dotplots.
+
+    Returns:
+        Dictionary of summary statistics.
+    '''
     summary: dict = {}
     stdevs = {
         # Convert IQRs from counts/fL to mM
-        protein: (np.array(iqrs) * 1e15 * 1e3 / N_A).mean() / (  # type: ignore
-            scipy_stats.norm.ppf(0.75) - scipy_stats.norm.ppf(0.25))
+        protein: (
+            np.array(iqrs) * 1e15 * 1e3 / N_A
+        ).mean() / (
+            scipy_stats.norm.ppf(0.75) - scipy_stats.norm.ppf(0.25)
+        )
         for protein, iqrs in EXPRESSION_IQRS.items()
     }
     for protein, protein_stats in stats.items():
@@ -262,7 +346,8 @@ SECTION_ANALYZER_MAP = {
 }
 
 
-def main(args=None):
+def main(tokens: Optional[Sequence[str]] = None) -> None:
+    '''Calculate summary statistics.'''
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'stats_json',
@@ -272,7 +357,7 @@ def main(args=None):
         default='summary_stats.json',
         help='Path to write summary stats to')
 
-    args = parser.parse_args(args)
+    args = parser.parse_args(tokens)
 
     with open(args.stats_json, 'r') as f:
         stats = json.load(f)

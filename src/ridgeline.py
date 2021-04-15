@@ -8,7 +8,6 @@ from matplotlib.axes import Axes
 
 
 Color = Union[str, Tuple[float, float, float, float]]
-Number = Union[float, int, np.float64]
 
 
 def flatten(value: Any) -> list:
@@ -43,7 +42,7 @@ def flatten(value: Any) -> list:
 
 def get_ridgeline_plot(
         replicates: Iterable[Tuple[
-            Dict[str, Sequence[Number]],
+            Dict[str, Sequence[float]],
             Color,
         ]],
         point_alpha: float = 1,
@@ -51,10 +50,10 @@ def get_ridgeline_plot(
         overlap: float = 0.2,
         horizontal_extra: float = 0.2,
         jitter: Optional[float] = None,
-        figsize: Optional[Tuple[Number, Number]] = None,
+        figsize: Optional[Tuple[float, float]] = None,
         x_label: str = '',
         y_label: str = '',
-        data_bounds: Optional[Tuple[Number, Number]] = None,
+        data_bounds: Optional[Tuple[float, float]] = None,
         fontsize: float = 36,
         ) -> plt.Figure:
     '''Generate a ridgeline plot.
@@ -81,7 +80,8 @@ def get_ridgeline_plot(
     if figsize is None:
         fig, ax = plt.subplots()
     else:
-        fig, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots(
+            figsize=cast(Tuple[float, float], figsize))
     data = [replicate[0] for replicate in replicates]
     colors = [replicate[1] for replicate in replicates]
     plot_ridgeline(
@@ -98,11 +98,16 @@ def get_ridgeline_plot(
 
 
 def _calculate_density_curves(
-        data: Sequence[Dict[str, Sequence[Number]]],
-        x_values: Union[Sequence[Number], np.ndarray],
-        overlap: float):
+        data: Sequence[Dict[str, Sequence[float]]],
+        x_values: Union[Sequence[float], np.ndarray],
+        overlap: float,
+        ) -> Tuple[
+            Dict[str, float],
+            Dict[str, List[np.ndarray]],
+            float,
+        ]:
     y_values: Dict[str, List[float]] = {}
-    density_curves: Dict[str, List[Sequence[float]]] = {}
+    density_curves: Dict[str, List[np.ndarray]] = {}
     offset = 0
     for data_dict in data:
         y = 0.
@@ -133,7 +138,7 @@ def _calculate_density_curves(
 
 
 def plot_ridgeline(
-        data: Sequence[Dict[str, Sequence[Number]]],
+        data: Sequence[Dict[str, Sequence[float]]],
         ax: Axes,
         colors: Sequence[Color],
         fill_alpha: float = 0.2,
@@ -142,7 +147,7 @@ def plot_ridgeline(
         overlap: float = 0.2,
         horizontal_extra: float = 0.2,
         jitter: Optional[float] = None,
-        data_bounds: Optional[Tuple[Number, Number]] = None,
+        data_bounds: Optional[Tuple[float, float]] = None,
         fontsize: float = 36,
         ) -> None:
     '''Plot data as a ridgeline plot.
@@ -226,9 +231,9 @@ def plot_ridgeline(
             ) * 2 * jitter
             # pylint: enable=no-member
             ax.scatter(points,  # type: ignore
-                np.ones(len(points)) * y - offset, color=cast(str, color),
-                marker='|', s=20, linewidths=0.1, zorder=zorder,
-                alpha=point_alpha)
+                np.ones(len(points)) * y - offset,
+                color=cast(str, color), marker='|', s=20,
+                linewidths=0.1, zorder=zorder, alpha=point_alpha)
     ax.set_yticks(list(y_values.values()))
     ax.set_yticklabels(list(y_values.keys()))
     ax.tick_params(  # type: ignore

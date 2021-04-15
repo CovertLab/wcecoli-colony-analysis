@@ -107,7 +107,8 @@ def plot_phylogeny(
     }
     for label, color in legend.items():
         tstyle.legend.add_face(CircleFace(5, color), column=0)
-        tstyle.legend.add_face(TextFace(' ' + label, ftype=FONT), column=1)
+        tstyle.legend.add_face(
+            TextFace(' ' + label, ftype=FONT), column=1)
 
     # Set styles for each node
     for node in tree.traverse():

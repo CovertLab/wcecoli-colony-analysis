@@ -61,5 +61,9 @@ disable=print-statement,
 
 no-docstring-rgx=(^_)|(^[Tt]est)
 max-line-length=72
-variable-rgx=^[a-z][a-z0-9]*((_[a-z0-9]+)*)?$
-argument-rgx=^[a-z][a-z0-9]*((_[a-z0-9]+)*)?$
+variable-rgx=^_?[a-z][a-z0-9]*((_[a-z0-9]+)*)?$
+argument-rgx=^_?[a-z][a-z0-9]*((_[a-z0-9]+)*)?$
+
+[TYPECHECK]
+
+generated-members=data.keys|data.__getitem__

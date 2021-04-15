@@ -19,6 +19,16 @@ Locations = Sequence[Location]
 def get_survival_against_centrality_plot(
         data: RawData,
         fontsize: float = 20) -> Tuple[plt.Figure, dict]:
+    '''Get a centrality box plot.
+
+    Args:
+        data: Simulation data.
+        fontsize: Size of text on plot.
+
+    Returns:
+        Tuple of ``(fig, stats)`` with Matplotlib Figure object as
+        ``fig`` and a dictionary of statistics as ``stats``.
+    '''
     survive_locations, die_locations = extract_spatial_data(data)
     center = extract_center(data)
 
@@ -30,6 +40,14 @@ def get_survival_against_centrality_plot(
 
 
 def extract_spatial_data(data: RawData) -> Tuple[Locations, Locations]:
+    '''Get agent locations at the end of a simulation split by survival.
+
+    Args:
+        data: Simulation data.
+
+    Returns:
+        Tuple ``(survive_locations, die_locations)``.
+    '''
     end_time = max(data.keys())
     data_filtered = RawData({
         end_time: data[end_time]
@@ -38,7 +56,8 @@ def extract_spatial_data(data: RawData) -> Tuple[Locations, Locations]:
     survive_locations = [
         get_in(agent_data, LOCATION_PATH)
         for agent_data in get_in(
-            survive_data[end_time], AGENTS_PATH).values()
+            survive_data[end_time],  # pylint: disable=unsubscriptable-object
+            AGENTS_PATH).values()
     ]
     die_locations = [
         get_in(agent_data, LOCATION_PATH)
@@ -49,6 +68,14 @@ def extract_spatial_data(data: RawData) -> Tuple[Locations, Locations]:
 
 
 def extract_center(data: RawData) -> Location:
+    '''Find the environment center from simulation data.
+
+    Args:
+        data: Simulation raw data (top-level keys are times).
+
+    Returns:
+        Coordinates of the environment center.
+    '''
     end_time = max(data.keys())
     bounds = get_in(data[end_time], BOUNDS_PATH)
     x, y = bounds
@@ -59,9 +86,24 @@ def plot_survival_against_centrality(
         survive_locations: Locations, die_locations: Locations,
         center: Location, ax: plt.Axes,
         fontsize: float = 20) -> dict:
-    survive_array = np.array(survive_locations)  # type: ignore
-    die_array = np.array(die_locations)  # type: ignore
-    center_array = np.array(center)  # type: ignore
+    '''Create box plot of agent distances from center split by survival.
+
+    Args:
+        survive_locations: Locations of agents that survived to divide
+            or until the end of the simulation.
+        die_locations: Locations of agents that died.
+        center: Coordinates of the environment center.
+        ax: Axes to plot on.
+        fontsize: Size of font for plot text.
+
+    Returns:
+        Statistics dictionary with all the distances of surviving agents
+        to the center (under key ``survive_distances``) and all the
+        distances of dying agents (under key ``die_distances``).
+    '''
+    survive_array = np.array(survive_locations)
+    die_array = np.array(die_locations)
+    center_array = np.array(center)
 
     to_plot = []
     if len(survive_array) != 0:
