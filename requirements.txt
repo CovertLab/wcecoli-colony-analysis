@@ -1,7 +1,7 @@
 alphashape==1.1.0
 appnope==0.1.0
 Arpeggio==1.9.2
-astroid==2.4.2
+astroid==2.5.3
 attrs==20.2.0
 backcall==0.2.0
 certifi==2020.6.20
@@ -33,7 +33,7 @@ mpmath==1.1.0
 mypy==0.782
 mypy-extensions==0.4.3
 networkx==2.5
-numpy==1.19.2
+numpy==1.20.2
 optlang==1.4.6
 packaging==20.4
 pandas==1.1.2
@@ -50,7 +50,7 @@ ptyprocess==0.6.0
 py==1.9.0
 pycparser==2.20
 Pygments==2.7.1
-pylint==2.6.0
+pylint==2.7.4
 pymongo==3.11.0
 pymunk==5.7.0
 pyparsing==2.4.7
