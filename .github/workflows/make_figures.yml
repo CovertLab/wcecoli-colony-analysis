@@ -39,7 +39,7 @@ jobs:
         wget https://zenodo.org/record/4697519/files/archived_simulations.tar.gz
         tar -xf archived_simulations.tar.gz
     - name: Make Figures
-      run: xvfb-run python -m src.make_figures data/search.json --data_path data/archived_simulations --all
+      run: xvfb-run -a python -m src.make_figures data/search.json --data_path data/archived_simulations --all
     - name: Calculate Statistics
       run: python -m src.analyze_stats out/figs/stats.json -o out/figs/summary_stats.json
     - name: Run Phylogeny Analysis

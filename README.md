@@ -26,7 +26,7 @@ GitHub repository.
 
 * If you are running on a headless system, you will need to install the
   X virtual framebuffer (XVFB) and prepend the figure generation
-  commands with `xvfb-run`.
+  commands with `xvfb-run -a`.
 * To analyze phylogenetic data, you will need to have
   [R](https://www.r-project.org/) (version 4.0.4) with the `argparse`
   and `phytools` packages. Developers will also need the `lintr` package
