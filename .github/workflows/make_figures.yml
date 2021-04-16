@@ -33,6 +33,7 @@ jobs:
         Rscript -e "install.packages('phytools')"
     - name: Download and Extract Data
       run: |
+        mkdir data
         cd data
         wget https://zenodo.org/record/4697519/files/search.json
         wget https://zenodo.org/record/4697519/files/archived_simulations.tar.gz
