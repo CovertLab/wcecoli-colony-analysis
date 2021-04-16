@@ -34,12 +34,6 @@ GitHub repository.
 * [Python](https://python.org) 3.8.3
 * If you clone from GitHub, you'll also need these tools:
   * [Git](https://git-scm.com)
-  * [Git Large File Storage](https://git-lfs.github.com) (LFS) will be
-    needed to download the archived simulation data. If you have this
-    installed and configured (e.g. by running `git lfs install`), the
-    simulation data should automatically be downloaded when you run `git
-    clone` below. Note that the simulation data is included in code
-    archives, so you don't need to access Git LFS if you use those.
 * [GPG](https://gnupg.org) to verify code integrity if you don't want to
   rely on GitHub's security checking.
 
@@ -88,7 +82,30 @@ analysis code: reading from files or reading from a MongoDB database.
 Here, we will only describe how to read from files since MongoDB is
 over-kill for just reproducing our analyses.
 
-1. The raw simulation data is included as an archive at
+1. The raw simulation data is not included in the repository due to its
+   size. Instead, it is available under the DOI
+   [10.5281/zenodo.4697519](https://doi.org/10.5281/zenodo.4697519).
+   Follow the DOI link and download all the files that it contains to
+   `data/`.
+
+   **You should verify the integrity of the downloaded files**. You can
+   do so like this:
+
+   ```console
+   $ cd data
+   $ gpg --verify SHA512SUMS.txt.asc
+   gpg: assuming signed data in 'SHA512SUMS.txt'
+   gpg: Signature made Fri Apr 16 14:26:12 2021 EDT
+   gpg:                using RSA key F76925D5D12B91104587678FC98CBB9C501917E0
+   gpg: Good signature from "anonymous <cs.temporary@icloud.com>" [full]
+   $ shasum -c SHA512SUMS.txt
+   LICENSE.txt: OK
+   README.md: OK
+   archived_simulations.tar.gz: OK
+   search.json: OK
+   ```
+
+2. The raw simulation data is now an archive at
    `data/archived_simulations.tar.gz`. You can extract it like this:
 
    ```console
@@ -104,7 +121,7 @@ over-kill for just reproducing our analyses.
    5I. This is already un-compressed, so you don't need to do anything
    more with it except pass it to scripts as specified below.
 
-2. Now you can generate figures using the `src/make_figures.py` script.
+3. Now you can generate figures using the `src/make_figures.py` script.
    Run `python -m src.make_figures -h` to see the available options:
 
    ```console
@@ -213,7 +230,7 @@ over-kill for just reproducing our analyses.
      $ python -m src.make_figures data/search.json --data_path data/archived_simulations --all
      ```
 
-3. Calculate summary statistics using `src/analyze_stats.py`. You can
+4. Calculate summary statistics using `src/analyze_stats.py`. You can
    view its help text by running:
 
    ```console
@@ -238,7 +255,7 @@ over-kill for just reproducing our analyses.
    The out/figs/summary_stats.json file stores the summary statistics in
    a human-readable format.
 
-4. Analyze phylogeny data using `src/analyze_phylogeny.r` like this:
+5. Analyze phylogeny data using `src/analyze_phylogeny.r` like this:
 
    ```console
    $ RScript src/analyze_phylogeny.r out/figs/phylogeny.nw out/figs/agent_survival.csv
