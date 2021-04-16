@@ -57,4 +57,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: figs
-        path: /home/runner/work/wcecoli-colony-analysis/out/figs
+        path: ${{ GITHUB_WORKSPACE}}/out/figs
