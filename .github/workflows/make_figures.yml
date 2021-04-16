@@ -51,4 +51,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: figs
-        path: ${{ GITHUB_WORKSPACE}}/out/figs
+        path: ${{ env.GITHUB_WORKSPACE }}/out/figs
