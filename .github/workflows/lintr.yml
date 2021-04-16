@@ -16,10 +16,8 @@ jobs:
       with:
         r-version: 4.0.4
     - name: Install libcurl for lintr
-      run: sudo apt install libcurl4-openssl-dev
+      run: sudo apt-get install libcurl4-openssl-dev
     - name: Install lintr
-      run: |
-        install.packages('lintr')
-      shell: RScript {0}
+      run: Rscript -e "install.packages('lintr')"
     - name: Run lintr
       run: Rscript -e "lintr::lint_dir(path = '.', relative_path = TRUE)"
