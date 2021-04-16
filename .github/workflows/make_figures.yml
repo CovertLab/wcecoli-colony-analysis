@@ -31,9 +31,11 @@ jobs:
       run: |
         Rscript -e "install.packages('argparse')"
         Rscript -e "install.packages('phytools')"
-    - name: Extract Compressed Data
+    - name: Download and Extract Data
       run: |
         cd data
+        wget https://zenodo.org/record/4697519/files/search.json
+        wget https://zenodo.org/record/4697519/files/archived_simulations.tar.gz
         tar -xf archived_simulations.tar.gz
     - name: Make Figures
       run: xvfb-run python -m src.make_figures data/search.json --data_path data/archived_simulations --all
