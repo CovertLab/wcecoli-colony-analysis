@@ -14,12 +14,13 @@ GitHub repository.
 ### Hardware Requirements
 
 * 5 GB of free space because the un-compressed simulation data is about
-  1.3 GB.
+  2.4 GB.
 * At least 4 GB RAM because you will need to load at least one
   experiment's data into memory to generate the figures. This data can
-  be several hundred MB. If you generate all the figures at once, the
-  analysis code will need to load all 1.3 GB of simulation data into
-  memory.
+  be over 1 GB. If you generate all the figures at once, the analysis
+  code will need to load all 2.4 GB of simulation data into memory.
+  Depending on what other processes consume RAM on your system, you may
+  need more memory and/or swap space.
 
 ### Software Requirements
 
@@ -47,7 +48,7 @@ GitHub repository.
 1. Clone the repository.
 
    ```console
-   git clone https://github.com/CovertLab/wcecoli-colony-analysis.git
+   $ git clone https://github.com/CovertLab/wcecoli-colony-analysis.git
    ```
 
    Alternatively, you can simply extract an archive of the source code
@@ -57,10 +58,27 @@ GitHub repository.
    comes from a trusted source.** See the [Security section](#security)
    below for instructions.
 2. (recommended but optional) Setup a Python virtual environment.
-3. Install dependencies
+3. Install Python dependencies
 
    ```console
-   pip install -r requirements.txt
+   $ pip install numpy
+   $ pip install -r requirements.txt
+   ```
+
+   Note that you have to install numpy first because the `setup.py`
+   script of one of our dependencies requires it.
+4. Install R dependencies. In an R shell, run:
+
+   ```r
+   install.packages('argparse')
+   install.packages('phytools')
+   ```
+
+   If you want to run the lint checks (only developers need to do this),
+   also run:
+
+   ```r
+   install.packages('lintr')
    ```
 
 ## Reproduce Analyses
@@ -74,8 +92,8 @@ over-kill for just reproducing our analyses.
    `data/archived_simulations.tar.gz`. You can extract it like this:
 
    ```console
-   cd data
-   tar -xf archived_simulations.tar.gz
+   $ cd data
+   $ tar -xf archived_simulations.tar.gz
    ```
 
    Now you should see the simulation data as a series of JSON files
@@ -178,8 +196,7 @@ over-kill for just reproducing our analyses.
      For example, to generate Figure 3A from the paper:
 
      ```console
-     python -m src.make_figures data/search.json \
-         --data_path data/archived_simulations --3A
+     $ python -m src.make_figures data/search.json --data_path data/archived_simulations --3A
      ```
 
      This will save the plots used in Figure 3A to `out/figs/`. Note
@@ -193,8 +210,7 @@ over-kill for just reproducing our analyses.
      can do this like so:
 
      ```console
-     python -m src.make_figures data/search.json \
-         --data_path data/archived_simulations --all
+     $ python -m src.make_figures data/search.json --data_path data/archived_simulations --all
      ```
 
 3. Calculate summary statistics using `src/analyze_stats.py`. You can
@@ -216,12 +232,19 @@ over-kill for just reproducing our analyses.
    statistics by running:
 
    ```console
-   python -m src.analyze_stats out/figs/stats.json -o \
-       out/figs/summary_stats.json
+   $ python -m src.analyze_stats out/figs/stats.json -o out/figs/summary_stats.json
    ```
 
    The out/figs/summary_stats.json file stores the summary statistics in
    a human-readable format.
+
+4. Analyze phylogeny data using `src/analyze_phylogeny.r` like this:
+
+   ```console
+   $ RScript src/analyze_phylogeny.r out/figs/phylogeny.nw out/figs/agent_survival.csv
+   ```
+
+   The analysis will be printed to the console.
 
 ## For Developers
 
@@ -231,7 +254,7 @@ You can use the `src/archive_experiments.py` script to create an archive
 of all the simulation data used by `src/make_figures.py`:
 
 ```console
-python -m src.archive_experiments <connection args>
+$ python -m src.archive_experiments <connection args>
 ```
 
 where `<connection args>` can include `-o IP` for MongoDB IP address
@@ -245,7 +268,7 @@ There should be no errors.
 
 ## Security
 
-This code **is not hardened against malicious inputs.** Therefore, you
+**This code is not hardened against malicious inputs.** Therefore, you
 should only run it on data you trust is not malformed. This trusted data
 might include the archived simulation data we provide or the outputs of
 simulations you ran.
@@ -257,24 +280,24 @@ All releases and commits are signed with the OpenPGP key
 1642C5C9C092F5AC1FE9222012C1B5FF558317E5
 ```
 
-### Validating Release Signatures
+### Verifying Release Signatures
 
 You can validate releases by verifying tag signatures:
 
 ```console
-git verify-tag <tag name>
+$ git verify-tag <tag name>
 ```
 
 If you retrieved an archive of the code with an accompanying signature,
 you can also verify that signature:
 
 ```console
-gpg --verify <signature file>
+$ gpg --verify <signature file>
 ```
 
-### Validating Commit Signatures
+### Verifying Commit Signatures
 
-You can use `git log --show-signature` to validate these signatures,
+You can use `git log --show-signature` to verify these signatures,
 though note that the signatures will show a fingerprint of the signing
 sub-key:
 
@@ -286,7 +309,7 @@ We have provided a script to automatically do this check in
 `check_signatures.py`, though of course you should make sure you
 understand the script before you trust it.
 
-### Validating Using GitHub
+### Verifying Using GitHub
 
 If you trust GitHub, you may also rely on the `Verified` labels GitHub
 adds to signed commits and releases. Click on the label to check which
