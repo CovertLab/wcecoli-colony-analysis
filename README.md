@@ -241,7 +241,7 @@ over-kill for just reproducing our analyses.
 4. Analyze phylogeny data using `src/analyze_phylogeny.r` like this:
 
    ```console
-   $ RScript src/analyze_phylogeny.r out/figs/phylogeny.nw out/figs/agent_survival.csv
+   $ Rscript src/analyze_phylogeny.r out/figs/phylogeny.nw out/figs/agent_survival.csv
    ```
 
    The analysis will be printed to the console.
