@@ -1,0 +1,46 @@
+name: Generate Figures and Statistics
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Setup R
+      uses: r-lib/actions/setup-r@master
+      with:
+        r-version: 4.0.4
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy
+        pip install -r requirements.txt
+    - name: Install R Dependencies
+      run: |
+        RScript -e "install.packages('argparse')"
+        Rscript -e "install.packages('phytools')"
+    - name: Extract Compressed Data
+      run: |
+        cd data
+        tar -xf archived_simulations.tar.gz
+    - name: Make Figures
+      run: xvfb-run python -m src.make_figures data/search.json --data_path data/archived_simulations --all
+    - name: Calculate Statistics
+      run: python -m src.analyze_stats out/figs/stats.json -o out/figs/summary_stats.json
+    - name: Upload Figures and Statistics as Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: figs
+        path: /home/runner/work/wcecoli-colony-analysis/out/figs
