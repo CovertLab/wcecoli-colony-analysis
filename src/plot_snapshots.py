@@ -1,6 +1,11 @@
 # type: ignore  # pylint: skip-file
 '''
-Adapted from vivarium-cell==0.0.24
+This code was adapted from vivarium-cell version 0.0.24. That project is
+hosted on GitHub at
+https://github.com/vivarium-collective/vivarium-cell/ and is under an MIT
+license.
+
+Copyright (c) 2018-2021 The Vivarium Authors, 2021 Christopher Skalnik
 '''
 
 from __future__ import absolute_import, division, print_function

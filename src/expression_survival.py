@@ -1,9 +1,11 @@
 '''
-======================================
-Expression Dotplot Colored by Survival
-======================================
+This code was adapted from vivarium-cell on December 30, 2020. That
+project is hosted on GitHub at
+https://github.com/vivarium-collective/vivarium-cell/ and is under an
+MIT license.
 
-Adapted from vivarium-cell.
+Copyright (c) 2018-2020 The Vivarium Authors
+Copyright (c) 2020-2021 Christopher Skalnik
 '''
 from typing import Sequence, Iterable, Tuple, List, Dict
 
