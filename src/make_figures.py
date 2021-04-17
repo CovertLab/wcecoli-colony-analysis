@@ -188,7 +188,22 @@ def exec_shell(
 
 def get_metadata() -> dict:
     '''Get information on which experiments and code were used.'''
-    metadata = {
+    if os.environ['CI']:
+        ci_url = '{}/{}/actions/runs/{}'.format(
+            os.environ['GITHUB_SERVER_URL'],
+            os.environ['GITHUB_REPOSITORY'],
+            os.environ['GITHUB_RUN_ID'],
+        )
+        return {
+            'git_hash': os.environ['GITHUB_SHA'],
+            'git_branch': os.environ.get('GITHUB_BASE_REF'),
+            'git_status': 'n/a because on CI',
+            'time': datetime.utcnow().isoformat() + '+00:00',
+            'python': sys.version.splitlines()[0],
+            'experiment_ids': EXPERIMENT_IDS,
+            'ci_url': ci_url,
+        }
+    return {
         'git_hash': exec_shell(['git', 'rev-parse', 'HEAD'])[0],
         'git_branch': exec_shell(
             ['git', 'symbolic-ref', '--short', 'HEAD'])[0],
@@ -198,7 +213,6 @@ def get_metadata() -> dict:
         'python': sys.version.splitlines()[0],
         'experiment_ids': EXPERIMENT_IDS,
     }
-    return metadata
 
 
 def get_experiment_ids(
@@ -750,8 +764,8 @@ FIGURE_FUNCTION_MAP = {
 
 def main() -> None:
     '''Generate all figures.'''
-    rcParams['font.family'] = ['sans-serif']
     rcParams['font.sans-serif'] = ['Arial']
+    rcParams['font.family'] = ['sans-serif']
     if not os.path.exists(FIG_OUT_DIR):
         os.makedirs(FIG_OUT_DIR)
     with open(os.path.join(FIG_OUT_DIR, METADATA_FILE), 'w') as f:

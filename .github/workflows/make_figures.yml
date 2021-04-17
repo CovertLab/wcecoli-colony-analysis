@@ -1,0 +1,60 @@
+name: Generate Figures and Statistics
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Setup R
+      uses: r-lib/actions/setup-r@master
+      with:
+        r-version: 4.0.4
+    - name: Install XVFB and Dependencies
+      run: |
+        sudo apt-get install xvfb
+        sudo apt-get install xorg libqt5x11extras5 libqt5x11extras5-dev
+        sudo apt-get install libxcb-render0 libxcb-render-util0
+        sudo apt-get install libxcb-shape0 libxcb-randr0 libxcb-xfixes0
+        sudo apt-get install libxcb-sync1 libxcb-shm0 libxcb-icccm4 libxcb-keysyms1
+        sudo apt-get install libxcb-image0 libxcb1 libx11-xcb-perl
+        sudo apt-get --reinstall install xvfb
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy
+        pip install -r requirements.txt
+    - name: Install R Dependencies
+      run: |
+        Rscript -e "install.packages('argparse')"
+        Rscript -e "install.packages('phytools')"
+    - name: Download and Extract Data
+      run: |
+        mkdir data
+        cd data
+        wget https://zenodo.org/record/4697519/files/search.json
+        wget https://zenodo.org/record/4697519/files/archived_simulations.tar.gz
+        tar -xf archived_simulations.tar.gz
+    - name: Make Figures
+      run: xvfb-run -a python -m src.make_figures data/search.json --data_path data/archived_simulations --all
+    - name: Calculate Statistics
+      run: python -m src.analyze_stats out/figs/stats.json -o out/figs/summary_stats.json
+    - name: Run Phylogeny Analysis
+      run: Rscript src/analyze_phylogeny.r out/figs/phylogeny.nw out/figs/agent_survival.csv > out/figs/phylogeny_analysis.txt
+    - name: Upload Figures and Statistics as Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: figs
+        path: ${{ github.workspace }}/out/figs

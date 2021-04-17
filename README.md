@@ -1,8 +1,12 @@
 # Analysis Code for Whole-Cell *E. coli* Colony Simulations
 
-This repository contains code and data to accompany a paper
-"Whole-Colony Modeling of *Escherichia coli*" that is currently in
-preparation. This project is hosted on GitHub at
+This repository contains code to accompany a paper "Whole-Colony
+Modeling of *Escherichia coli*" that is currently in preparation. The
+associated data are available under the DOI
+[10.5281/zenodo.4697519](https://doi.org/10.5281/zenodo.4697519) and can
+be re-generated using the model simulation code with DOI
+[10.5281/zenodo.4695018](http://doi.org/10.5281/zenodo.4695018). This
+project is hosted on GitHub at
 [https://github.com/CovertLab/wcecoli-colony-analysis](https://github.com/CovertLab/wcecoli-colony-analysis)
 and licensed under the terms in [`LICENSE.txt`](LICENSE.txt).
 
@@ -26,7 +30,7 @@ GitHub repository.
 
 * If you are running on a headless system, you will need to install the
   X virtual framebuffer (XVFB) and prepend the figure generation
-  commands with `xvfb-run`.
+  commands with `xvfb-run -a`.
 * To analyze phylogenetic data, you will need to have
   [R](https://www.r-project.org/) (version 4.0.4) with the `argparse`
   and `phytools` packages. Developers will also need the `lintr` package
@@ -258,7 +262,7 @@ over-kill for just reproducing our analyses.
 5. Analyze phylogeny data using `src/analyze_phylogeny.r` like this:
 
    ```console
-   $ RScript src/analyze_phylogeny.r out/figs/phylogeny.nw out/figs/agent_survival.csv
+   $ Rscript src/analyze_phylogeny.r out/figs/phylogeny.nw out/figs/agent_survival.csv
    ```
 
    The analysis will be printed to the console.
