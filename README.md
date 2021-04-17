@@ -343,3 +343,26 @@ Allen Discovery Center at Stanford and NIGMS of the National Institutes
 of Health under award number F32GM137464. The content is solely the
 responsibility of the authors and does not necessarily represent the
 official views of the National Institutes of Health.
+
+This program's development was supported by Eran Agmon and Ryan
+Spangler, and it was overseen by Markus Covert at Stanford University.
+
+## License
+
+This project is licensed under the GNU General Public License (GPL)
+because it has GPL-licensed dependencies.
+
+Copyright (C) 2021  Christopher Skalnik
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
