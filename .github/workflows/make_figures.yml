@@ -31,6 +31,8 @@ jobs:
         sudo apt-get install libxcb-sync1 libxcb-shm0 libxcb-icccm4 libxcb-keysyms1
         sudo apt-get install libxcb-image0 libxcb1 libx11-xcb-perl
         sudo apt-get --reinstall install xvfb
+    - name: Install Fonts
+      run: sudo apt-get install fonts-liberation
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip
