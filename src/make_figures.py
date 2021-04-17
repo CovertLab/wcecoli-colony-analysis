@@ -234,102 +234,6 @@ def get_experiment_ids(
     return id_obj
 
 
-def make_expression_heterogeneity_fig(
-        replicates_data: Iterable[DataTuple],
-        _: SearchData,
-        ) -> dict:
-    '''Figure shows heterogeneous expression within wcEcoli agents.'''
-    for i, (data, enviro_config) in enumerate(replicates_data):
-        tags_data = Analyzer.format_data_for_tags(data, enviro_config)
-        tagged_molecules = list(TAG_PATH_NAME_MAP.keys())
-        plot_config = {
-            'out_dir': FIG_OUT_DIR,
-            'tagged_molecules': tagged_molecules,
-            'background_color': 'white',
-            'filename': 'expression_heterogeneity_{}.{}'.format(
-               i, FILE_EXTENSION),
-            'tag_path_name_map': TAG_PATH_NAME_MAP,
-            'tag_label_size': 54,
-            'default_font_size': 48,
-            'n_snapshots': NUM_SNAPSHOTS,
-            'tag_colors': {
-                tag: ('white', '#0000ff')
-                for tag in tagged_molecules
-            },
-            'scale_bar_length': 10,
-            'scale_bar_color': 'black',
-            'xlim': (10, 40),
-            'ylim': (10, 40),
-        }
-        plot_tags(tags_data, plot_config)
-    return {}
-
-
-def _calculate_distribution_stats(
-        replicates_data: List[Tuple[Dict[str, Sequence[float]], str]],
-        ) -> dict:
-    stats = {}
-    keys = replicates_data[0][0].keys()
-    for replicate, _ in replicates_data:
-        assert replicate.keys() == keys
-    for key in keys:
-        key_replicates = [
-            replicate[key]
-            for replicate, _ in replicates_data
-        ]
-        key_replicates_array = np.array(key_replicates)  # type: ignore
-        q1, q2, q3 = np.percentile(
-            key_replicates_array,
-            [25, 50, 75],
-            axis=1,
-        )
-        stats[key] = (
-            key_replicates_array.min(axis=1),  # type: ignore
-            q1, q2, q3,
-            key_replicates_array.max(axis=1),  # type: ignore
-        )
-    return stats
-
-
-def make_expression_distributions_fig(
-        replicates_raw_data: Iterable[DataTuple],
-        _search_data: SearchData
-        ) -> dict:
-    '''Figure shows the distributions of expression values.'''
-    replicates_data = []
-    colors = ('#333333', '#777777', '#BBBBBB')
-    for i, (raw_data, _) in enumerate(replicates_raw_data):
-        color = colors[i]
-        end_expression_table = raw_data_to_end_expression_table(
-            raw_data,
-            {val: key for key, val in TAG_PATH_NAME_MAP.items()})
-        data = {
-            key: end_expression_table[key].tolist()
-            for key in end_expression_table.columns
-            if key != VOLUME_KEY
-        }
-        replicates_data.append((data, color))
-    stats = _calculate_distribution_stats(replicates_data)
-    fig = get_ridgeline_plot(
-        replicates_data,
-        point_alpha=1,
-        overlap=-0.1,
-        horizontal_extra=0,
-        num_bins=100,
-        jitter=0,
-        x_label='Protein Concentration (counts/fL)',
-        y_label='Distribution Density',
-        fontsize=20,
-    )
-    fig.savefig(
-        os.path.join(
-            FIG_OUT_DIR,
-            'expression_distributions.{}'.format(FILE_EXTENSION),
-        )
-    )
-    return stats
-
-
 def make_snapshots_figure(
         data: RawData,
         environment_config: EnvironmentConfig,
@@ -390,11 +294,116 @@ def make_snapshots_figure(
     return stats
 
 
+def make_expression_heterogeneity_fig(
+        replicates_data: Iterable[DataTuple],
+        _: SearchData,
+        ) -> dict:
+    '''Figure shows heterogeneous expression within wcEcoli agents.
+
+    Create Figure 3F.
+    '''
+    for i, (data, enviro_config) in enumerate(replicates_data):
+        tags_data = Analyzer.format_data_for_tags(data, enviro_config)
+        tagged_molecules = list(TAG_PATH_NAME_MAP.keys())
+        plot_config = {
+            'out_dir': FIG_OUT_DIR,
+            'tagged_molecules': tagged_molecules,
+            'background_color': 'white',
+            'filename': 'expression_heterogeneity_{}.{}'.format(
+               i, FILE_EXTENSION),
+            'tag_path_name_map': TAG_PATH_NAME_MAP,
+            'tag_label_size': 54,
+            'default_font_size': 48,
+            'n_snapshots': NUM_SNAPSHOTS,
+            'tag_colors': {
+                tag: ('white', '#0000ff')
+                for tag in tagged_molecules
+            },
+            'scale_bar_length': 10,
+            'scale_bar_color': 'black',
+            'xlim': (10, 40),
+            'ylim': (10, 40),
+        }
+        plot_tags(tags_data, plot_config)
+    return {}
+
+
+def _calculate_distribution_stats(
+        replicates_data: List[Tuple[Dict[str, Sequence[float]], str]],
+        ) -> dict:
+    stats = {}
+    keys = replicates_data[0][0].keys()
+    for replicate, _ in replicates_data:
+        assert replicate.keys() == keys
+    for key in keys:
+        key_replicates = [
+            replicate[key]
+            for replicate, _ in replicates_data
+        ]
+        key_replicates_array = np.array(key_replicates)  # type: ignore
+        q1, q2, q3 = np.percentile(
+            key_replicates_array,
+            [25, 50, 75],
+            axis=1,
+        )
+        stats[key] = (
+            key_replicates_array.min(axis=1),  # type: ignore
+            q1, q2, q3,
+            key_replicates_array.max(axis=1),  # type: ignore
+        )
+    return stats
+
+
+def make_expression_distributions_fig(
+        replicates_raw_data: Iterable[DataTuple],
+        _search_data: SearchData
+        ) -> dict:
+    '''Figure shows the distributions of expression values.
+
+    Create Figure 3G.
+    '''
+    replicates_data = []
+    colors = ('#333333', '#777777', '#BBBBBB')
+    for i, (raw_data, _) in enumerate(replicates_raw_data):
+        color = colors[i]
+        end_expression_table = raw_data_to_end_expression_table(
+            raw_data,
+            {val: key for key, val in TAG_PATH_NAME_MAP.items()})
+        data = {
+            key: end_expression_table[key].tolist()
+            for key in end_expression_table.columns
+            if key != VOLUME_KEY
+        }
+        replicates_data.append((data, color))
+    stats = _calculate_distribution_stats(replicates_data)
+    fig = get_ridgeline_plot(
+        replicates_data,
+        point_alpha=1,
+        overlap=-0.1,
+        horizontal_extra=0,
+        num_bins=100,
+        jitter=0,
+        x_label='Protein Concentration (counts/fL)',
+        y_label='Distribution Density',
+        fontsize=20,
+    )
+    fig.savefig(
+        os.path.join(
+            FIG_OUT_DIR,
+            'expression_distributions.{}'.format(FILE_EXTENSION),
+        )
+    )
+    return stats
+
+
 def make_growth_fig(
         raw_data: Dict[str, DataTuple],
         _: SearchData,
         ) -> dict:
-    '''Make plot of colony mass of basal and anaerobic colonies.'''
+    '''Make plot of colony mass of basal and anaerobic colonies.
+
+    Create Figure 3E.
+    '''
     data_dict = {
         'basal': [data for data, _ in raw_data['basal']],
         'anaerobic': [data for data, _ in raw_data['anaerobic']],
@@ -410,7 +419,10 @@ def make_threshold_scan_fig(
         data_and_configs: Dict[str, DataTuple],
         _: SearchData,
         ) -> dict:
-    '''Plot colony mass curves with various antibiotic thresholds.'''
+    '''Plot colony mass curves with various antibiotic thresholds.
+
+    Create Figure 5A.
+    '''
     data_dict = dict({
         threshold: list(
             data for data, enviro_config in threshold_ids
@@ -438,7 +450,10 @@ def make_expression_survival_fig(
         data_and_config: DataTuple,
         search_data: SearchData,
         ) -> dict:
-    '''Make expression-survival figures.'''
+    '''Make expression-survival figures.
+
+    Create Figures 5G, 5H, and 5I.
+    '''
     data, _ = data_and_config
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
@@ -520,7 +535,10 @@ def make_expression_survival_dotplots(
         data_and_config: DataTuple,
         _search_data: SearchData,
         ) -> dict:
-    '''Make dotplots of protein concentrations colored by survival.'''
+    '''Make dotplots of protein concentrations colored by survival.
+
+    Create Figures 5E and 5F.
+    '''
     data, _ = data_and_config
     stats = {}
     fig, stats['AcrAB-TolC'] = plot_expression_survival_dotplot(
@@ -549,7 +567,10 @@ def make_survival_centrality_fig(
         data_and_config: DataTuple,
         _search_data: SearchData,
         ) -> dict:
-    '''Plot box plot figure of agent distances from center.'''
+    '''Plot box plot figure of agent distances from center.
+
+    Create Figure 5C.
+    '''
     data, _ = data_and_config
     fig, stats = get_survival_against_centrality_plot(data)
     fig.savefig(os.path.join(
@@ -563,7 +584,10 @@ def make_environment_section(
         data_and_configs: Sequence[DataTuple],
         _search_data: SearchData,
         ) -> dict:
-    '''Plot field concentrations in cross-section of final enviro.'''
+    '''Plot field concentrations in cross-section of final enviro.
+
+    Create Figure 3B.
+    '''
     t_final = max(data_and_configs[0][0].keys())
     fields_ts: List[Dict[float, Dict[str, SerializedField]]] = []
     section_times = [
@@ -590,7 +614,10 @@ def make_growth_basal_fig(
         replicates_data: Iterable[DataTuple],
         _: SearchData,
         ) -> dict:
-    '''Create snapshots figure of colony on basal media.'''
+    '''Create snapshots figure of colony on basal media.
+
+    Create Figure 3C.
+    '''
     stats = {}
     for i, (data, enviro_config) in enumerate(replicates_data):
         stats[i] = make_snapshots_figure(
@@ -602,7 +629,10 @@ def make_growth_anaerobic_fig(
         replicates_data: Iterable[DataTuple],
         _: SearchData,
         ) -> dict:
-    '''Create snapshots figure of colony on anaerobic media.'''
+    '''Create snapshots figure of colony on anaerobic media.
+
+    Create Figure 3D.
+    '''
     stats = {}
     for i, (data, enviro_config) in enumerate(replicates_data):
         stats[i] = make_snapshots_figure(
@@ -614,7 +644,10 @@ def make_phylogeny_plot(
         data_and_config: DataTuple,
         _search_data: SearchData,
         ) -> dict:
-    '''Plot phylogenetic tree.'''
+    '''Plot phylogenetic tree.
+
+    Create Figure 5D.
+    '''
     data, _ = data_and_config
     tree, df = plot_phylogeny(data, os.path.join(
         FIG_OUT_DIR, 'phylogeny.{}').format(FILE_EXTENSION),
@@ -634,7 +667,10 @@ def make_enviro_heterogeneity_fig(
         replicates_data: Iterable[DataTuple],
         _: SearchData,
         ) -> dict:
-    '''Plot snapshots of colony consuming glucose.'''
+    '''Plot snapshots of colony consuming glucose.
+
+    Create Figure 5A.
+    '''
     stats = {}
     for i, (data, enviro_config) in enumerate(replicates_data):
         stats[i] = make_snapshots_figure(
@@ -648,7 +684,10 @@ def make_death_snapshots(
         data_and_config: DataTuple,
         _: SearchData,
         ) -> dict:
-    '''Plot colony exposed to antibiotics with death coloration.'''
+    '''Plot colony exposed to antibiotics with death coloration.
+
+    Create Figure 5B.
+    '''
     data, config = data_and_config
     return make_snapshots_figure(
         data, config, 'death_snapshots', [],
@@ -662,7 +701,12 @@ def make_death_snapshots_antibiotic(
         data_and_config: DataTuple,
         _: SearchData,
         ) -> dict:
-    '''Plot colony consuming (or not) antibiotics.'''
+    '''Plot colony consuming (or not) antibiotics.
+
+    Create Figure X1. This figure is not used in the paper, but its
+    statistics are used to find the change in nitrocefin concentration
+    over time.
+    '''
     data, config = data_and_config
     return make_snapshots_figure(
         data, config, 'death_snapshots_antibiotic',
