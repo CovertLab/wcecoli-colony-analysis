@@ -335,3 +335,11 @@ understand the script before you trust it.
 If you trust GitHub, you may also rely on the `Verified` labels GitHub
 adds to signed commits and releases. Click on the label to check which
 key was used.
+
+## Acknowledgments
+
+This work was supported by the Paul G. Allen Frontiers Group via the
+Allen Discovery Center at Stanford and NIGMS of the National Institutes
+of Health under award number F32GM137464. The content is solely the
+responsibility of the authors and does not necessarily represent the
+official views of the National Institutes of Health.
