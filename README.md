@@ -1,8 +1,12 @@
 # Analysis Code for Whole-Cell *E. coli* Colony Simulations
 
-This repository contains code and data to accompany a paper
-"Whole-Colony Modeling of *Escherichia coli*" that is currently in
-preparation. This project is hosted on GitHub at
+This repository contains code to accompany a paper "Whole-Colony
+Modeling of *Escherichia coli*" that is currently in preparation. The
+associated data are available under the DOI
+[10.5281/zenodo.4697519](https://doi.org/10.5281/zenodo.4697519) and can
+be re-generated using the model simulation code with DOI
+[10.5281/zenodo.4695018](http://doi.org/10.5281/zenodo.4695018). This
+project is hosted on GitHub at
 [https://github.com/CovertLab/wcecoli-colony-analysis](https://github.com/CovertLab/wcecoli-colony-analysis)
 and licensed under the terms in [`LICENSE.txt`](LICENSE.txt).
 
