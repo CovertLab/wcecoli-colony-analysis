@@ -26,12 +26,14 @@ def analyze_expression_distributions_stats(stats: dict) -> dict:
         Dictionary of summary statistics.
     '''
     summary = {}
-    for protein, (minimum, q1, q2, q3, maximum) in stats.items():
+    for protein, vals in stats.items():
+        num_zero, minimum, q1, q2, q3, maximum, num_cells = vals
         summary[protein] = {
             'Median Concentration (counts/fL)': q2,
             'IQR': (np.array(q3) - np.array(q1)).tolist(),
             'Minimum': minimum,
             'Maximum': maximum,
+            'Fraction Zero': num_zero / num_cells,
         }
     return summary
 

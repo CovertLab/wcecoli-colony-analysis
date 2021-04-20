@@ -336,10 +336,11 @@ def _calculate_distribution_stats(
     for replicate, _ in replicates_data:
         assert replicate.keys() == keys
     for key in keys:
-        key_replicates = [
-            replicate[key]
-            for replicate, _ in replicates_data
-        ]
+        num_cells = 0
+        key_replicates = []
+        for replicate, _ in replicates_data:
+            key_replicates.append(replicate[key])
+            num_cells += len(replicate)
         key_replicates_array = np.array(key_replicates)  # type: ignore
         q1, q2, q3 = np.percentile(
             key_replicates_array,
@@ -347,9 +348,11 @@ def _calculate_distribution_stats(
             axis=1,
         )
         stats[key] = (
+            (key_replicates_array == 0).sum(),
             key_replicates_array.min(axis=1),  # type: ignore
             q1, q2, q3,
             key_replicates_array.max(axis=1),  # type: ignore
+            num_cells,
         )
     return stats
 
