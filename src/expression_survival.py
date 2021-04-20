@@ -369,8 +369,8 @@ def plot_expression_survival_lineage_traces(
                         linewidth=1,
                         linestyle='--',
                         label=(
-                            'From final mother location to initial '
-                            'daughter location'
+                            'From final mother state to initial '
+                            'daughter state'
                             if not plotted_dashed else ''
                         ),
                     )
