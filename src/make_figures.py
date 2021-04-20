@@ -188,7 +188,7 @@ def exec_shell(
 
 def get_metadata() -> dict:
     '''Get information on which experiments and code were used.'''
-    if os.environ['CI']:
+    if os.environ.get('CI'):
         ci_url = '{}/{}/actions/runs/{}'.format(
             os.environ['GITHUB_SERVER_URL'],
             os.environ['GITHUB_REPOSITORY'],
@@ -385,7 +385,7 @@ def make_expression_distributions_fig(
         jitter=0,
         x_label='Protein Concentration (counts/fL)',
         y_label='Distribution Density',
-        fontsize=20,
+        fontsize=16,
     )
     fig.savefig(
         os.path.join(
