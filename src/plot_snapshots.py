@@ -424,6 +424,8 @@ def plot_snapshots(data, plot_config):
     super_ax.set_xlabel(  # type: ignore
         'Time (hr)', labelpad=50)
     super_ax.xaxis.set_tick_params(width=2, length=8)
+    super_ax.xaxis.set_major_formatter(
+        matplotlib.ticker.FormatStrFormatter('%.1f'))
     for spine_name in ('top', 'right', 'left'):
         super_ax.spines[spine_name].set_visible(False)
     super_ax.spines['bottom'].set_linewidth(2)
