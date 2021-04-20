@@ -388,7 +388,7 @@ def make_expression_distributions_fig(
         jitter=0,
         x_label='Protein Concentration (counts/fL)',
         y_label='Distribution Density',
-        fontsize=16,
+        fontsize=14,
     )
     fig.savefig(
         os.path.join(
