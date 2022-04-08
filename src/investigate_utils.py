@@ -6,11 +6,11 @@ import copy
 import os
 
 from typing import Dict, Tuple
-from vivarium.core.experiment import get_in, assoc_path
-from vivarium_cell.analysis.analyze import Analyzer
+from vivarium.library.topology import get_in, assoc_path
 
-from src.types import RawData
 from src.constants import OUT_DIR
+from src.db import add_connection_args, get_experiment_data
+from src.types import RawData
 
 
 PATH_TO_AGENTS = ('agents',)
@@ -121,13 +121,13 @@ def parse_args_retrieve_data_by_id() -> Tuple[RawData, Dict, str]:
         output directory path.
     '''
     parser = argparse.ArgumentParser()
-    Analyzer.add_connection_args(parser)
+    add_connection_args(parser)
     add_experiment_id_arg(parser)
     args = parser.parse_args()
 
     out_dir = os.path.join(OUT_DIR, args.experiment_id)
     create_dir(out_dir)
 
-    data, environment_config = Analyzer.get_data(
+    data, environment_config = get_experiment_data(
         args, args.experiment_id)
     return data, environment_config, out_dir

@@ -7,9 +7,9 @@ import os
 
 from typing import Dict
 import pandas as pd
-from vivarium.core.experiment import get_in
-from vivarium_cell.analysis.analyze import Analyzer
+from vivarium.library.topology import get_in
 
+from src.db import add_connection_args, get_experiment_data
 from src.types import Path, RawData
 from src.constants import AGENTS_PATH, VOLUME_PATH
 
@@ -59,7 +59,7 @@ def process_data(args: argparse.Namespace) -> None:
         with open(args.json_path, 'r') as f:
             data = json.load(f)
     else:
-        data, _ = Analyzer.get_data(args, args.experiment_id)
+        data, _ = get_experiment_data(args, args.experiment_id)
     with open(args.tagged_molecules, 'r') as f:
         reader = csv.reader(f)
         paths = [tuple(line) for line in reader]
@@ -76,7 +76,7 @@ def process_data(args: argparse.Namespace) -> None:
 def main() -> None:
     '''Main function that handles CLI arguments.'''
     parser = argparse.ArgumentParser()
-    Analyzer.add_connection_args(parser)
+    add_connection_args(parser)
     parser.add_argument(
         '-e', '--experiment_id',
         type=str,

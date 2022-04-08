@@ -2,7 +2,7 @@ from typing import Sequence, Tuple
 
 from matplotlib import pyplot as plt
 import numpy as np
-from vivarium.core.experiment import get_in
+from vivarium.library.topology import get_in
 
 from src.types import RawData
 from src.investigate_utils import (

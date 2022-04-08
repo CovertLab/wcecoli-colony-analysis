@@ -5,14 +5,13 @@ For usage information, run:
 '''
 import argparse
 import os
-from typing import List
 
 from matplotlib import rcParams  # type: ignore
-from vivarium_cell.analysis.analyze import Analyzer
 
 from src.constants import OUT_DIR
+from src.db import add_connection_args, get_experiment_data
 from src.snapshots_video import make_tags_video, make_snapshots_video
-from src.make_figures import get_experiment_data, TAG_PATH_NAME_MAP
+from src.make_figures import TAG_PATH_NAME_MAP
 
 
 FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
@@ -67,7 +66,7 @@ def main() -> None:
             'simulation data.'
         ),
     )
-    Analyzer.add_connection_args(parser)
+    add_connection_args(parser)
     parser.add_argument(
         '--data_path',
         default='',

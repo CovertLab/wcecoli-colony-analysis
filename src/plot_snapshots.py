@@ -25,7 +25,7 @@ from mpl_toolkits.axes_grid1 import (
     make_axes_locatable, anchored_artists)
 import numpy as np
 from vivarium.library.dict_utils import get_value_from_path
-from vivarium.core.experiment import get_in
+from vivarium.library.topology import get_in
 
 
 DEFAULT_BOUNDS = [10, 10]

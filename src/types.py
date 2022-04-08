@@ -4,3 +4,4 @@ RawData = NewType('RawData', dict)
 EnvironmentConfig = NewType('EnvironmentConfig', dict)
 Path = Tuple[str, ...]
 SearchData = NewType('SearchData', dict)
+DataTuple = Tuple[RawData, EnvironmentConfig]

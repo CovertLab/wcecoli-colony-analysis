@@ -15,6 +15,7 @@ data-science-types==0.2.18
 decorator==4.4.2
 depinfo==1.5.4
 ete3==3.1.2
+fonttools==4.32.0
 future==0.18.2
 importlib-metadata==2.0.0
 importlib-resources==3.0.0
@@ -27,13 +28,13 @@ jedi==0.17.2
 joblib==1.0.0
 kiwisolver==1.2.0
 lazy-object-proxy==1.4.3
-matplotlib==3.3.2
+matplotlib==3.5.1
 mccabe==0.6.1
 mpmath==1.1.0
 mypy==0.782
 mypy-extensions==0.4.3
-networkx==2.5
-numpy==1.20.2
+networkx==2.7.1
+numpy==1.22.3
 opencv-python==4.5.2.52
 optlang==1.4.6
 packaging==20.4
@@ -43,7 +44,7 @@ parso==0.7.1
 pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==8.2.0
-Pint==0.16.1
+Pint==0.19.1
 pip-licenses==3.3.1
 pipdeptree==1.0.0
 pluggy==0.13.1
@@ -54,7 +55,7 @@ py==1.9.0
 pycparser==2.20
 Pygments==2.8.1
 pylint==2.7.4
-pymongo==3.11.0
+pymongo==4.1.0
 pymunk==5.7.0
 pyparsing==2.4.7
 PyQt5==5.15.1
@@ -66,7 +67,7 @@ pytz==2020.1
 ruamel.yaml==0.16.12
 ruamel.yaml.clib==0.2.2
 scikit-learn==0.24.1
-scipy==1.5.2
+scipy==1.8.0
 Shapely==1.7.1
 six==1.15.0
 stochastic-arrow==0.4.3
@@ -78,8 +79,7 @@ tqdm==4.56.2
 traitlets==5.0.4
 typed-ast==1.4.1
 typing-extensions==3.7.4.3
-vivarium-cell==0.0.25
-vivarium-core==0.0.37
+vivarium-core==1.2.3
 vivarium-scripts==0.0.5
 wcwidth==0.2.5
 wrapt==1.12.1

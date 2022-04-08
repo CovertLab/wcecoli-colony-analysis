@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple, Iterable, cast
 
 from matplotlib import pyplot as plt
 import numpy as np
-from vivarium.core.experiment import get_in
+from vivarium.library.topology import get_in
 
 from src.constants import AGENTS_PATH, MASS_PATH
 from src.types import RawData

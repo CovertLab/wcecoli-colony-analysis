@@ -11,7 +11,7 @@ from typing import Sequence, Iterable, Tuple, List, Dict
 
 from matplotlib import pyplot as plt
 import numpy as np
-from vivarium.core.experiment import get_in
+from vivarium.library.topology import get_in
 from vivarium.core.emitter import path_timeseries_from_data
 
 from src.investigate_utils import filter_raw_data_by_time

@@ -14,16 +14,21 @@ from typing import (
 
 from matplotlib import rcParams  # type: ignore
 import numpy as np
-from vivarium.core.process import serialize_value
-from vivarium.core.experiment import get_in
-from vivarium_cell.analysis.analyze import Analyzer
+from vivarium.core.serialize import serialize_value
+from vivarium.library.topology import get_in
 
+from src.db import (
+    add_connection_args,
+    format_data_for_snapshots,
+    format_data_for_tags,
+    get_experiment_data,
+)
 from src.expression_survival import (
     plot_expression_survival,
     plot_expression_survival_dotplot,
 )
 from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
-from src.types import RawData, EnvironmentConfig, SearchData
+from src.types import RawData, EnvironmentConfig, SearchData, DataTuple
 from src.total_mass import get_total_mass_plot
 from src.environment_cross_sections import (
     get_enviro_sections_plot, SerializedField)
@@ -35,7 +40,6 @@ from src.plot_snapshots import plot_snapshots, plot_tags  # type: ignore
 from src.centrality import get_survival_against_centrality_plot
 
 
-DataTuple = Tuple[RawData, EnvironmentConfig]
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
@@ -264,7 +268,7 @@ def make_snapshots_figure(
     Returns:
         Statistics.
     '''
-    snapshots_data = Analyzer.format_data_for_snapshots(
+    snapshots_data = format_data_for_snapshots(
         data, environment_config)
     if not fields:
         data = RawData({
@@ -303,7 +307,7 @@ def make_expression_heterogeneity_fig(
     Create Figure 3F.
     '''
     for i, (data, enviro_config) in enumerate(replicates_data):
-        tags_data = Analyzer.format_data_for_tags(data, enviro_config)
+        tags_data = format_data_for_tags(data, enviro_config)
         tagged_molecules = list(TAG_PATH_NAME_MAP.keys())
         plot_config = {
             'out_dir': FIG_OUT_DIR,
@@ -760,37 +764,6 @@ def create_data_dict(
     )
 
 
-def get_experiment_data(
-        args: argparse.Namespace,
-        experiment_id: str,
-        ) -> DataTuple:
-    '''Get simulation data for an experiment.
-
-    If ``args.data_path`` is set, retrieve the experiment data from a
-    JSON file named ``<experiment_id>.json`` under ``args.data_path``.
-    Otherwise, retrieve the data from MongoDB.
-
-    Args:
-        args: Parsed CLI args.
-        experiment_id: ID of experiment.
-
-    Returns: Tuple of simulation data and environment config.
-    '''
-    if args.data_path:
-        path = os.path.join(
-            args.data_path, '{}.json'.format(experiment_id))
-        with open(path, 'r') as f:
-            loaded_file = json.load(f)
-            data = RawData({
-                float(time): value
-                for time, value in loaded_file['data'].items()
-            })
-            config = EnvironmentConfig(
-                loaded_file['environment_config'])
-            return data, config
-    return Analyzer.get_data(args, experiment_id)
-
-
 FIGURE_FUNCTION_MAP = {
     'expression_distributions': make_expression_distributions_fig,
     'expression_heterogeneity': make_expression_heterogeneity_fig,
@@ -824,7 +797,7 @@ def main() -> None:
             'simulation data.'
         ),
     )
-    Analyzer.add_connection_args(parser)
+    add_connection_args(parser)
     parser.add_argument(
         'search_data', type=str, help='Path to boundary search data.')
     parser.add_argument(

@@ -5,7 +5,7 @@ from typing import Dict, List, Set, Iterable, Tuple
 
 from ete3 import TreeNode, TreeStyle, NodeStyle, CircleFace, TextFace
 import pandas as pd
-from vivarium.core.experiment import get_in
+from vivarium.library.topology import get_in
 
 from src.types import RawData
 from src.constants import AGENTS_PATH

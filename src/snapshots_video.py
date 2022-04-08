@@ -3,8 +3,8 @@ import os
 import shutil
 
 import cv2  # type: ignore
-from vivarium_cell.analysis.analyze import Analyzer
 
+from src.db import format_data_for_snapshots, format_data_for_tags
 from src.plot_snapshots import (
     plot_snapshots,
     plot_tags,
@@ -98,7 +98,7 @@ def make_tags_video(
     time_vec = all_times[::available_frames_per_desired]
     true_fps = len(time_vec) / desired_runtime
 
-    tags_data = Analyzer.format_data_for_tags(data, environment_config)
+    tags_data = format_data_for_tags(data, environment_config)
     tag_ranges = get_tag_ranges(tags_data['agents'], tags, True)
 
     # make the individual snapshot figures
@@ -158,7 +158,7 @@ def make_snapshots_video(
     time_vec = all_times[::available_frames_per_desired]
     true_fps = len(time_vec) / desired_runtime
 
-    snapshots_data = Analyzer.format_data_for_snapshots(
+    snapshots_data = format_data_for_snapshots(
         data, environment_config)
 
     agent_ids = set()
