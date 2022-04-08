@@ -201,10 +201,11 @@ def color_phylogeny(ancestor_id, phylogeny, baseline_hsv, phylogeny_colors={}):
             color_phylogeny(daughter_id, phylogeny, daughter_color)
     return phylogeny_colors
 
-def get_phylogeny_colors_from_names(agent_ids):
+def get_phylogeny_colors_from_names(agent_ids, initial_hues=None):
     '''Get agent colors using phlogeny saved in agent_ids
     This assumes the names use daughter_phylogeny_id() from meta_division
     '''
+    initial_hues = initial_hues or {}
 
     # make phylogeny with {mother_id: [daughter_1_id, daughter_2_id]}
     phylogeny = {agent_id: [] for agent_id in agent_ids}
@@ -223,7 +224,7 @@ def get_phylogeny_colors_from_names(agent_ids):
     # agent colors based on phylogeny
     agent_colors = {agent_id: [] for agent_id in agent_ids}
     for agent_id in ancestors:
-        hue = random.choice(HUES)  # select random initial hue
+        hue = initial_hues.get(agent_id, random.choice(HUES))  # select random initial hue
         initial_color = [hue] + DEFAULT_SV
         agent_colors.update(color_phylogeny(agent_id, phylogeny, initial_color))
 
@@ -324,6 +325,9 @@ def plot_snapshots(data, plot_config):
     min_color = plot_config.get('min_color', 'white')
     max_color = plot_config.get('max_color', 'gray')
     grid_color = plot_config.get('grid_color', '')
+    agent_colors = plot_config.get('agent_colors', {})
+    field_range = plot_config.get('field_range', {})
+    begin_gradient = plot_config.get('begin_gradient', 0.25)
 
     # get data
     agents = data.get('agents', {})
@@ -360,11 +364,11 @@ def plot_snapshots(data, plot_config):
         else:
             field_ids = set(include_fields)
         field_ids -= set(skip_fields)
-        field_range = {}
         for field_id in field_ids:
-            field_min = min([min(min(field_data[field_id])) for t, field_data in fields.items()])
-            field_max = max([max(max(field_data[field_id])) for t, field_data in fields.items()])
-            field_range[field_id] = [field_min, field_max]
+            if field_id not in field_range:
+                field_min = min([min(min(field_data[field_id])) for t, field_data in fields.items()])
+                field_max = max([max(max(field_data[field_id])) for t, field_data in fields.items()])
+                field_range[field_id] = [field_min, field_max]
 
     # get agent ids
     agent_ids = set()
@@ -375,7 +379,9 @@ def plot_snapshots(data, plot_config):
         agent_ids = list(agent_ids)
 
         # set agent colors
-        if agent_fill_color:
+        if agent_colors:
+            pass
+        elif agent_fill_color:
             agent_colors = {
                 agent_id: agent_fill_color for agent_id in agent_ids}
         elif phylogeny_names:
@@ -436,17 +442,17 @@ def plot_snapshots(data, plot_config):
     colors_dict = {
         'red': [
             [0, min_rgb[0], min_rgb[0]],
-            [0.25, max_rgb[0], max_rgb[0]],
+            [begin_gradient, max_rgb[0], max_rgb[0]],
             [1, max_rgb[0], max_rgb[0]],
         ],
         'green': [
             [0, min_rgb[1], min_rgb[1]],
-            [0.25, max_rgb[1], max_rgb[1]],
+            [begin_gradient, max_rgb[1], max_rgb[1]],
             [1, max_rgb[1], max_rgb[1]],
         ],
         'blue': [
             [0, min_rgb[2], min_rgb[2]],
-            [0.25, max_rgb[2], max_rgb[2]],
+            [begin_gradient, max_rgb[2], max_rgb[2]],
             [1, max_rgb[2], max_rgb[2]],
         ],
     }
@@ -512,16 +518,16 @@ def plot_snapshots(data, plot_config):
                 # colorbar in new column after final snapshot
                 if col_idx == n_snapshots - 1:
                     cbar_col = col_idx + 1
-                    ax = fig.add_subplot(grid[row_idx, cbar_col])
+                    cbar_ax = fig.add_subplot(grid[row_idx, cbar_col])
                     if row_idx == 0:
-                        ax.set_title('Concentration (mM)', y=1.08)
-                    ax.axis('off')
+                        cbar_ax.set_title('Concentration (mM)', y=1.08)
+                    cbar_ax.axis('off')
                     if vmin == vmax:
                         continue
-                    divider = make_axes_locatable(ax)
+                    divider = make_axes_locatable(cbar_ax)
                     cax = divider.append_axes("left", size="5%", pad=0.0)
                     fig.colorbar(im, cax=cax, format='%.3f')
-                    ax.axis('off')
+                    cbar_ax.axis('off')
                 # Scale bar in first snapshot of each row
                 if col_idx == 0 and scale_bar_length:
                     scale_bar = anchored_artists.AnchoredSizeBar(
@@ -571,6 +577,25 @@ def plot_snapshots(data, plot_config):
     plt.close(fig)
     plt.rcParams.update({'font.size': original_fontsize})
     return stats
+
+
+def get_tag_ranges(agents, tagged_molecules, convert_to_concs):
+    tag_ranges = {}
+    for time, time_data in agents.items():
+        for agent_id, agent_data in time_data.items():
+            volume = agent_data.get('boundary', {}).get('volume', 0)
+            for tag_id in tagged_molecules:
+                level = get_value_from_path(agent_data, tag_id)
+                if convert_to_concs:
+                    level = level / volume if volume else 0
+                if tag_id in tag_ranges:
+                    tag_ranges[tag_id] = [
+                        min(tag_ranges[tag_id][0], level),
+                        max(tag_ranges[tag_id][1], level)]
+                else:
+                    # add new tag
+                    tag_ranges[tag_id] = [level, level]
+    return tag_ranges
 
 
 def plot_tags(data, plot_config):
@@ -643,6 +668,8 @@ def plot_tags(data, plot_config):
     scale_bar_color = plot_config.get('scale_bar_color', 'white')
     xlim = plot_config.get('xlim')
     ylim = plot_config.get('ylim')
+    tag_ranges = plot_config.get('tag_ranges', {})
+    snapshot_times = plot_config.get('snapshot_times', [])
 
     if tagged_molecules == []:
         raise ValueError('At least one molecule must be tagged.')
@@ -655,28 +682,18 @@ def plot_tags(data, plot_config):
 
     # time steps that will be used
     time_vec = list(agents.keys())
-    time_indices = np.round(
-        np.linspace(0, len(time_vec) - 1, n_snapshots)
-    ).astype(int)
-    snapshot_times = [time_vec[i] for i in time_indices]
+    if snapshot_times:
+        n_snapshots = len(snapshot_times)
+        time_indices = [
+            time_vec.index(time) for time in snapshot_times]
+    else:
+        time_indices = np.round(np.linspace(0, len(time_vec) - 1, n_snapshots)).astype(int)
+        snapshot_times = [time_vec[i] for i in time_indices]
 
     # get tag ids and range
-    tag_ranges = {}
-
-    for time, time_data in agents.items():
-        for agent_id, agent_data in time_data.items():
-            volume = agent_data.get('boundary', {}).get('volume', 0)
-            for tag_id in tagged_molecules:
-                level = get_value_from_path(agent_data, tag_id)
-                if convert_to_concs:
-                    level = level / volume if volume else 0
-                if tag_id in tag_ranges:
-                    tag_ranges[tag_id] = [
-                        min(tag_ranges[tag_id][0], level),
-                        max(tag_ranges[tag_id][1], level)]
-                else:
-                    # add new tag
-                    tag_ranges[tag_id] = [level, level]
+    if not tag_ranges:
+        tag_ranges = get_tag_ranges(
+            agents, tagged_molecules, convert_to_concs)
 
     # make the figure
     n_rows = len(tagged_molecules)
@@ -714,6 +731,8 @@ def plot_tags(data, plot_config):
     super_ax.set_xlabel(  # type: ignore
         'Time (hr)', labelpad=50)
     super_ax.xaxis.set_tick_params(width=2, length=8)
+    super_ax.xaxis.set_major_formatter(
+        matplotlib.ticker.FormatStrFormatter('%.1f'))
     for spine_name in ('top', 'right', 'left'):
         super_ax.spines[spine_name].set_visible(False)
     super_ax.spines['bottom'].set_linewidth(2)
@@ -781,14 +800,14 @@ def plot_tags(data, plot_config):
             # colorbar in new column after final snapshot
             if col_idx == n_snapshots - 1:
                 cbar_col = col_idx + 1
-                ax = fig.add_subplot(grid[row_idx, cbar_col])
+                cbar_ax = fig.add_subplot(grid[row_idx, cbar_col])
                 if row_idx == 0:
                     if convert_to_concs:
-                        ax.set_title('Concentration (counts/fL)', y=1.08)
-                ax.axis('off')
+                        cbar_ax.set_title('Concentration (counts/fL)', y=1.08)
+                cbar_ax.axis('off')
                 if min_tag == max_tag:
                     continue
-                divider = make_axes_locatable(ax)
+                divider = make_axes_locatable(cbar_ax)
                 cax = divider.append_axes("left", size="5%", pad=0.0)
                 mappable = matplotlib.cm.ScalarMappable(norm, cmap)
                 fig.colorbar(mappable, cax=cax, format='%.0f')
