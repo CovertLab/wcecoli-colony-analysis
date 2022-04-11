@@ -6,6 +6,8 @@ from vivarium.core.emitter import (
     get_local_client,
     data_from_database,
 )
+from vivarium.core.serialize import deserialize_value
+from vivarium.library.units import remove_units
 
 from src.types import RawData, EnvironmentConfig, DataTuple
 
@@ -40,7 +42,11 @@ def get_experiment_data(
             return data, config
     client = get_local_client(
         args.host, args.port, args.database_name)
-    return data_from_database(experiment_id, client)
+    data, environment_config = data_from_database(experiment_id, client)
+    data = remove_units(deserialize_value(data))
+    environment_config = remove_units(
+        deserialize_value(environment_config))
+    return data, environment_config
 
 
 def add_connection_args(parser: argparse.ArgumentParser) -> None:

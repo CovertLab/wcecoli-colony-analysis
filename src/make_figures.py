@@ -682,7 +682,7 @@ def make_enviro_heterogeneity_fig(
     for i, (data, enviro_config) in enumerate(replicates_data):
         stats[i] = make_snapshots_figure(
             data, enviro_config, 'enviro_heterogeneity_{}'.format(i),
-            ['GLC'], 'white',
+            ENVIRONMENT_SECTION_FIELDS, 'white',
         )
     return stats
 
