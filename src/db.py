@@ -42,10 +42,9 @@ def get_experiment_data(
             return data, config
     client = get_local_client(
         args.host, args.port, args.database_name)
-    data, environment_config = data_from_database(experiment_id, client)
+    data, _ = data_from_database(experiment_id, client)
     data = remove_units(deserialize_value(data))
-    environment_config = remove_units(
-        deserialize_value(environment_config))
+    environment_config = data[min(data)]['dimensions']
     return data, environment_config
 
 
