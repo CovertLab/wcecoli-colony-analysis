@@ -40,8 +40,6 @@ from src.plot_snapshots import plot_snapshots, plot_tags  # type: ignore
 from src.centrality import get_survival_against_centrality_plot
 
 
-
-
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
 COLORS = {
     'blue': '#0077BB',
@@ -51,16 +49,14 @@ COLORS = {
     'teal': '#009988',
     'magenta': '#EE3377'}
 PUMP_PATH = (
-    'boundary', 'bulk_molecule_concentrations', 'TRANS-CPLX-201[s]')
+    'periplasm', 'concentrations', 'TRANS-CPLX-201[m]')
 BETA_LACTAMASE_PATH = (
-    'boundary', 'bulk_molecule_concentrations', 'EG10040-MONOMER[p]')
+    'periplasm', 'concentrations', 'EG10040-MONOMER[p]')
 TAG_PATH_NAME_MAP = {
-    ('boundary', 'bulk_molecules_report', 'EG10040-MONOMER[p]'): 'AmpC',
-    (
-        'boundary', 'bulk_molecules_report', 'TRANS-CPLX-201[s]'
-    ): 'AcrAB-TolC',
+    ('bulk', 'EG10040-MONOMER[p]'): 'AmpC',
+    ('bulk', 'TRANS-CPLX-201[m]'): 'AcrAB-TolC',
 }
-ENVIRONMENT_SECTION_FIELDS = ('GLC',)
+ENVIRONMENT_SECTION_FIELDS = ('GLC[p]',)
 ENVIRONMENT_SECTION_TIMES: Tuple[int, ...] = (
     231, 6006, 11781, 17325, 23100)
 AGENTS_TO_TRACE: Tuple[str, ...] = (
@@ -247,8 +243,8 @@ def make_snapshots_figure(
         agent_alpha: float = 1,
         num_snapshots: int = NUM_SNAPSHOTS,
         snapshot_times: Optional[Tuple[float, ...]] = None,
-        xlim: Tuple[float, float] = (10, 40),
-        ylim: Tuple[float, float] = (10, 40)
+        xlim: Tuple[float, float] = (0, 50),
+        ylim: Tuple[float, float] = (0, 50)
         ) -> dict:
     '''Make a figure of snapshots.
 
@@ -293,6 +289,7 @@ def make_snapshots_figure(
         'min_color': '#FFFFFF',
         'max_color': '#000000',
         'grid_color': 'white' if fields else '',
+        'begin_gradient': 1,
     }
     stats = plot_snapshots(snapshots_data, plot_config)
     return stats
