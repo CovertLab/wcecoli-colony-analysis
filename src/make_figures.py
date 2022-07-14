@@ -16,6 +16,7 @@ from matplotlib import rcParams  # type: ignore
 import numpy as np
 from vivarium.core.serialize import serialize_value
 from vivarium.library.topology import get_in
+from vivarium.plots.agents_multigen import plot_agents_multigen
 
 from src.db import (
     add_connection_args,
@@ -38,6 +39,7 @@ from src.process_expression_data import (
 from src.ridgeline import get_ridgeline_plot
 from src.plot_snapshots import plot_snapshots, plot_tags  # type: ignore
 from src.centrality import get_survival_against_centrality_plot
+from src.rna_protein_timeseries import plot_rna_protein_timeseries
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
@@ -56,6 +58,39 @@ TAG_PATH_NAME_MAP = {
     ('bulk', 'EG10040-MONOMER[p]'): 'AmpC',
     ('bulk', 'TRANS-CPLX-201[m]'): 'AcrAB-TolC',
 }
+RNA_PROTEIN_NAME_PATHS_MAP = {
+    'AmpC': (
+        (('bulk', 'EG10040-MONOMER[p]'), 1),
+    ),
+    'ampC': (
+        (('bulk', 'EG10040_RNA[c]'), 1),
+    ),
+    'AcrA': (
+        (('bulk', 'EG11703-MONOMER[p]'), 1),
+        (('bulk', 'TRANS-CPLX-201[m]'), 6),
+        (('bulk', 'CPLX0-3932[i]'), 6),
+    ),
+    'acrA': (
+        (('bulk', 'EG11703_RNA[c]'), 1),
+    ),
+    'MarR': (
+        (('bulk', 'PD00364[c]'), 1),
+        (('bulk', 'CPLX0-7710[c]'), 2),
+    ),
+    'marR': (
+        (('bulk', 'EG11435_RNA[c]'), 1),
+    ),
+    'MarA': (
+        (('bulk', 'PD00365[c]'), 1),
+    ),
+    'marA': (
+        (('bulk', 'EG11434_RNA[c]'), 1),
+    ),
+}
+RNA_PROTEIN_LAYOUT = [
+    ['acrA', 'ampC', 'marA', 'marR'],
+    ['AcrA', 'AmpC', 'MarA', 'MarR'],
+]
 ENVIRONMENT_SECTION_FIELDS = ('GLC[p]',)
 ENVIRONMENT_SECTION_TIMES: Tuple[int, ...] = (
     231, 6006, 11781, 17325, 23100)
@@ -79,6 +114,8 @@ ExperimentIdsType = Dict[
     Union[str, Tuple[str, ...], Dict[str, Tuple[str, ...]]],
 ]
 EXPERIMENT_IDS: ExperimentIdsType = {
+    'rna_protein_timeseries': (
+        '3a08c9ec-0310-11ed-a663-eb633c9de872'),
     'expression_distributions': (
         '20201119.150828', '20210112.185210', '20210125.152527'),
     'expression_heterogeneity': (
@@ -139,6 +176,7 @@ FIGURE_NUMBER_NAME_MAP = {
     },
     'X': {
         '1': 'death_snapshots_antibiotic',
+        '2': 'rna_protein_timeseries',
     },
 }
 FIGURE_DESCRIPTIONS = {
@@ -164,6 +202,7 @@ FIGURE_DESCRIPTIONS = {
     },
     'X': {
         '1': 'death_snapshots_antibiotic',
+        '2': 'timeseries of selected RNA and protein counts'
     },
 }
 METADATA_FILE = 'metadata.json'
@@ -721,6 +760,42 @@ def make_death_snapshots_antibiotic(
     )
 
 
+def make_rna_protein_timeseries(
+        data_and_config: DataTuple,
+        _: SearchData,
+        ) -> dict:
+    '''Plot RNA and protein expression timeseries.
+
+    Create Figure X2. This figure is not used in the paper.
+    '''
+    data, _config = data_and_config
+    fig = plot_rna_protein_timeseries(
+        data,
+        RNA_PROTEIN_NAME_PATHS_MAP,
+        {name: 'count' for name in RNA_PROTEIN_NAME_PATHS_MAP},
+        RNA_PROTEIN_LAYOUT,
+        agent_path=('agents', '00'),
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'rna_protein_timeseries.{FILE_EXTENSION}')
+    fig.savefig(out_path)
+    #plot_agents_multigen(
+    #    data,
+    #    settings={
+    #        'max_rows': 2,
+    #        'include_paths': RNA_PROTEIN_NAME_MAP.keys(),
+    #        'titles_map': RNA_PROTEIN_NAME_MAP,
+    #        'ylabels_map': {
+    #            path: 'count'
+    #            for path in RNA_PROTEIN_NAME_MAP
+    #        },
+    #    },
+    #    out_dir=FIG_OUT_DIR,
+    #    filename=f'rna_protein_timeseries.{FILE_EXTENSION}',
+    #)
+    return {}
+
+
 def create_data_dict(
         all_data: Dict[str, DataTuple],
         experiment_id_obj: Union[dict, str, Tuple[str, ...]],
@@ -762,6 +837,7 @@ def create_data_dict(
 
 
 FIGURE_FUNCTION_MAP = {
+    'rna_protein_timeseries': make_rna_protein_timeseries,
     'expression_distributions': make_expression_distributions_fig,
     'expression_heterogeneity': make_expression_heterogeneity_fig,
     'growth_basal': make_growth_basal_fig,
