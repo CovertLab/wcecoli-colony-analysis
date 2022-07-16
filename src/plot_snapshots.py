@@ -412,6 +412,7 @@ def plot_snapshots(data, plot_config):
     grid_params = grid.get_subplot_params()
     snapshot_times_hrs = tuple(
         time / 60 / 60 for time in snapshot_times)
+    print(snapshot_times)
     if n_snapshots > 1:
         time_per_snapshot = (
             snapshot_times_hrs[-1] - snapshot_times_hrs[0]) / (
