@@ -73,6 +73,7 @@ EQUILIBRATION_HORIZONTAL_LINES = {
         ('expected', 1.7e-3, COLOR_LIST[2]),
     ),
 }
+GROWTH_RATE_AGENT = '0'
 RNA_PROTEIN_NAME_PATHS_MAP = {
     'AmpC': (
         (('bulk', 'EG10040-MONOMER[p]'), 1),
@@ -128,6 +129,8 @@ EXPERIMENT_IDS: ExperimentIdsType = {
         '709652e8-03b7-11ed-acfe-2f08daca2550'),
     'equilibration_tetracycline': (
         '0c44f61c-0477-11ed-acfe-2f08daca2550'),
+    'growth_rate': (
+        '447e44ba-055e-11ed-a7c0-87492988b953'),
     'equilibration_ampicillin': (
         'bb92b112-049b-11ed-acfe-2f08daca2550'),
     'expression_distributions': (
@@ -186,6 +189,7 @@ FIGURE_NUMBER_NAME_MAP = {
         '2': 'rna_protein_timeseries',
         '3': 'equilibration_tetracycline',
         '4': 'equilibration_ampicillin',
+        '5': 'growth_rate',
     },
 }
 FIGURE_DESCRIPTIONS = {
@@ -214,6 +218,7 @@ FIGURE_DESCRIPTIONS = {
         '2': 'timeseries of selected RNA and protein counts',
         '3': 'timeseries of tetracycline reaching equilibrium',
         '4': 'timeseries of ampicillin reaching equilibrium',
+        '5': 'timeseries of instantaneous growth rate',
     },
 }
 METADATA_FILE = 'metadata.json'
@@ -863,6 +868,35 @@ def make_ampicillin_equilibration_timeseries(
     return {}
 
 
+def make_growth_rate_timeseries(
+        data_and_config: DataTuple,
+        _: SearchData,
+        ) -> dict:
+    '''Plot timeseries of growth rate under tetracycline.
+
+    Create Figure X5. This figure is not used in the paper.
+    '''
+    data, _config = data_and_config
+    fig = get_timeseries_plot(
+        data,
+        {
+            'growth rate': (
+                (('listeners', 'mass', 'instantaniousGrowthRate'), 1),
+            ),
+        },
+        {'growth rate': 'fg/s'},
+        [['growth rate']],
+        col_width=8,
+        row_height=4,
+        agent_path=('agents', GROWTH_RATE_AGENT),
+        min_value=0,
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'growth_rate.{FILE_EXTENSION}')
+    fig.savefig(out_path)
+    return {}
+
+
 def create_data_dict(
         all_data: Dict[str, DataTuple],
         experiment_id_obj: Union[dict, str, Tuple[str, ...]],
@@ -909,6 +943,7 @@ FIGURE_FUNCTION_MAP = {
         make_tetracycline_equilibration_timeseries),
     'equilibration_ampicillin': (
         make_ampicillin_equilibration_timeseries),
+    'growth_rate': make_growth_rate_timeseries,
     'expression_distributions': make_expression_distributions_fig,
     'expression_heterogeneity': make_expression_heterogeneity_fig,
     'growth_basal': make_growth_basal_fig,
