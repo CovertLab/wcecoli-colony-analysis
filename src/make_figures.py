@@ -16,7 +16,6 @@ from matplotlib import rcParams  # type: ignore
 import numpy as np
 from vivarium.core.serialize import serialize_value
 from vivarium.library.topology import get_in
-from vivarium.plots.agents_multigen import plot_agents_multigen
 
 from src.db import (
     add_connection_args,
@@ -39,7 +38,7 @@ from src.process_expression_data import (
 from src.ridgeline import get_ridgeline_plot
 from src.plot_snapshots import plot_snapshots, plot_tags  # type: ignore
 from src.centrality import get_survival_against_centrality_plot
-from src.rna_protein_timeseries import plot_rna_protein_timeseries
+from src.timeseries import get_timeseries_plot
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
@@ -49,7 +48,9 @@ COLORS = {
     'cyan': '#33BBEE',
     'red': '#CC3311',
     'teal': '#009988',
-    'magenta': '#EE3377'}
+    'magenta': '#EE3377'
+}
+COLOR_LIST = list(COLORS.values())
 PUMP_PATH = (
     'periplasm', 'concentrations', 'TRANS-CPLX-201[m]')
 BETA_LACTAMASE_PATH = (
@@ -57,6 +58,20 @@ BETA_LACTAMASE_PATH = (
 TAG_PATH_NAME_MAP = {
     ('bulk', 'EG10040-MONOMER[p]'): 'AmpC',
     ('bulk', 'TRANS-CPLX-201[m]'): 'AcrAB-TolC',
+}
+EQUILIBRATION_TIME_RANGE = (25, 35)
+EQUILIBRATION_AGENT = '0'
+EQUILIBRATION_HORIZONTAL_LINES = {
+    'tetracycline': (
+        ('external', 0.0025, COLOR_LIST[1]),
+        # Source: Thanassi et al. (1995)
+        ('expected', 10e-3, COLOR_LIST[2]),
+    ),
+    'ampicillin': (
+        ('external', 0.0057, COLOR_LIST[1]),
+        # Source: Kojima and Nikaido (2013)
+        ('expected', 1.7e-3, COLOR_LIST[2]),
+    ),
 }
 RNA_PROTEIN_NAME_PATHS_MAP = {
     'AmpC': (
@@ -91,19 +106,14 @@ RNA_PROTEIN_LAYOUT = [
     ['acrA', 'ampC', 'marA', 'marR'],
     ['AcrA', 'AmpC', 'MarA', 'MarR'],
 ]
+RNA_PROTEIN_AGENT = '00'
 ENVIRONMENT_SECTION_FIELDS = ('GLC[p]',)
 ENVIRONMENT_SECTION_TIMES: Tuple[int, ...] = (
-    231, 6006, 11781, 17325, 23100)
+    0, 2890, 5780, 8660, 11550)
 AGENTS_TO_TRACE: Tuple[str, ...] = (
-    '0_wcecoli01010101111',
-    '0_wcecoli00100110',
-    '0_wcecoli111111',
-    '0_wcecoli01010100',
-    '0_wcecoli0101011011',
-    '0_wcecoli010110',
-    '0_wcecoli1111010',
+    '010',
 )
-AGENTS_FOR_PHYLOGENY_TRACE = ('0_wcecoli101001101110',)
+AGENTS_FOR_PHYLOGENY_TRACE = ('010',)
 COLONY_MASS_PATH = ('mass',)
 EXPRESSION_SURVIVAL_TIME_RANGE = (0.5, 1)
 NUM_SNAPSHOTS = 5
@@ -115,43 +125,40 @@ ExperimentIdsType = Dict[
 ]
 EXPERIMENT_IDS: ExperimentIdsType = {
     'rna_protein_timeseries': (
-        '3a08c9ec-0310-11ed-a663-eb633c9de872'),
+        '709652e8-03b7-11ed-acfe-2f08daca2550'),
+    'equilibration_tetracycline': (
+        '0c44f61c-0477-11ed-acfe-2f08daca2550'),
+    'equilibration_ampicillin': (
+        'bb92b112-049b-11ed-acfe-2f08daca2550'),
     'expression_distributions': (
-        '20201119.150828', '20210112.185210', '20210125.152527'),
+        '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',),
     'expression_heterogeneity': (
-        '20201119.150828', '20210112.185210', '20210125.152527'),
+        '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',),
     'enviro_heterogeneity': (
-        '20201119.150828', '20210112.185210', '20210125.152527'),
+        '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',),
     'enviro_section': (
-        '20201119.150828', '20210112.185210', '20210125.152527'),
+        '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',),
     'growth_basal': (
-        '20201119.150828', '20210112.185210', '20210125.152527'),
+        '4de8a748-bddd-11ec-af73-a566a8a29bc0',),
     'growth_anaerobic': (
-        '20201221.194828', '20210205.163802', '20210205.183800'),
+        '4de8a748-bddd-11ec-af73-a566a8a29bc0',),
     'growth': {
         'basal': (
-            '20201119.150828', '20210112.185210', '20210125.152527'),
+            '4de8a748-bddd-11ec-af73-a566a8a29bc0',),
         'anaerobic': (
-            '20201221.194828', '20210205.163802', '20210205.183800'),
+            '4de8a748-bddd-11ec-af73-a566a8a29bc0',),
     },
     'threshold_scan': {
         '0.01 mM': (
-            '20201228.172246', '20210209.174715', '20210209.192621'),
-        '0.02 mM': (
-            '20201228.211700', '20210210.181817', '20210210.210112'),
-        '0.03 mM': (
-            '20201229.160649', '20210212.160943', '20210212.193824'),
-        '0.04 mM': (
-            '20201230.191552', '20210217.152358', '20210217.201244'),
-        '0.05 mM': (
-            '20210206.045834', '20210219.151929', '20210220.153658'),
+            '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',),
     },
-    'expression_survival': '20210329.155953',
-    'expression_survival_dotplots': '20210329.155953',
-    'death_snapshots': '20210329.155953',
-    'death_snapshots_antibiotic': '20210329.155953',
-    'centrality': '20210329.155953',
-    'phylogeny': '20210329.155953',
+    'expression_survival': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
+    'expression_survival_dotplots': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
+    'death_snapshots': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
+    'death_snapshots_antibiotic': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
+    'centrality': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
+    'phylogeny': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
+
 }
 FIGURE_NUMBER_NAME_MAP = {
     '3': {
@@ -177,6 +184,8 @@ FIGURE_NUMBER_NAME_MAP = {
     'X': {
         '1': 'death_snapshots_antibiotic',
         '2': 'rna_protein_timeseries',
+        '3': 'equilibration_tetracycline',
+        '4': 'equilibration_ampicillin',
     },
 }
 FIGURE_DESCRIPTIONS = {
@@ -202,7 +211,9 @@ FIGURE_DESCRIPTIONS = {
     },
     'X': {
         '1': 'death_snapshots_antibiotic',
-        '2': 'timeseries of selected RNA and protein counts'
+        '2': 'timeseries of selected RNA and protein counts',
+        '3': 'timeseries of tetracycline reaching equilibrium',
+        '4': 'timeseries of ampicillin reaching equilibrium',
     },
 }
 METADATA_FILE = 'metadata.json'
@@ -516,7 +527,7 @@ def make_expression_survival_fig(
     ))
     plot_agents = set()
     for agent in AGENTS_FOR_PHYLOGENY_TRACE:
-        for i in range(len('0_wcecoli') + 1, len(agent) + 1):
+        for i in range(1, len(agent) + 1):
             plot_agents.add(agent[:i])
     fig = plot_expression_survival(
         data, PUMP_PATH, BETA_LACTAMASE_PATH,
@@ -769,30 +780,86 @@ def make_rna_protein_timeseries(
     Create Figure X2. This figure is not used in the paper.
     '''
     data, _config = data_and_config
-    fig = plot_rna_protein_timeseries(
+    fig = get_timeseries_plot(
         data,
         RNA_PROTEIN_NAME_PATHS_MAP,
         {name: 'count' for name in RNA_PROTEIN_NAME_PATHS_MAP},
         RNA_PROTEIN_LAYOUT,
-        agent_path=('agents', '00'),
+        agent_path=('agents', RNA_PROTEIN_AGENT),
     )
     out_path = os.path.join(
         FIG_OUT_DIR, f'rna_protein_timeseries.{FILE_EXTENSION}')
     fig.savefig(out_path)
-    #plot_agents_multigen(
-    #    data,
-    #    settings={
-    #        'max_rows': 2,
-    #        'include_paths': RNA_PROTEIN_NAME_MAP.keys(),
-    #        'titles_map': RNA_PROTEIN_NAME_MAP,
-    #        'ylabels_map': {
-    #            path: 'count'
-    #            for path in RNA_PROTEIN_NAME_MAP
-    #        },
-    #    },
-    #    out_dir=FIG_OUT_DIR,
-    #    filename=f'rna_protein_timeseries.{FILE_EXTENSION}',
-    #)
+    return {}
+
+
+def make_tetracycline_equilibration_timeseries(
+        data_and_config: DataTuple,
+        _: SearchData,
+        ) -> dict:
+    '''Plot timeseries of tetracycline equilibrating with environment.
+
+    Create Figure X3. This figure is not used in the paper.
+    '''
+    data, _config = data_and_config
+    min_time, max_time = EQUILIBRATION_TIME_RANGE
+    data = RawData({
+        time: timepoint
+        for time, timepoint in data.items()
+        if min_time <= time <= max_time
+    })
+    fig = get_timeseries_plot(
+        data,
+        {
+            'tetracycline': (
+                (('cytoplasm', 'concentrations', 'tetracycline'), 1),
+            ),
+        },
+        {'tetracycline': 'concentration (mM)'},
+        [['tetracycline']],
+        col_width=8,
+        row_height=4,
+        agent_path=('agents', EQUILIBRATION_AGENT),
+        horizontal_lines=EQUILIBRATION_HORIZONTAL_LINES,
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'equilibration_tetracycline.{FILE_EXTENSION}')
+    fig.savefig(out_path)
+    return {}
+
+
+def make_ampicillin_equilibration_timeseries(
+        data_and_config: DataTuple,
+        _: SearchData,
+        ) -> dict:
+    '''Plot timeseries of ampicillin equilibrating with environment.
+
+    Create Figure X4. This figure is not used in the paper.
+    '''
+    data, _config = data_and_config
+    min_time, max_time = EQUILIBRATION_TIME_RANGE
+    data = RawData({
+        time: timepoint
+        for time, timepoint in data.items()
+        if min_time <= time <= max_time
+    })
+    fig = get_timeseries_plot(
+        data,
+        {
+            'ampicillin': (
+                (('periplasm', 'concentrations', 'ampicillin'), 1),
+            ),
+        },
+        {'ampicillin': 'concentration (mM)'},
+        [['ampicillin']],
+        col_width=8,
+        row_height=4,
+        agent_path=('agents', EQUILIBRATION_AGENT),
+        horizontal_lines=EQUILIBRATION_HORIZONTAL_LINES,
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'equilibration_ampicillin.{FILE_EXTENSION}')
+    fig.savefig(out_path)
     return {}
 
 
@@ -838,6 +905,10 @@ def create_data_dict(
 
 FIGURE_FUNCTION_MAP = {
     'rna_protein_timeseries': make_rna_protein_timeseries,
+    'equilibration_tetracycline': (
+        make_tetracycline_equilibration_timeseries),
+    'equilibration_ampicillin': (
+        make_ampicillin_equilibration_timeseries),
     'expression_distributions': make_expression_distributions_fig,
     'expression_heterogeneity': make_expression_heterogeneity_fig,
     'growth_basal': make_growth_basal_fig,
