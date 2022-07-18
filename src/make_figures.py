@@ -108,6 +108,54 @@ RNA_PROTEIN_LAYOUT = [
     ['AcrA', 'AmpC', 'MarA', 'MarR'],
 ]
 RNA_PROTEIN_AGENT = '00'
+TETRACYCLINE_ACTIVITY_TIMESERIES_NAME_PATHS_MAP = {
+    'Inhibited Active Ribosomes': (
+        (('listeners', 'unique_counts', 'active_ribosome_tetracycline'), 1),
+    ),
+    'Inhibited 30S Subunits': (
+        (('bulk', 'CPLX0-3953-tetracycline[c]'), 1),
+    ),
+    'Uninhibited 30S Subunits': (
+        (('bulk', 'CPLX0-3953[c]'), 1),
+    ),
+    'Uninhibited Active Ribosomes': (
+        (('listeners', 'unique_counts', 'active_ribosome'), 1),
+    ),
+}
+TETRACYCLINE_TRANSPORT_TIMESERIES_NAME_PATHS_MAP = {
+    'Cytoplasmic Tetracycline': (
+        (('cytoplasm', 'concentrations', 'tetracycline'), 1),
+    ),
+    'External Tetracycline': (
+        (('boundary', 'external', 'tetracycline'), 1),
+    ),
+    'OmpF': (
+        (('bulk', 'CPLX0-7534[o]'), 1),
+    ),
+    'Outer Membrane': (
+        (('kinetic_parameters', 'outer_tetracycline_permeability'), 1),
+    ),
+    'AcrAB-TolC': (
+        (('bulk', 'TRANS-CPLX-201[m]'), 1),
+    ),
+}
+TETRACYCLINE_TRANSPORT_TIMESERIES_Y_LABELS = {
+    'Cytoplasmic Tetracycline': 'concentration (mM)',
+    'External Tetracycline': 'concentration (mM)',
+    'OmpF': 'counts',
+    'Outer Membrane': 'permeability (cm/s)',
+    'AcrAB-TolC': 'concentration (mM)',
+}
+TETRACYCLINE_TRANSPORT_TIMESERIES_LAYOUT = [
+    ['External Tetracycline', 'Cytoplasmic Tetracycline', None],
+    ['OmpF', 'Outer Membrane', 'AcrAB-TolC'],
+]
+TETRACYCLINE_ACTIVITY_TIMESERIES_LAYOUT = [
+    ['Inhibited Active Ribosomes', 'Uninhibited Active Ribosomes'],
+    ['Inhibited 30S Subunits', 'Uninhibited 30S Subunits'],
+]
+TETRACYCLINE_TRANSPORT_TIMESERIES_AGENT = '0'
+TETRACYCLINE_ACTIVITY_TIMESERIES_AGENT = '0'
 ENVIRONMENT_SECTION_FIELDS = ('GLC[p]',)
 ENVIRONMENT_SECTION_TIMES: Tuple[int, ...] = (
     0, 2890, 5780, 8660, 11550)
@@ -131,6 +179,10 @@ EXPERIMENT_IDS: ExperimentIdsType = {
         '0c44f61c-0477-11ed-acfe-2f08daca2550'),
     'growth_rate': (
         '447e44ba-055e-11ed-a7c0-87492988b953'),
+    'tetracycline_activity_timeseries': (
+        '98e8a2c0-0621-11ed-80f5-fbbd58ffc717'),
+    'tetracycline_transport_timeseries': (
+        '0c44f61c-0477-11ed-acfe-2f08daca2550'),
     'equilibration_ampicillin': (
         'bb92b112-049b-11ed-acfe-2f08daca2550'),
     'expression_distributions': (
@@ -190,6 +242,8 @@ FIGURE_NUMBER_NAME_MAP = {
         '3': 'equilibration_tetracycline',
         '4': 'equilibration_ampicillin',
         '5': 'growth_rate',
+        '6': 'tetracycline_activity_timeseries',
+        '7': 'tetracycline_transport_timeseries',
     },
 }
 FIGURE_DESCRIPTIONS = {
@@ -219,6 +273,8 @@ FIGURE_DESCRIPTIONS = {
         '3': 'timeseries of tetracycline reaching equilibrium',
         '4': 'timeseries of ampicillin reaching equilibrium',
         '5': 'timeseries of instantaneous growth rate',
+        '6': 'timeseries of variables related to tetracycline activity',
+        '7': 'timeseries of variables related to tetracycline transport',
     },
 }
 METADATA_FILE = 'metadata.json'
@@ -897,6 +953,46 @@ def make_growth_rate_timeseries(
     return {}
 
 
+def make_tetracycline_activity_timeseries(
+        data_and_config: DataTuple,
+        _: SearchData,
+        ) -> dict:
+    data, _config = data_and_config
+    fig = get_timeseries_plot(
+        data,
+        TETRACYCLINE_ACTIVITY_TIMESERIES_NAME_PATHS_MAP,
+        {
+            var: 'counts' for var in
+            TETRACYCLINE_ACTIVITY_TIMESERIES_NAME_PATHS_MAP
+        },
+        TETRACYCLINE_ACTIVITY_TIMESERIES_LAYOUT,
+        agent_path=('agents', TETRACYCLINE_ACTIVITY_TIMESERIES_AGENT),
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'tetracycline_activity_timeseries.{FILE_EXTENSION}')
+    fig.savefig(out_path)
+    return {}
+
+
+def make_tetracycline_transport_timeseries(
+        data_and_config: DataTuple,
+        _: SearchData,
+        ) -> dict:
+    data, _config = data_and_config
+    fig = get_timeseries_plot(
+        data,
+        TETRACYCLINE_TRANSPORT_TIMESERIES_NAME_PATHS_MAP,
+        TETRACYCLINE_TRANSPORT_TIMESERIES_Y_LABELS,
+        TETRACYCLINE_TRANSPORT_TIMESERIES_LAYOUT,
+        agent_path=('agents', TETRACYCLINE_TRANSPORT_TIMESERIES_AGENT),
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'tetracycline_transport_timeseries.{FILE_EXTENSION}')
+    fig.savefig(out_path)
+    return {}
+
+
+
 def create_data_dict(
         all_data: Dict[str, DataTuple],
         experiment_id_obj: Union[dict, str, Tuple[str, ...]],
@@ -944,6 +1040,10 @@ FIGURE_FUNCTION_MAP = {
     'equilibration_ampicillin': (
         make_ampicillin_equilibration_timeseries),
     'growth_rate': make_growth_rate_timeseries,
+    'tetracycline_activity_timeseries': (
+        make_tetracycline_activity_timeseries),
+    'tetracycline_transport_timeseries': (
+        make_tetracycline_transport_timeseries),
     'expression_distributions': make_expression_distributions_fig,
     'expression_heterogeneity': make_expression_heterogeneity_fig,
     'growth_basal': make_growth_basal_fig,

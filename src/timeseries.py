@@ -67,7 +67,7 @@ def get_timeseries_plot(
             if name is None:
                 continue
             ax = fig.add_subplot(grid[i, j])
-            ax.set_title(name)
+            ax.set_title(name, pad=15)
             ax.title.set_fontsize(title_size)
             for tick_type in ('major', 'minor'):
                 ax.tick_params(
