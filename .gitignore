@@ -1,2 +1,4 @@
 /out/
 /data/
+/.python-version
+**/__pycache__/
