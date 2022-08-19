@@ -18,6 +18,7 @@ from vivarium.core.serialize import serialize_value
 from vivarium.library.topology import get_in
 
 from src.db import (
+    SplitExperimentSpec,
     add_connection_args,
     format_data_for_snapshots,
     format_data_for_tags,
@@ -28,7 +29,12 @@ from src.expression_survival import (
     plot_expression_survival_dotplot,
 )
 from src.constants import OUT_DIR, FIELDS_PATH, BOUNDS_PATH
-from src.types import RawData, EnvironmentConfig, SearchData, DataTuple
+from src.types import (
+    RawData,
+    EnvironmentConfig,
+    SearchData,
+    DataTuple,
+)
 from src.total_mass import get_total_mass_plot
 from src.environment_cross_sections import (
     get_enviro_sections_plot, SerializedField)
@@ -170,7 +176,7 @@ FIG_OUT_DIR = os.path.join(OUT_DIR, 'figs')
 FILE_EXTENSION = 'pdf'
 ExperimentIdsType = Dict[
     str,
-    Union[str, Tuple[str, ...], Dict[str, Tuple[str, ...]]],
+    Union[str, tuple, dict],
 ]
 EXPERIMENT_IDS: ExperimentIdsType = {
     'rna_protein_timeseries': (
@@ -188,20 +194,40 @@ EXPERIMENT_IDS: ExperimentIdsType = {
     'expression_distributions': (
         '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',),
     'expression_heterogeneity': (
-        '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',),
+        SplitExperimentSpec({
+            0: '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',
+            11551: '2022-08-11_22-31-14_068632+0000',
+        }),
+    ),
     'enviro_heterogeneity': (
-        '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',),
+        SplitExperimentSpec({
+            0: '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',
+            11551: '2022-08-11_22-31-14_068632+0000',
+        }),
+    ),
     'enviro_section': (
-        '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',),
+        SplitExperimentSpec({
+            0: '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',
+            11551: '2022-08-11_22-31-14_068632+0000',
+        }),
+    ),
     'growth_basal': (
-        '4de8a748-bddd-11ec-af73-a566a8a29bc0',),
+        SplitExperimentSpec({
+            0: '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',
+            11551: '2022-08-11_22-31-14_068632+0000',
+        }),
+    ),
     'growth_anaerobic': (
         '4de8a748-bddd-11ec-af73-a566a8a29bc0',),
     'growth': {
         'basal': (
-            '4de8a748-bddd-11ec-af73-a566a8a29bc0',),
+            SplitExperimentSpec({
+                0: '1b2a3ca2-fd4f-11ec-ae52-8da6b112d368',
+                11551: '2022-08-11_22-31-14_068632+0000',
+            }),
+        ),
         'anaerobic': (
-            '4de8a748-bddd-11ec-af73-a566a8a29bc0',),
+            'fc32e70c-eb49-11ec-8f84-bb7045ed26ca',),
     },
     'threshold_scan': {
         '0.01 mM': (
@@ -297,6 +323,23 @@ def exec_shell(
     return proc.stdout.rstrip(), proc.stderr.rstrip()
 
 
+def _prepare_for_json(experiment_ids):
+    if isinstance(experiment_ids, SplitExperimentSpec):
+        return _prepare_for_json(experiment_ids.to_dict())
+    if isinstance(experiment_ids, tuple):
+        return tuple(_prepare_for_json(elem) for elem in experiment_ids)
+    if isinstance(experiment_ids, str):
+        return experiment_ids
+    if isinstance(experiment_ids, dict):
+        return {
+            str(key): _prepare_for_json(value)
+            for key, value in experiment_ids.items()
+        }
+    raise ValueError(
+        f'Cannot prepare value of type {type(experiment_ids)} '
+        f'for JSON: {experiment_ids}.')
+
+
 def get_metadata() -> dict:
     '''Get information on which experiments and code were used.'''
     if os.environ.get('CI'):
@@ -311,7 +354,7 @@ def get_metadata() -> dict:
             'git_status': 'n/a because on CI',
             'time': datetime.utcnow().isoformat() + '+00:00',
             'python': sys.version.splitlines()[0],
-            'experiment_ids': EXPERIMENT_IDS,
+            'experiment_ids': _prepare_for_json(EXPERIMENT_IDS),
             'ci_url': ci_url,
         }
     return {
@@ -322,13 +365,13 @@ def get_metadata() -> dict:
             ['git', 'status', '--porcelain'])[0].split('\n'),
         'time': datetime.utcnow().isoformat() + '+00:00',
         'python': sys.version.splitlines()[0],
-        'experiment_ids': EXPERIMENT_IDS,
+        'experiment_ids': _prepare_for_json(EXPERIMENT_IDS),
     }
 
 
 def get_experiment_ids(
         id_obj: Union[str, Tuple[str, ...], List[str], Set[str], dict]
-        ) -> List[str]:
+        ) -> List[Union[str, SplitExperimentSpec]]:
     '''Get a flat list of all experiment IDs. May have duplicates.'''
     if isinstance(id_obj, str):
         return [id_obj]
@@ -337,6 +380,8 @@ def get_experiment_ids(
         for elem in id_obj:
             ids_lst.extend(get_experiment_ids(elem))
         return ids_lst
+    if isinstance(id_obj, SplitExperimentSpec):
+        return [id_obj]
     if isinstance(id_obj, dict):
         ids_lst = []
         for elem in id_obj.values():
@@ -994,13 +1039,12 @@ def make_tetracycline_transport_timeseries(
 
 
 def create_data_dict(
-        all_data: Dict[str, DataTuple],
-        experiment_id_obj: Union[dict, str, Tuple[str, ...]],
+        all_data: Dict[Union[str, SplitExperimentSpec], DataTuple],
+        experiment_id_obj: Union[
+            dict, str, Tuple[str, ...],
+            Tuple[SplitExperimentSpec, ...], SplitExperimentSpec],
         ) -> Union[dict, DataTuple, Tuple[DataTuple, ...]]:
     '''Create a dictionary of experiment simulation data.
-
-    Note that we only support tuples of IDs, not tuples of dictionaries
-    or tuples of tuples.
 
     Args:
         all_data (dict(str, tuple(RawData, dict))): Map from experiment
@@ -1013,12 +1057,11 @@ def create_data_dict(
 
     Returns: Data object of the same form as the experiment_id_obj.
     '''
-    if isinstance(experiment_id_obj, str):
+    if isinstance(experiment_id_obj, (str, SplitExperimentSpec)):
         return all_data[experiment_id_obj]
     if isinstance(experiment_id_obj, tuple):
         to_return = []
         for elem in experiment_id_obj:
-            assert isinstance(elem, str)
             data_tuple = create_data_dict(all_data, elem)
             to_return.append(cast(DataTuple, data_tuple))
         return tuple(to_return)
