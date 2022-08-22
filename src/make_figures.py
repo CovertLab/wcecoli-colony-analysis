@@ -45,6 +45,10 @@ from src.ridgeline import get_ridgeline_plot
 from src.plot_snapshots import plot_snapshots, plot_tags  # type: ignore
 from src.centrality import get_survival_against_centrality_plot
 from src.timeseries import get_timeseries_plot
+from src.vivarium_wcecoli_comparison import (
+    get_proteome_comparison_plot,
+    get_submass_comparison_plot,
+)
 
 
 # Colors from https://personal.sron.nl/~pault/#sec:qualitative
@@ -239,7 +243,34 @@ EXPERIMENT_IDS: ExperimentIdsType = {
     'death_snapshots_antibiotic': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
     'centrality': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
     'phylogeny': '27c2aa52-c12d-11ec-a3cd-d588635fd3e2',
-
+    'proteome_comparison': {
+        'vivarium-ecoli': (
+            '709652e8-03b7-11ed-acfe-2f08daca2550',
+            'ffe868bc-201a-11ed-881c-a91fcb0e2640',
+            'd5956e52-202e-11ed-881c-a91fcb0e2640',
+        ),
+        'wcecoli': (
+            'wcecoli_sim_seed_0',
+            'wcecoli_sim_seed_1',
+            'wcecoli_sim_seed_2',
+            'wcecoli_sim_seed_3',
+            'wcecoli_sim_seed_4',
+        ),
+    },
+    'submass_comparison': {
+        'vivarium-ecoli': (
+            '709652e8-03b7-11ed-acfe-2f08daca2550',
+            'ffe868bc-201a-11ed-881c-a91fcb0e2640',
+            'd5956e52-202e-11ed-881c-a91fcb0e2640',
+        ),
+        'wcecoli': (
+            'wcecoli_sim_seed_0',
+            'wcecoli_sim_seed_1',
+            'wcecoli_sim_seed_2',
+            'wcecoli_sim_seed_3',
+            'wcecoli_sim_seed_4',
+        ),
+    },
 }
 FIGURE_NUMBER_NAME_MAP = {
     '3': {
@@ -270,6 +301,8 @@ FIGURE_NUMBER_NAME_MAP = {
         '5': 'growth_rate',
         '6': 'tetracycline_activity_timeseries',
         '7': 'tetracycline_transport_timeseries',
+        '8': 'proteome_comparison',
+        '9': 'submass_comparison',
     },
 }
 FIGURE_DESCRIPTIONS = {
@@ -301,6 +334,8 @@ FIGURE_DESCRIPTIONS = {
         '5': 'timeseries of instantaneous growth rate',
         '6': 'timeseries of variables related to tetracycline activity',
         '7': 'timeseries of variables related to tetracycline transport',
+        '8': 'comparison of wcEcoli and vivarium-ecoli proteomes',
+        '9': 'comparison of wcEcoli and vivarium-ecoli submass growth',
     },
 }
 METADATA_FILE = 'metadata.json'
@@ -1037,6 +1072,42 @@ def make_tetracycline_transport_timeseries(
     return {}
 
 
+def make_proteome_comparison(
+        data_and_configs: Dict[str, Iterable[DataTuple]],
+        _: SearchData,
+        ) -> dict:
+    data = {
+        key: [datatuple[0] for datatuple in datatuples]
+        for key, datatuples in data_and_configs.items()
+    }
+    fig = get_proteome_comparison_plot(
+        data,
+        vivarium_agent='0',
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'proteome_comparison.{FILE_EXTENSION}')
+    fig.savefig(out_path)
+    return {}
+
+
+def make_submass_comparison(
+        data_and_configs: Dict[str, Iterable[DataTuple]],
+        _: SearchData,
+        ) -> dict:
+    data = {
+        key: [datatuple[0] for datatuple in datatuples]
+        for key, datatuples in data_and_configs.items()
+    }
+    fig = get_submass_comparison_plot(
+        data,
+        COLOR_LIST,
+        vivarium_agent='0',
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'submass_comparison.{FILE_EXTENSION}')
+    fig.savefig(out_path)
+    return {}
+
 
 def create_data_dict(
         all_data: Dict[Union[str, SplitExperimentSpec], DataTuple],
@@ -1101,6 +1172,8 @@ FIGURE_FUNCTION_MAP = {
     'death_snapshots': make_death_snapshots,
     'death_snapshots_antibiotic': make_death_snapshots_antibiotic,
     'centrality': make_survival_centrality_fig,
+    'proteome_comparison': make_proteome_comparison,
+    'submass_comparison': make_submass_comparison,
 }
 
 
