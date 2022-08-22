@@ -73,10 +73,10 @@ def get_experiment_data(
 
     environment_config: Optional[EnvironmentConfig] = None
     combined_data: dict = {}
-    if args.data_path:
-        for start_time, experiment_id in experiment_ids.items():
-            path = os.path.join(
-                args.data_path, '{}.json'.format(experiment_id))
+    for start_time, experiment_id in experiment_ids.items():
+        path = os.path.join(
+            args.data_path, '{}.json'.format(experiment_id))
+        if args.data_path and os.path.exists(path):
             with open(path, 'r') as f:
                 loaded_file = json.load(f)
                 data = RawData({
@@ -88,10 +88,9 @@ def get_experiment_data(
                         loaded_file['environment_config'])
                 assert not combined_data.keys() & data.keys()
                 combined_data.update(data)
-    else:
-        client = get_local_client(
-            args.host, args.port, args.database_name)
-        for start_time, experiment_id in experiment_ids.items():
+        else:
+            client = get_local_client(
+                args.host, args.port, args.database_name)
             data, _ = data_from_database(
                 experiment_id, client,
                 #filters={'data.time': {'$mod': [10, 0]}}
