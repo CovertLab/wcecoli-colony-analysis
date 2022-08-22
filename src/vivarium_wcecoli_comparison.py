@@ -6,8 +6,9 @@ from src.constants import AGENTS_PATH
 
 
 MONOMER_COUNTS_PATH = ('listeners', 'monomer_counts')
+DRY_MASS_PATH = ('listeners', 'mass', 'dry_mass')
 SUBMASS_PATHS = {
-    'Total Dry Mass': ('listeners', 'mass', 'dry_mass'),
+    'Total Dry Mass': DRY_MASS_PATH,
     'Protein Mass': ('listeners', 'mass', 'proteinMass'),
     'tRNA Mass': ('listeners', 'mass', 'tRnaMass'),
     'rRNA Mass': ('listeners', 'mass', 'rRnaMass'),
@@ -106,6 +107,105 @@ def get_proteome_comparison_plot(
         data, vivarium_agent='', wcecoli_agent=''):
     fig, ax = plt.subplots()
     plot_proteome_comparison(ax, data, vivarium_agent, wcecoli_agent)
+    return fig
+
+
+def plot_mass_fraction_comparison(
+        ax, data, colors, vivarium_agent='', wcecoli_agent=''):
+    vivarium_data = data['vivarium-ecoli']
+    wcecoli_data = data['wcecoli']
+
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel('Submasses as Fractions of Total Dry Mass')
+
+    vivarium_data_truncated = {}
+    wcecoli_data_truncated = {}
+
+    for path in SUBMASS_PATHS.values():
+        vivarium_times, vivarium_timeseries = _get_timeseries(
+            vivarium_data, path, vivarium_agent)
+        wcecoli_times, wcecoli_timeseries = _get_timeseries(
+            wcecoli_data, path, wcecoli_agent)
+
+        # Make sure all datasets are the same length.
+        n_vivarium_timepoints = min([
+            len(times) for times in vivarium_times])
+        vivarium_time_arrays = [
+            times[:n_vivarium_timepoints]
+            for times in vivarium_times
+        ]
+        vivarium_timeseries = np.array([
+            timeseries[:n_vivarium_timepoints]
+            for timeseries in vivarium_timeseries
+        ])
+        n_wcecoli_timepoints = min([
+            len(times) for times in wcecoli_times])
+        wcecoli_time_arrays = [
+            times[:n_wcecoli_timepoints]
+            for times in wcecoli_times
+        ]
+        wcecoli_timeseries = np.array([
+            timeseries[:n_wcecoli_timepoints]
+            for timeseries in wcecoli_timeseries
+        ])
+
+        vivarium_times = vivarium_time_arrays[0]
+        for time_array in vivarium_time_arrays:
+            assert np.all(vivarium_times == time_array)
+        wcecoli_times = wcecoli_time_arrays[0]
+        for time_array in wcecoli_time_arrays:
+            assert np.all(wcecoli_times == time_array)
+
+        vivarium_data_truncated[path] = (
+            vivarium_times, vivarium_timeseries)
+        wcecoli_data_truncated[path] = (
+            wcecoli_times, wcecoli_timeseries)
+
+    _, vivarium_drymass = vivarium_data_truncated[DRY_MASS_PATH]
+    _, wcecoli_drymass = wcecoli_data_truncated[DRY_MASS_PATH]
+
+    for color, (label, path) in zip(colors, SUBMASS_PATHS.items()):
+        if path == DRY_MASS_PATH:
+            continue
+        vivarium_times, vivarium_timeseries = vivarium_data_truncated[
+            path]
+        wcecoli_times, wcecoli_timeseries = wcecoli_data_truncated[
+            path]
+        vivarium_timeseries /= vivarium_drymass
+        wcecoli_timeseries /= wcecoli_drymass
+
+        (
+            wcecoli_q25,
+            wcecoli_q50,
+            wcecoli_q75,
+        ) = np.percentile(wcecoli_timeseries, [25, 50, 75], axis=0)
+        (
+            vivarium_q25,
+            vivarium_q50,
+            vivarium_q75,
+        ) = np.percentile(vivarium_timeseries, [25, 50, 75], axis=0)
+
+        ax.fill_between(
+            vivarium_times, vivarium_q25, vivarium_q75, color=color,
+            alpha=0.2)
+        ax.fill_between(
+            wcecoli_times, wcecoli_q25, wcecoli_q75, color=color,
+            alpha=0.2)
+        ax.plot(
+            vivarium_times, vivarium_q50,
+            label=f'{label} (vivarium-ecoli)', linestyle='-',
+            linewidth=1, color=color)
+        ax.plot(
+            wcecoli_times, wcecoli_q50, label=f'{label} (wcEcoli)',
+            linestyle='--', linewidth=1, color=color)
+    ax.legend()
+
+
+def get_mass_fraction_comparison_plot(
+        data, colors, vivarium_agent='', wcecoli_agent=''):
+    fig, ax = plt.subplots(figsize=(8, 11))
+    plot_mass_fraction_comparison(
+        ax, data, colors, vivarium_agent, wcecoli_agent)
     return fig
 
 

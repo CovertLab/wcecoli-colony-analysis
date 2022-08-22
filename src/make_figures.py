@@ -48,6 +48,7 @@ from src.timeseries import get_timeseries_plot
 from src.vivarium_wcecoli_comparison import (
     get_proteome_comparison_plot,
     get_submass_comparison_plot,
+    get_mass_fraction_comparison_plot,
 )
 
 
@@ -248,6 +249,7 @@ EXPERIMENT_IDS: ExperimentIdsType = {
             '709652e8-03b7-11ed-acfe-2f08daca2550',
             'ffe868bc-201a-11ed-881c-a91fcb0e2640',
             'd5956e52-202e-11ed-881c-a91fcb0e2640',
+            '30aa30b0-224c-11ed-881c-a91fcb0e2640',
         ),
         'wcecoli': (
             'wcecoli_sim_seed_0',
@@ -262,6 +264,22 @@ EXPERIMENT_IDS: ExperimentIdsType = {
             '709652e8-03b7-11ed-acfe-2f08daca2550',
             'ffe868bc-201a-11ed-881c-a91fcb0e2640',
             'd5956e52-202e-11ed-881c-a91fcb0e2640',
+            '30aa30b0-224c-11ed-881c-a91fcb0e2640',
+        ),
+        'wcecoli': (
+            'wcecoli_sim_seed_0',
+            'wcecoli_sim_seed_1',
+            'wcecoli_sim_seed_2',
+            'wcecoli_sim_seed_3',
+            'wcecoli_sim_seed_4',
+        ),
+    },
+    'mass_fraction_comparison': {
+        'vivarium-ecoli': (
+            '709652e8-03b7-11ed-acfe-2f08daca2550',
+            'ffe868bc-201a-11ed-881c-a91fcb0e2640',
+            'd5956e52-202e-11ed-881c-a91fcb0e2640',
+            '30aa30b0-224c-11ed-881c-a91fcb0e2640',
         ),
         'wcecoli': (
             'wcecoli_sim_seed_0',
@@ -303,6 +321,7 @@ FIGURE_NUMBER_NAME_MAP = {
         '7': 'tetracycline_transport_timeseries',
         '8': 'proteome_comparison',
         '9': 'submass_comparison',
+        '10': 'mass_fraction_comparison',
     },
 }
 FIGURE_DESCRIPTIONS = {
@@ -336,6 +355,7 @@ FIGURE_DESCRIPTIONS = {
         '7': 'timeseries of variables related to tetracycline transport',
         '8': 'comparison of wcEcoli and vivarium-ecoli proteomes',
         '9': 'comparison of wcEcoli and vivarium-ecoli submass growth',
+        '10': 'comparison of wcEcoli and vivarium-ecoli mass fractions',
     },
 }
 METADATA_FILE = 'metadata.json'
@@ -1109,6 +1129,25 @@ def make_submass_comparison(
     return {}
 
 
+def make_mass_fraction_comparison(
+        data_and_configs: Dict[str, Iterable[DataTuple]],
+        _: SearchData,
+        ) -> dict:
+    data = {
+        key: [datatuple[0] for datatuple in datatuples]
+        for key, datatuples in data_and_configs.items()
+    }
+    fig = get_mass_fraction_comparison_plot(
+        data,
+        COLOR_LIST,
+        vivarium_agent='0',
+    )
+    out_path = os.path.join(
+        FIG_OUT_DIR, f'mass_fraction_comparison.{FILE_EXTENSION}')
+    fig.savefig(out_path)
+    return {}
+
+
 def create_data_dict(
         all_data: Dict[Union[str, SplitExperimentSpec], DataTuple],
         experiment_id_obj: Union[
@@ -1174,6 +1213,7 @@ FIGURE_FUNCTION_MAP = {
     'centrality': make_survival_centrality_fig,
     'proteome_comparison': make_proteome_comparison,
     'submass_comparison': make_submass_comparison,
+    'mass_fraction_comparison': make_mass_fraction_comparison,
 }
 
 
