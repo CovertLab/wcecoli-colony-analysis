@@ -250,6 +250,7 @@ EXPERIMENT_IDS: ExperimentIdsType = {
             'ffe868bc-201a-11ed-881c-a91fcb0e2640',
             'd5956e52-202e-11ed-881c-a91fcb0e2640',
             '30aa30b0-224c-11ed-881c-a91fcb0e2640',
+            'c096dde6-225f-11ed-881c-a91fcb0e2640',
         ),
         'wcecoli': (
             'wcecoli_sim_seed_0',
@@ -265,6 +266,7 @@ EXPERIMENT_IDS: ExperimentIdsType = {
             'ffe868bc-201a-11ed-881c-a91fcb0e2640',
             'd5956e52-202e-11ed-881c-a91fcb0e2640',
             '30aa30b0-224c-11ed-881c-a91fcb0e2640',
+            'c096dde6-225f-11ed-881c-a91fcb0e2640',
         ),
         'wcecoli': (
             'wcecoli_sim_seed_0',
@@ -280,6 +282,7 @@ EXPERIMENT_IDS: ExperimentIdsType = {
             'ffe868bc-201a-11ed-881c-a91fcb0e2640',
             'd5956e52-202e-11ed-881c-a91fcb0e2640',
             '30aa30b0-224c-11ed-881c-a91fcb0e2640',
+            'c096dde6-225f-11ed-881c-a91fcb0e2640',
         ),
         'wcecoli': (
             'wcecoli_sim_seed_0',
