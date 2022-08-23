@@ -93,7 +93,7 @@ def get_experiment_data(
                 args.host, args.port, args.database_name)
             data, _ = data_from_database(
                 experiment_id, client,
-                #filters={'data.time': {'$mod': [10, 0]}}
+                filters={'data.time': {'$mod': [args.sampling_rate, 0]}}
             )
             data = remove_units(deserialize_value(data))
             if environment_config is None:
@@ -135,7 +135,13 @@ def add_connection_args(parser: argparse.ArgumentParser) -> None:
         help=(
             'Name of database on local mongoDB instance to read from. '
             'Defaults to "simulations".'
-        )
+        ),
+    )
+    parser.add_argument(
+        '--sampling_rate', '-s',
+        default=1,
+        type=int,
+        help='Rate (in seconds) at which to sample simulation data.',
     )
 
 
